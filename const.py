@@ -11,25 +11,45 @@ REPOLL_DELAY = 1
 UNIQUE_ID = "omnilogic"
 MANUFACTURER = "Hayward"
 
-DEVICE_TYPES_FILTER = [
+KEY_MSP_BACKYARD = "Backyard"
+KEY_MSP_BOW = "Body-of-water"
+KEY_MSP_SYSTEM_ID = "System-Id"
+
+KEY_TELEMETRY_SYSTEM_ID = "@systemId"
+
+OMNI_DEVICE_TYPES_FILTER = [
     "Filter",
 ]
 
-DEVICE_TYPES_LIGHT = [
+OMNI_DEVICE_TYPES_LIGHT = [
     "ColorLogic-Light",
 ]
 
-DEVICE_TYPES_SWITCH = [
+OMNI_DEVICE_TYPES_SWITCH = [
     "ValveActuator",
     "Relay",
 ]
 
+OMNI_DEVICE_TYPES_SENSOR = [
+    "Sensor"
+]
 
-DEVICE_TYPES = DEVICE_TYPES_FILTER + DEVICE_TYPES_LIGHT + DEVICE_TYPES_SWITCH
+
+OMNI_DEVICE_TYPES = [
+    KEY_MSP_BACKYARD,
+    KEY_MSP_BOW,
+    *OMNI_DEVICE_TYPES_FILTER,
+    *OMNI_DEVICE_TYPES_LIGHT,
+    *OMNI_DEVICE_TYPES_SWITCH,
+    *OMNI_DEVICE_TYPES_SENSOR
+]
 
 OMNI_TO_HASS_TYPES = {
+    "Backyard": "device",
+    "Body-of-water": "device",
     "Filter": "switch",
     "ColorLogic-Light": "light",
     "ValveActuator": "switch",
     "Relay": "switch",
+    "Sensor": "sensor"
 }

@@ -20,12 +20,18 @@ def get_omni_model(data: dict[str,str]) -> str:
 
 def get_power_state(data: dict[str,str]) -> int:
     match data['metadata']['omni_type']:
+        case "Relay":
+            match data['omni_config']['Type']:
+                case "RLY_VALVE_ACTUATOR":
+                    return int(data['omni_telemetry']['@valveActuatorState'])
+                case _:
+                    state_prefix = data['metadata']['omni_type'][0].lower() + data['metadata']['omni_type'][1:]
+                    return int(data['omni_telemetry']['@'+state_prefix+'State'])
         case _:
-            # This pattern works for all "switch" devices I have, it does not work for lights/heaters/etc
-            # but in this platform we aren't worried about those. I have it in a match block because I wouldn't
-            # be surprised if Hayward didn't follow this standard for everything. The general pattern appears to
-            # be the omnilogic type, with the first letter lowercase, with "State" appended. The @ is because the
-            # XML API is parsed with xmltodict and this was an XML attribute
+            # This pattern works for some "switch" devices I have, it does not work for everything. Notably, "Relays" represent
+            # the physical relay within the Omni, but they are represented in the telemetry by what they control (I.E.: ValveActuator)
+            # The generic pattern appears to be the omnilogic type, with the first letter lowercase, with "State" appended.
+            # The @ is because the XML API is parsed with xmltodict and this was an XML attribute
             state_prefix = data['metadata']['omni_type'][0].lower() + data['metadata']['omni_type'][1:]
             return int(data['omni_telemetry']['@'+state_prefix+'State'])
 
@@ -63,6 +69,7 @@ class OmniLogicSwitchEntity(OmniLogicEntity, SwitchEntity):
     def __init__(self, coordinator, context) -> None:
         """Pass coordinator to CoordinatorEntity."""
         switch_data = coordinator.data[context]
+        _LOGGER.debug("switch_data: %s", switch_data)
         super().__init__(
             coordinator,
             context=context,
@@ -84,13 +91,14 @@ class OmniLogicSwitchEntity(OmniLogicEntity, SwitchEntity):
 
     @property
     def icon(self) -> str | None:
-        match self.omni_type:
-            case 'Filter':
-                return "mdi:pump" if self._attr_is_on else "mdi:pump-off"
-            case 'ValveActuator':
-                return "mdi:valve-open" if self._attr_is_on else "mdi:valve-closed"
-            case _:
-                return "mdi:toggle-switch-variant" if self._attr_is_on else "mdi:toggle-switch-variant-off"
+        if self.omni_type == 'Filter':
+            return "mdi:pump" if self._attr_is_on else "mdi:pump-off"
+        elif self.omni_type == 'Relay':
+            match self.model:
+                case 'RLY_VALVE_ACTUATOR':
+                    return "mdi:valve-open" if self._attr_is_on else "mdi:valve-closed"
+                case _:
+                    return "mdi:toggle-switch-variant" if self._attr_is_on else "mdi:toggle-switch-variant-off"
 
     async def async_turn_on(self, **kwargs):
         """Turn the entity on."""

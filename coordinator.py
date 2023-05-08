@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import logging
 from datetime import timedelta
+import json
 
 import async_timeout
 import xmltodict
@@ -12,31 +13,52 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import (DataUpdateCoordinator,
                                                       UpdateFailed)
 
-from .const import DEFAULT_POLL_INTERVAL, DEVICE_TYPES, OMNI_TO_HASS_TYPES
-from .utils import get_config_by_systemid, one_or_many
+from .const import DEFAULT_POLL_INTERVAL, OMNI_DEVICE_TYPES, OMNI_TO_HASS_TYPES, KEY_MSP_SYSTEM_ID
+from .utils import get_telemetry_by_systemid, get_config_by_systemid, get_entities_of_type, one_or_many
 
 _LOGGER = logging.getLogger(__name__)
 
+# This function filters out any entities that may be nested under the passes in entity
+def get_single_entity_config(raw_data: dict) -> dict:
+    return {key: value for key, value in raw_data.items() if not key in OMNI_DEVICE_TYPES}
 
-def build_device_index(data: dict[str, str]) -> dict[int,dict[str,str]]:
-    device_index = {}
-    for device_type, device_data in data['STATUS'].items():
-        if device_type in DEVICE_TYPES:
-            for device in one_or_many(device_data):
-                config = get_config_by_systemid(data['MSPConfig'], device['@systemId'])
-                device_index[int(device['@systemId'])] = {
-                    'metadata': {
-                        'name': config.get('Name', device_type),
-                        'hass_type': OMNI_TO_HASS_TYPES[device_type],
-                        'omni_type': device_type,
-                        'bow_id': config['Body-of-water-Id'],
-                        'system_id': int(device['@systemId']),
-                    },
-                    'omni_config': config,
-                    'omni_telemetry': device
-                }
+def build_entity_item(omni_entity_type: str, entity_config: dict, bow_id: int | None = None):
 
-    return device_index
+    for entity in one_or_many(entity_config):
+        # Filter the data down to only this one entity and not any nested entities
+        config = get_single_entity_config(entity)
+        # config = get_single_entity_config({omni_device_type: device_data})
+        # The returned entity had no system ID, which means we cannot address it via the API
+        if not config:
+            continue
+
+        yield {
+                'metadata': {
+                    'name': config.get('Name', omni_entity_type),
+                    'hass_type': OMNI_TO_HASS_TYPES[omni_entity_type],
+                    'omni_type': omni_entity_type,
+                    'bow_id': bow_id,
+                    'system_id': int(config[KEY_MSP_SYSTEM_ID]),
+                },
+                'omni_config': config
+            }
+
+def build_entity_index(data: dict[str, str]) -> dict[int,dict[str,str]]:
+    entity_index = {}
+
+    for tier in [data["MSPConfig"], data["MSPConfig"]["Backyard"], data["MSPConfig"]["Backyard"]["Body-of-water"]]:
+        for item in one_or_many(tier):
+            bow_id = int(item[KEY_MSP_SYSTEM_ID]) if item.get('Type') == "BOW_POOL" else None
+            for omni_entity_type, entity_data in tier.items():
+                if omni_entity_type not in OMNI_DEVICE_TYPES:
+                    continue
+                for entity in build_entity_item(omni_entity_type, entity_data, bow_id):
+                    entity['metadata']['bow_id'] = bow_id
+                    entity['omni_telemetry'] = get_telemetry_by_systemid(data['STATUS'], entity['metadata']['system_id'])
+                    entity_index[int(entity['metadata']['system_id'])] = entity
+    
+    return entity_index
+
 
 class OmniLogicCoordinator(DataUpdateCoordinator):
     """Hayward OmniLogic API coordinator."""
@@ -62,9 +84,6 @@ class OmniLogicCoordinator(DataUpdateCoordinator):
         so entities can quickly look up their data.
         """
 
-        # Reset the update interval
-        self.update_interval=timedelta(seconds=DEFAULT_POLL_INTERVAL)
-
         try:
             # Note: asyncio.TimeoutError and aiohttp.ClientError are already
             # handled by the data update coordinator.
@@ -74,15 +93,20 @@ class OmniLogicCoordinator(DataUpdateCoordinator):
                 # data retrieved from API.
                 # listening_idx = set(self.async_contexts())
 
+                # The MSPConfig only changes if there are hardware/configuration changes to the Omni
+                # We don't need to pull this every time, currently we only pull it one time when the integration
+                # is loaded.
                 if self._config is None:
                     _LOGGER.debug("Fetching OmniLogic MSPConfig")
                     self._config = await self.omni_api.asyncGetConfig()
+
                 _LOGGER.debug("Fetching OmniLogic Telemetry")
                 telemetry = await self.omni_api.asyncGetTelemetry()
-                omnilogic_data = xmltodict.parse(self._config) | xmltodict.parse(telemetry)
-                # _LOGGER.debug(json.dumps(omnilogic_data, indent=2))
-                device_index = build_device_index(omnilogic_data)
 
-                return device_index
+                omnilogic_data = xmltodict.parse(self._config) | xmltodict.parse(telemetry)
+
+                entity_index = build_entity_index(omnilogic_data)
+
+                return entity_index
         except TimeoutError as exc:
             raise UpdateFailed("Error communicating with API") from exc

@@ -41,7 +41,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         config_entry_id=entry.entry_id,
         identifiers={(DOMAIN, UNIQUE_ID)},
         manufacturer="Hayward",
-        name=entry.data[CONF_NAME],
+        name="omnilogic", # TODO: Figure out how to manage device naming, the API does not return a name
     )
 
     # Store them for use later

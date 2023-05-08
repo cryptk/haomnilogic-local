@@ -76,7 +76,16 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     ) -> FlowResult:
         """Manage the options."""
         if user_input is not None:
-            return self.async_create_entry(title=user_input[CONF_NAME], data=user_input)
+
+            # write updated config entries
+            self.hass.config_entries.async_update_entry(
+                self.config_entry, data=user_input, options=self.config_entry.options
+            )
+            # reload updated config entries
+            await self.hass.config_entries.async_reload(self.config_entry.entry_id)
+            self.async_abort(reason="configuration updated")
+
+            return self.async_create_entry(data=user_input)
 
         return self.async_show_form(
             step_id="init",
@@ -126,6 +135,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 # For now, we are just asking for a name, and using that as the unique_id, which will be confusing because
                 # a use could rename the integration config entry, but that would not change this unique ID, although they
                 # came from the same source... yeah... it's janky... I'll make it better later... somehow
+                # we may need to use https://developers.home-assistant.io/docs/entity_registry_index/#unique-id-of-last-resort
                 await self.async_set_unique_id(UNIQUE_ID)
                 self._abort_if_unique_id_configured()
                 return self.async_create_entry(
