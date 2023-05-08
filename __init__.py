@@ -3,15 +3,10 @@ from __future__ import annotations
 
 from pyomnilogic_local import OmniLogicAPI
 
-from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import (
-    CONF_IP_ADDRESS,
-    CONF_NAME,
-    CONF_PORT,
-    CONF_TIMEOUT,
-    Platform,
-)
+from homeassistant.const import (CONF_IP_ADDRESS, CONF_NAME, CONF_PORT,
+                                 CONF_TIMEOUT, Platform)
+from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
 
@@ -20,7 +15,7 @@ from .coordinator import OmniLogicCoordinator
 
 # TODO List the platforms that you want to support.
 # For your initial PR, limit it to 1 platform.
-PLATFORMS: list[Platform] = [Platform.LIGHT]
+PLATFORMS: list[Platform] = [Platform.LIGHT, Platform.SWITCH]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:

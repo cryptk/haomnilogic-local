@@ -4,16 +4,17 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from pyomnilogic_local import OmniLogicAPI
 import voluptuous as vol
 import xmltodict
+from pyomnilogic_local import OmniLogicAPI
 
+import homeassistant.helpers.config_validation as cv
 from homeassistant import config_entries
-from homeassistant.const import CONF_IP_ADDRESS, CONF_NAME, CONF_PORT, CONF_TIMEOUT
+from homeassistant.const import (CONF_IP_ADDRESS, CONF_NAME, CONF_PORT,
+                                 CONF_TIMEOUT)
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
-import homeassistant.helpers.config_validation as cv
 
 from .const import DOMAIN, UNIQUE_ID
 

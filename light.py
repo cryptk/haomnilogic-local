@@ -1,22 +1,15 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
 import logging
+from collections.abc import Mapping
 from typing import Any
 
-from pyomnilogic_local.omnilogicTypes import (
-    ColorLogicBrightness,
-    ColorLogicShow,
-    ColorLogicSpeed,
-)
+from pyomnilogic_local.omnilogicTypes import (ColorLogicBrightness,
+                                              ColorLogicShow, ColorLogicSpeed)
 
-from homeassistant.components.light import (
-    ATTR_BRIGHTNESS,
-    ATTR_EFFECT,
-    ColorMode,
-    LightEntity,
-    LightEntityFeature,
-)
+from homeassistant.components.light import (ATTR_BRIGHTNESS, ATTR_EFFECT,
+                                            ColorMode, LightEntity,
+                                            LightEntityFeature)
 from homeassistant.core import HomeAssistant, callback
 
 from .const import DOMAIN, KEY_COORDINATOR
