@@ -1,0 +1,26 @@
+{
+  "domain": "omnilogic_local",
+  "name": "OmniLogic Local",
+  "version": "0.1",
+  "codeowners": [
+    "@cryptk"
+  ],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/cryptk/ha-omnilogic-local",
+  "homekit": {},
+  "iot_class": "local_polling",
+  "integration_type": "device",
+  "requirements": [
+    "python_omnilogic_local==0.0.1"
+  ],
+  "loggers": ["pyomnilogic_local"],
+  "ssdp": [],
+  "zeroconf": [],
+  "dhcp": [
+    {
+      "hostname": "HaywardOmni*",
+      "macaddress": "002362*"
+    }
+  ]
+}
