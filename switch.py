@@ -103,13 +103,13 @@ class OmniLogicSwitchEntity(OmniLogicEntity, SwitchEntity):
     async def async_turn_on(self, **kwargs):
         """Turn the entity on."""
         _LOGGER.debug("turning on switch ID: %s", self.system_id)
-        await self.coordinator.omni_api.asyncSetEquipment(self.bow_id, self.system_id, True)
+        await self.coordinator.omni_api.async_set_equipment(self.bow_id, self.system_id, True)
         self._attr_is_on = True
         self.push_assumed_state()
     
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
         _LOGGER.debug("turning off switch ID: %s", self.system_id)
-        await self.coordinator.omni_api.asyncSetEquipment(self.bow_id, self.system_id, False)
+        await self.coordinator.omni_api.async_set_equipment(self.bow_id, self.system_id, False)
         self._attr_is_on = False
         self.push_assumed_state()

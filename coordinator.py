@@ -115,10 +115,10 @@ class OmniLogicCoordinator(DataUpdateCoordinator):
                 # is loaded.
                 if self._config is None:
                     _LOGGER.debug("Fetching OmniLogic MSPConfig")
-                    self._config = await self.omni_api.asyncGetConfig()
+                    self._config = await self.omni_api.async_get_config()
 
                 _LOGGER.debug("Fetching OmniLogic Telemetry")
-                telemetry = await self.omni_api.asyncGetTelemetry()
+                telemetry = await self.omni_api.async_get_telemetry()
 
                 omnilogic_data = xmltodict.parse(self._config) | xmltodict.parse(telemetry)
 

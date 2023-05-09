@@ -4,8 +4,8 @@ import logging
 from collections.abc import Mapping
 from typing import Any
 
-from pyomnilogic_local.omnilogicTypes import (ColorLogicBrightness,
-                                              ColorLogicShow, ColorLogicSpeed)
+from pyomnilogic_local.types import (ColorLogicBrightness, ColorLogicShow,
+                                     ColorLogicSpeed)
 
 from homeassistant.components.light import (ATTR_BRIGHTNESS, ATTR_EFFECT,
                                             ColorMode, LightEntity,
@@ -157,7 +157,7 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
                 to_omni_level(kwargs.get(ATTR_BRIGHTNESS, self._attr_brightness))
             ),
         }
-        await self.coordinator.omni_api.asyncSetLightShow(
+        await self.coordinator.omni_api.async_set_light_show(
             self.bow_id, self.system_id, **params
         )
 
@@ -178,7 +178,7 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
         """
 
         _LOGGER.debug("Turning off the light")
-        await self.coordinator.omni_api.asyncSetEquipment(
+        await self.coordinator.omni_api.async_set_equipment(
             self.bow_id, self.system_id, False
         )
 

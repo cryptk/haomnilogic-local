@@ -54,13 +54,13 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     """
     omni = OmniLogicAPI((data[CONF_IP_ADDRESS], data[CONF_PORT]), data[CONF_TIMEOUT])
     try:
-        config = await omni.asyncGetConfig()
+        config = await omni.async_get_config()
     except TimeoutError as exc:
         raise OmniLogicTimeout from exc
     except Exception as exc:  # pylint: disable=broad-except
         raise CannotConnect from exc
 
-    telemetry = await omni.asyncGetTelemetry()
+    telemetry = await omni.async_get_telemetry()
 
     # Return info that you want to store in the config entry.
     return {"config": xmltodict.parse(config), "telemetry": xmltodict.parse(telemetry)}

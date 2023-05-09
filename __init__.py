@@ -28,7 +28,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Validate that we can talk to the API endpoint
     try:
-        await omni_api.asyncGetConfig()
+        await omni_api.async_get_config()
     except Exception as error:
         raise ConfigEntryNotReady from error
 
