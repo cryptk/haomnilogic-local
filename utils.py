@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 
-from .const import OMNI_DEVICE_TYPES, KEY_TELEMETRY_SYSTEM_ID
+from .const import KEY_TELEMETRY_SYSTEM_ID, OMNI_DEVICE_TYPES
 from .errors import UnknownDevice
 from .types import OmniLogicEntity
 

@@ -40,14 +40,14 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
 
     coordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
 
-    all_lights = get_entities_of_type(coordinator.data, "switch")
+    all_switches = get_entities_of_type(coordinator.data, "switch")
 
     entities = []
-    for system_id, light in all_lights.items():
+    for system_id, switch in all_switches.items():
         _LOGGER.debug(
             "Configuring switch with ID: %s, Name: %s",
-            light["metadata"]["system_id"],
-            light["metadata"]["name"],
+            switch["metadata"]["system_id"],
+            switch["metadata"]["name"],
         )
         entities.append(
             OmniLogicSwitchEntity(coordinator=coordinator, context=system_id)
@@ -69,7 +69,7 @@ class OmniLogicSwitchEntity(OmniLogicEntity, SwitchEntity):
     def __init__(self, coordinator, context) -> None:
         """Pass coordinator to CoordinatorEntity."""
         switch_data = coordinator.data[context]
-        _LOGGER.debug("switch_data: %s", switch_data)
+        # _LOGGER.debug("switch_data: %s", switch_data)
         super().__init__(
             coordinator,
             context=context,
@@ -93,7 +93,7 @@ class OmniLogicSwitchEntity(OmniLogicEntity, SwitchEntity):
     def icon(self) -> str | None:
         if self.omni_type == 'Filter':
             return "mdi:pump" if self._attr_is_on else "mdi:pump-off"
-        elif self.omni_type == 'Relay':
+        if self.omni_type == 'Relay':
             match self.model:
                 case 'RLY_VALVE_ACTUATOR':
                     return "mdi:valve-open" if self._attr_is_on else "mdi:valve-closed"
