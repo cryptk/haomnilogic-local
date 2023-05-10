@@ -1,7 +1,5 @@
 """Constants for the OmniLogic Local integration."""
 
-from enum import StrEnum
-
 DOMAIN = "omnilogic_local"
 KEY_COORDINATOR = "coordinator"
 KEY_OMNI_API = "omni_api"
@@ -64,11 +62,11 @@ OMNI_TO_HASS_TYPES = {
 }
 
 
-class OmniModels(StrEnum):
+class OmniModels:
     RELAY_VALVE_ACTUATOR = "RLY_VALVE_ACTUATOR"
     VARIABLE_SPEED_PUMP = "FMT_VARIABLE_SPEED_PUMP"
 
 
-class OmniTypes(StrEnum):
+class OmniTypes:
     FILTER = "Filter"
     RELAY = "Relay"
