@@ -16,6 +16,7 @@ This addon is not complete, initially I am implementing all functionality for th
 - Filter Pumps
     - Turn on/off
     - Set speed to high/med/low presets
+    - Set speed to custom value
 - Lights
     - Turn on/off
     - Set brightness
