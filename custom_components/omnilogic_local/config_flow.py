@@ -56,7 +56,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
         config = await omni.async_get_config()
     except TimeoutError as exc:
         raise OmniLogicTimeout from exc
-    except Exception as exc:  # pylint: disable=broad-except
+    except Exception as exc:
         raise CannotConnect from exc
 
     telemetry = await omni.async_get_telemetry()

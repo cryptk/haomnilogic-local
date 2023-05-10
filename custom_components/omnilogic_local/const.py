@@ -60,3 +60,5 @@ OMNI_TO_HASS_TYPES = {
     "Heater-Equipment": "water_heater",
     "VirtualHeater": "water_heater",
 }
+
+OMNI_MODEL_VARIABLE_SPEED_PUMP = "FMT_VARIABLE_SPEED_PUMP"

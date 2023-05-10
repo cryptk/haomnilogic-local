@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 
 from homeassistant.components.button import ButtonEntity
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN, KEY_COORDINATOR
 from .types import OmniLogicEntity
@@ -27,14 +27,14 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     _LOGGER.debug(all_filters)
 
     entities = []
-    for system_id, filter in all_filters.items():
-        if filter["omni_config"]["Filter-Type"] == "FMT_VARIABLE_SPEED_PUMP":
+    for system_id, filter_pump in all_filters.items():
+        if filter_pump["omni_config"]["Filter-Type"] == "FMT_VARIABLE_SPEED_PUMP":
             for speed in OMNI_SPEED_FRIENDLY_NAMES:
-                if filter["omni_config"].get(speed):
+                if filter_pump["omni_config"].get(speed):
                     _LOGGER.debug(
                         "Configuring button for filter with ID: %s, Name: %s, Speed: %s",
-                        filter["metadata"]["system_id"],
-                        filter["metadata"]["name"],
+                        filter_pump["metadata"]["system_id"],
+                        filter_pump["metadata"]["name"],
                         speed,
                     )
                     entities.append(

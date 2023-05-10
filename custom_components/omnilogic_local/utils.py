@@ -66,6 +66,7 @@ def get_entities_of_omni_type(
     # _LOGGER.debug(found)
     return found
 
+
 def get_omni_model(data: dict[str, str]) -> str:
     match data["metadata"]["omni_type"]:
         case "Filter":
