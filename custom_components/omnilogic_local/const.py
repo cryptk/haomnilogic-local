@@ -4,7 +4,7 @@ DOMAIN = "omnilogic_local"
 KEY_COORDINATOR = "coordinator"
 KEY_OMNI_API = "omni_api"
 KEY_DEVICE_REGISTRY = "device_registry"
-DEFAULT_POLL_INTERVAL = 5
+DEFAULT_POLL_INTERVAL = 10
 
 # According to Hayward docs, the backyard always has a system id of 0
 BACKYARD_SYSTEM_ID = 0

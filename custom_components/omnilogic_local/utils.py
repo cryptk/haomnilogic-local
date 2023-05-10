@@ -65,3 +65,10 @@ def get_entities_of_omni_type(
             found[int(system_id)] = entity
     # _LOGGER.debug(found)
     return found
+
+def get_omni_model(data: dict[str, str]) -> str:
+    match data["metadata"]["omni_type"]:
+        case "Filter":
+            return data["omni_config"]["Filter-Type"]
+        case _:
+            return data["omni_config"]["Type"]

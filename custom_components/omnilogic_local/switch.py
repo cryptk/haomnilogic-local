@@ -7,17 +7,9 @@ from homeassistant.core import HomeAssistant, callback
 
 from .const import DOMAIN, KEY_COORDINATOR
 from .types import OmniLogicEntity
-from .utils import get_entities_of_hass_type
+from .utils import get_entities_of_hass_type, get_omni_model
 
 _LOGGER = logging.getLogger(__name__)
-
-
-def get_omni_model(data: dict[str, str]) -> str:
-    match data["metadata"]["omni_type"]:
-        case "Filter":
-            return data["omni_config"]["Filter-Type"]
-        case _:
-            return data["omni_config"]["Type"]
 
 
 def get_power_state(data: dict[str, str]) -> int:
