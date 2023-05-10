@@ -1,13 +1,14 @@
 {
   "domain": "omnilogic_local",
   "name": "OmniLogic Local",
-  "version": "0.1",
+  "version": "0.0.1",
   "codeowners": [
     "@cryptk"
   ],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://github.com/cryptk/ha-omnilogic-local",
+  "documentation": "https://github.com/cryptk/haomnilogic-local",
+  "issue_tracker": "https://github.com/cryptk/haomnilogic-local/issues",
   "homekit": {},
   "iot_class": "local_polling",
   "integration_type": "device",
@@ -16,11 +17,5 @@
   ],
   "loggers": ["pyomnilogic_local"],
   "ssdp": [],
-  "zeroconf": [],
-  "dhcp": [
-    {
-      "hostname": "HaywardOmni*",
-      "macaddress": "002362*"
-    }
-  ]
+  "zeroconf": []
 }
