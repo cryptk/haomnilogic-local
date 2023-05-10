@@ -11,29 +11,38 @@ from .utils import get_entities_of_type
 
 _LOGGER = logging.getLogger(__name__)
 
-def get_omni_model(data: dict[str,str]) -> str:
-    match data['metadata']['omni_type']:
-        case 'Filter':
-            return data['omni_config']['Filter-Type']
-        case _:
-            return data['omni_config']['Type']
 
-def get_power_state(data: dict[str,str]) -> int:
-    match data['metadata']['omni_type']:
+def get_omni_model(data: dict[str, str]) -> str:
+    match data["metadata"]["omni_type"]:
+        case "Filter":
+            return data["omni_config"]["Filter-Type"]
+        case _:
+            return data["omni_config"]["Type"]
+
+
+def get_power_state(data: dict[str, str]) -> int:
+    match data["metadata"]["omni_type"]:
         case "Relay":
-            match data['omni_config']['Type']:
+            match data["omni_config"]["Type"]:
                 case "RLY_VALVE_ACTUATOR":
-                    return int(data['omni_telemetry']['@valveActuatorState'])
+                    return int(data["omni_telemetry"]["@valveActuatorState"])
                 case _:
-                    state_prefix = data['metadata']['omni_type'][0].lower() + data['metadata']['omni_type'][1:]
-                    return int(data['omni_telemetry']['@'+state_prefix+'State'])
+                    state_prefix = (
+                        data["metadata"]["omni_type"][0].lower()
+                        + data["metadata"]["omni_type"][1:]
+                    )
+                    return int(data["omni_telemetry"]["@" + state_prefix + "State"])
         case _:
             # This pattern works for some "switch" devices I have, it does not work for everything. Notably, "Relays" represent
             # the physical relay within the Omni, but they are represented in the telemetry by what they control (I.E.: ValveActuator)
             # The generic pattern appears to be the omnilogic type, with the first letter lowercase, with "State" appended.
             # The @ is because the XML API is parsed with xmltodict and this was an XML attribute
-            state_prefix = data['metadata']['omni_type'][0].lower() + data['metadata']['omni_type'][1:]
-            return int(data['omni_telemetry']['@'+state_prefix+'State'])
+            state_prefix = (
+                data["metadata"]["omni_type"][0].lower()
+                + data["metadata"]["omni_type"][1:]
+            )
+            return int(data["omni_telemetry"]["@" + state_prefix + "State"])
+
 
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     """Set up the switch platform."""
@@ -54,6 +63,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
         )
 
     async_add_entities(entities)
+
 
 class OmniLogicSwitchEntity(OmniLogicEntity, SwitchEntity):
     """An entity using CoordinatorEntity.
@@ -79,9 +89,9 @@ class OmniLogicSwitchEntity(OmniLogicEntity, SwitchEntity):
             extra_attributes=None,
         )
         self.model = get_omni_model(switch_data)
-        self.omni_type = switch_data['metadata']['omni_type']
+        self.omni_type = switch_data["metadata"]["omni_type"]
         self._attr_is_on = get_power_state(switch_data)
-    
+
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
@@ -91,25 +101,33 @@ class OmniLogicSwitchEntity(OmniLogicEntity, SwitchEntity):
 
     @property
     def icon(self) -> str | None:
-        if self.omni_type == 'Filter':
+        if self.omni_type == "Filter":
             return "mdi:pump" if self._attr_is_on else "mdi:pump-off"
-        if self.omni_type == 'Relay':
+        if self.omni_type == "Relay":
             match self.model:
-                case 'RLY_VALVE_ACTUATOR':
+                case "RLY_VALVE_ACTUATOR":
                     return "mdi:valve-open" if self._attr_is_on else "mdi:valve-closed"
                 case _:
-                    return "mdi:toggle-switch-variant" if self._attr_is_on else "mdi:toggle-switch-variant-off"
+                    return (
+                        "mdi:toggle-switch-variant"
+                        if self._attr_is_on
+                        else "mdi:toggle-switch-variant-off"
+                    )
 
     async def async_turn_on(self, **kwargs):
         """Turn the entity on."""
         _LOGGER.debug("turning on switch ID: %s", self.system_id)
-        await self.coordinator.omni_api.async_set_equipment(self.bow_id, self.system_id, True)
+        await self.coordinator.omni_api.async_set_equipment(
+            self.bow_id, self.system_id, True
+        )
         self._attr_is_on = True
         self.push_assumed_state()
-    
+
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
         _LOGGER.debug("turning off switch ID: %s", self.system_id)
-        await self.coordinator.omni_api.async_set_equipment(self.bow_id, self.system_id, False)
+        await self.coordinator.omni_api.async_set_equipment(
+            self.bow_id, self.system_id, False
+        )
         self._attr_is_on = False
         self.push_assumed_state()

@@ -4,8 +4,13 @@ from __future__ import annotations
 from pyomnilogic_local import OmniLogicAPI
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import (CONF_IP_ADDRESS, CONF_NAME, CONF_PORT,
-                                 CONF_TIMEOUT, Platform)
+from homeassistant.const import (
+    CONF_IP_ADDRESS,
+    CONF_NAME,
+    CONF_PORT,
+    CONF_TIMEOUT,
+    Platform,
+)
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
@@ -13,9 +18,12 @@ from homeassistant.helpers import device_registry as dr
 from .const import DOMAIN, KEY_COORDINATOR, UNIQUE_ID
 from .coordinator import OmniLogicCoordinator
 
-# TODO List the platforms that you want to support.
-# For your initial PR, limit it to 1 platform.
-PLATFORMS: list[Platform] = [Platform.LIGHT, Platform.SWITCH, Platform.SENSOR]
+PLATFORMS: list[Platform] = [
+    Platform.LIGHT,
+    Platform.SWITCH,
+    Platform.SENSOR,
+    Platform.WATER_HEATER,
+]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
@@ -41,7 +49,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         config_entry_id=entry.entry_id,
         identifiers={(DOMAIN, UNIQUE_ID)},
         manufacturer="Hayward",
-        name="omnilogic", # TODO: Figure out how to manage device naming, the API does not return a name
+        name="omnilogic",  # TODO: Figure out how to manage device naming, the API does not return a name
     )
 
     # Store them for use later

@@ -32,15 +32,9 @@ OMNI_DEVICE_TYPES_SWITCH = [
     "Relay",
 ]
 
-OMNI_DEVICE_TYPES_SENSOR = [
-    "Sensor"
-]
+OMNI_DEVICE_TYPES_SENSOR = ["Sensor"]
 
-OMNI_DEVICE_TYPES_WATER_HEATER = [
-    "Heater",
-    "Heater-Equipment",
-    "VirtualHeater"
-]
+OMNI_DEVICE_TYPES_WATER_HEATER = ["Heater", "Heater-Equipment", "VirtualHeater"]
 
 
 OMNI_DEVICE_TYPES = [
@@ -51,7 +45,7 @@ OMNI_DEVICE_TYPES = [
     *OMNI_DEVICE_TYPES_LIGHT,
     *OMNI_DEVICE_TYPES_SWITCH,
     *OMNI_DEVICE_TYPES_SENSOR,
-    *OMNI_DEVICE_TYPES_WATER_HEATER
+    *OMNI_DEVICE_TYPES_WATER_HEATER,
 ]
 
 OMNI_TO_HASS_TYPES = {
@@ -64,5 +58,5 @@ OMNI_TO_HASS_TYPES = {
     "Sensor": "sensor",
     "Heater": "water_heater",
     "Heater-Equipment": "water_heater",
-    "VirtualHeater": "water_heater"
+    "VirtualHeater": "water_heater",
 }

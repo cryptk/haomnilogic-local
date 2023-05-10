@@ -10,8 +10,7 @@ from pyomnilogic_local import OmniLogicAPI
 
 import homeassistant.helpers.config_validation as cv
 from homeassistant import config_entries
-from homeassistant.const import (CONF_IP_ADDRESS, CONF_NAME, CONF_PORT,
-                                 CONF_TIMEOUT)
+from homeassistant.const import CONF_IP_ADDRESS, CONF_NAME, CONF_PORT, CONF_TIMEOUT
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
@@ -76,7 +75,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     ) -> FlowResult:
         """Manage the options."""
         if user_input is not None:
-
             # write updated config entries
             self.hass.config_entries.async_update_entry(
                 self.config_entry, data=user_input, options=self.config_entry.options

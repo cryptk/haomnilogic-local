@@ -4,12 +4,19 @@ import logging
 from collections.abc import Mapping
 from typing import Any
 
-from pyomnilogic_local.types import (ColorLogicBrightness, ColorLogicShow,
-                                     ColorLogicSpeed)
+from pyomnilogic_local.types import (
+    ColorLogicBrightness,
+    ColorLogicShow,
+    ColorLogicSpeed,
+)
 
-from homeassistant.components.light import (ATTR_BRIGHTNESS, ATTR_EFFECT,
-                                            ColorMode, LightEntity,
-                                            LightEntityFeature)
+from homeassistant.components.light import (
+    ATTR_BRIGHTNESS,
+    ATTR_EFFECT,
+    ColorMode,
+    LightEntity,
+    LightEntityFeature,
+)
 from homeassistant.core import HomeAssistant, callback
 
 from .const import DOMAIN, KEY_COORDINATOR
@@ -135,7 +142,7 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
 
     @property
     def extra_state_attributes(self) -> Mapping[str, Any] | None:
-        return {
+        return super().extra_state_attributes | {
             "omnilogic_state": self.omni_light_state,
             "model": self.model,
             "speed": self.speed,

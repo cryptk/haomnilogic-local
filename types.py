@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -40,12 +41,16 @@ class OmniLogicEntity(CoordinatorEntity):
     def device_info(self) -> DeviceInfo:
         """Return the device info."""
         return DeviceInfo(
-            identifiers={
-                (DOMAIN, UNIQUE_ID)
-            },
+            identifiers={(DOMAIN, UNIQUE_ID)},
             manufacturer=MANUFACTURER,
-            model=self.model,
+            # model=self.model,
         )
+
+    @property
+    def extra_state_attributes(self) -> Mapping[str, Any] | None:
+        return {
+            "omni_system_id": self.system_id,
+        } | ({"omni_bow_id": self.bow_id} if self.bow_id is not None else {})
 
     def push_assumed_state(self):
         # It takes the controller ~1s to return back the new state in the telemetry data, so just in case the next poll is happening
