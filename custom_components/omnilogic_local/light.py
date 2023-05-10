@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import logging
 from collections.abc import Mapping
+import logging
 from typing import Any
 
 from pyomnilogic_local.types import (
@@ -21,7 +21,7 @@ from homeassistant.core import HomeAssistant, callback
 
 from .const import DOMAIN, KEY_COORDINATOR
 from .types import OmniLogicEntity
-from .utils import get_entities_of_type
+from .utils import get_entities_of_hass_type
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -53,7 +53,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
 
     coordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
 
-    all_lights = get_entities_of_type(coordinator.data, "light")
+    all_lights = get_entities_of_hass_type(coordinator.data, "light")
 
     entities = []
     for system_id, light in all_lights.items():

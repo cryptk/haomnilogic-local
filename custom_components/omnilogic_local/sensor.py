@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import logging
 from datetime import date, datetime
 from decimal import Decimal
+import logging
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -15,7 +15,7 @@ from homeassistant.helpers.typing import StateType
 
 from .const import BACKYARD_SYSTEM_ID, DOMAIN, KEY_COORDINATOR
 from .types import OmniLogicEntity
-from .utils import get_entities_of_type
+from .utils import get_entities_of_hass_type
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -24,7 +24,7 @@ SUPPORTED_SENSOR_TYPES = ["SENSOR_AIR_TEMP", "SENSOR_WATER_TEMP", "SENSOR_SOLAR_
 
 
 def find_sensor_heater_systemid(data: dict, sensor_system_id: int) -> int:
-    heaters = get_entities_of_type(data, "water_heater")
+    heaters = get_entities_of_hass_type(data, "water_heater")
     # _LOGGER.debug(heaters)
     for system_id, heater in heaters.items():
         if not "Sensor-System-Id" in heater["omni_config"]:
@@ -39,7 +39,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
 
     coordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
 
-    all_sensors = get_entities_of_type(coordinator.data, "sensor")
+    all_sensors = get_entities_of_hass_type(coordinator.data, "sensor")
 
     entities = []
     for system_id, sensor in all_sensors.items():

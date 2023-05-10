@@ -4,16 +4,16 @@ from __future__ import annotations
 import logging
 from typing import Any
 
+from pyomnilogic_local import OmniLogicAPI
 import voluptuous as vol
 import xmltodict
-from pyomnilogic_local import OmniLogicAPI
 
-import homeassistant.helpers.config_validation as cv
 from homeassistant import config_entries
 from homeassistant.const import CONF_IP_ADDRESS, CONF_NAME, CONF_PORT, CONF_TIMEOUT
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
+import homeassistant.helpers.config_validation as cv
 
 from .const import DOMAIN, UNIQUE_ID
 
@@ -24,7 +24,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
         vol.Required(CONF_IP_ADDRESS): cv.string,
         vol.Required(CONF_NAME, default="Pool"): cv.string,
         vol.Optional(CONF_PORT, default=10444): cv.port,
-        vol.Optional(CONF_TIMEOUT, default=1.0): vol.All(
+        vol.Optional(CONF_TIMEOUT, default=4.0): vol.All(
             vol.Coerce(float), vol.Range(min=0.5, max=10.0)
         ),
     }

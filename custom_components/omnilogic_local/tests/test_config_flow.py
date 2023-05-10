@@ -5,7 +5,9 @@ import pytest
 
 from homeassistant import config_entries
 from homeassistant.components.omnilogic_local.config_flow import (
-    CannotConnect, InvalidAuth)
+    CannotConnect,
+    InvalidAuth,
+)
 from homeassistant.components.omnilogic_local.const import DOMAIN
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType

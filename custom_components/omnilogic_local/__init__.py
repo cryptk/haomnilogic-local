@@ -23,6 +23,7 @@ PLATFORMS: list[Platform] = [
     Platform.SWITCH,
     Platform.SENSOR,
     Platform.WATER_HEATER,
+    Platform.BUTTON,
 ]
 
 
@@ -49,7 +50,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         config_entry_id=entry.entry_id,
         identifiers={(DOMAIN, UNIQUE_ID)},
         manufacturer="Hayward",
-        name="omnilogic",  # TODO: Figure out how to manage device naming, the API does not return a name
+        # TODO: Figure out how to manage device naming, the API does not return a name
+        name="omnilogic",
     )
 
     # Store them for use later

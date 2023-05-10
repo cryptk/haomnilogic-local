@@ -1,12 +1,12 @@
 """Example integration using DataUpdateCoordinator."""
 from __future__ import annotations
 
-import logging
 from datetime import timedelta
+import logging
 
 import async_timeout
-import xmltodict
 from pyomnilogic_local import OmniLogicAPI
+import xmltodict
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
