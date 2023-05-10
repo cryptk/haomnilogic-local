@@ -13,7 +13,7 @@
   "iot_class": "local_polling",
   "integration_type": "device",
   "requirements": [
-    "python_omnilogic_local==0.0.1"
+    "python_omnilogic_local==0.0.2"
   ],
   "loggers": ["pyomnilogic_local"],
   "ssdp": [],

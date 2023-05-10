@@ -24,7 +24,6 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     coordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
 
     all_filters = get_entities_of_omni_type(coordinator.data, "Filter")
-    _LOGGER.debug(all_filters)
 
     entities = []
     for system_id, filter_pump in all_filters.items():

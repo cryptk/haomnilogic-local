@@ -9,8 +9,8 @@ from homeassistant.components.sensor import (
     SensorEntity,
     SensorStateClass,
 )
-from homeassistant.const import UnitOfElectricPotential, UnitOfTemperature
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.const import UnitOfTemperature
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import StateType
 
 from .const import BACKYARD_SYSTEM_ID, DOMAIN, KEY_COORDINATOR
@@ -20,12 +20,11 @@ from .utils import get_entities_of_hass_type
 _LOGGER = logging.getLogger(__name__)
 
 # There is a SENSOR_FLOW as well, but I don't have one to test with
-SUPPORTED_SENSOR_TYPES = ["SENSOR_AIR_TEMP", "SENSOR_WATER_TEMP", "SENSOR_SOLAR_TEMP"]
+SENSOR_TYPES_TEMPERATURE = ["SENSOR_AIR_TEMP", "SENSOR_WATER_TEMP", "SENSOR_SOLAR_TEMP"]
 
 
 def find_sensor_heater_systemid(data: dict, sensor_system_id: int) -> int:
     heaters = get_entities_of_hass_type(data, "water_heater")
-    # _LOGGER.debug(heaters)
     for system_id, heater in heaters.items():
         if not "Sensor-System-Id" in heater["omni_config"]:
             continue
@@ -43,14 +42,17 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
 
     entities = []
     for system_id, sensor in all_sensors.items():
-        _LOGGER.debug(
-            "Configuring sensor with ID: %s, Name: %s",
-            sensor["metadata"]["system_id"],
-            sensor["metadata"]["name"],
-        )
-        entities.append(
-            OmniLogicSensorEntity(coordinator=coordinator, context=system_id)
-        )
+        if sensor["omni_config"]["Type"] in SENSOR_TYPES_TEMPERATURE:
+            _LOGGER.debug(
+                "Configuring temperature sensor with ID: %s, Name: %s",
+                sensor["metadata"]["system_id"],
+                sensor["metadata"]["name"],
+            )
+            entities.append(
+                OmniLogicTemperatureSensorEntity(
+                    coordinator=coordinator, context=system_id
+                )
+            )
 
     async_add_entities(entities)
 
@@ -71,7 +73,6 @@ class OmniLogicSensorEntity(OmniLogicEntity, SensorEntity):
     def __init__(self, coordinator, context) -> None:
         """Pass coordinator to CoordinatorEntity."""
         sensor_data = coordinator.data[context]
-        # _LOGGER.debug("sensor_data: %s", sensor_data)
         super().__init__(
             coordinator,
             context=context,
@@ -82,28 +83,28 @@ class OmniLogicSensorEntity(OmniLogicEntity, SensorEntity):
         )
         self.omni_type = sensor_data["metadata"]["omni_type"]
         self.model = sensor_data["omni_config"]["Type"]
+
+
+class OmniLogicTemperatureSensorEntity(OmniLogicSensorEntity):
+    """An entity using CoordinatorEntity.
+
+    The CoordinatorEntity class provides:
+      should_poll
+      async_update
+      async_added_to_hass
+      available
+
+    """
+
+    def __init__(self, coordinator, context) -> None:
+        """Pass coordinator to CoordinatorEntity."""
+        sensor_data = coordinator.data[context]
+        super().__init__(coordinator, context)
         self.units = sensor_data["omni_config"]["Units"]
         self.heater_system_id = find_sensor_heater_systemid(
             coordinator.data, sensor_data["metadata"]["system_id"]
         )
-
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        # sensor_data = self.coordinator.data[self.context]
-        self.async_write_ha_state()
-
-    @property
-    def device_class(self) -> SensorDeviceClass | None:
-        match self.model:
-            case "SENSOR_AIR_TEMP" | "SENSOR_WATER_TEMP" | "SENSOR_SOLAR_TEMP":
-                return SensorDeviceClass.TEMPERATURE
-            case "SENSOR_FLOW":
-                # There does not appear to be an available device class for flow rate
-                # https://developers.home-assistant.io/docs/core/entity/sensor#available-device-classes
-                return None
-            case _:
-                return None
+        self._attr_device_class = SensorDeviceClass.TEMPERATURE
 
     @property
     def native_unit_of_measurement(self) -> str | None:
@@ -112,14 +113,6 @@ class OmniLogicSensorEntity(OmniLogicEntity, SensorEntity):
                 return UnitOfTemperature.FAHRENHEIT
             case "UNITS_CELCIUS":
                 return UnitOfTemperature.CELSIUS
-            case "UNITS_PPM":
-                return "ppm"
-            case "UNITS_GRAMS_PER_LITER":
-                return "g/L"
-            case "UNITS_MILLIVOLTS":
-                return UnitOfElectricPotential.MILLIVOLT
-            case "UNITS_NO_UNITS":
-                return None
 
     @property
     def native_value(self) -> StateType | date | datetime | Decimal:
@@ -137,3 +130,15 @@ class OmniLogicSensorEntity(OmniLogicEntity, SensorEntity):
                 return self.coordinator.data[self.heater_system_id]["omni_telemetry"][
                     "@temp"
                 ]
+
+
+class OmniLogicFlowSensorEntity(OmniLogicSensorEntity):
+    """An entity using CoordinatorEntity.
+
+    The CoordinatorEntity class provides:
+      should_poll
+      async_update
+      async_added_to_hass
+      available
+
+    """

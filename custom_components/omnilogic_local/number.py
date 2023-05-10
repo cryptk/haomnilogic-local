@@ -8,7 +8,7 @@ from typing import Any
 from homeassistant.components.number import NumberEntity
 from homeassistant.core import HomeAssistant, callback
 
-from .const import DOMAIN, KEY_COORDINATOR, OMNI_MODEL_VARIABLE_SPEED_PUMP
+from .const import DOMAIN, KEY_COORDINATOR, OmniModels
 from .types import OmniLogicEntity
 from .utils import get_entities_of_omni_type, get_omni_model
 
@@ -21,7 +21,6 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     coordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
 
     all_filters = get_entities_of_omni_type(coordinator.data, "Filter")
-    _LOGGER.debug(all_filters)
 
     entities = []
     for system_id, filter_pump in all_filters.items():
@@ -97,7 +96,7 @@ class OmniLogicNumberEntity(OmniLogicEntity, NumberEntity):
 
     @property
     def native_max_value(self) -> float:
-        if self.model == OMNI_MODEL_VARIABLE_SPEED_PUMP:
+        if self.model == OmniModels.VARIABLE_SPEED_PUMP:
             if self._attr_native_unit_of_measurement == "RPM":
                 return int(
                     self.coordinator.data[self.data_system_id]["omni_config"][
@@ -113,7 +112,7 @@ class OmniLogicNumberEntity(OmniLogicEntity, NumberEntity):
 
     @property
     def native_min_value(self) -> float:
-        if self.model == OMNI_MODEL_VARIABLE_SPEED_PUMP:
+        if self.model == OmniModels.VARIABLE_SPEED_PUMP:
             if self._attr_native_unit_of_measurement == "RPM":
                 return int(
                     self.coordinator.data[self.data_system_id]["omni_config"][
@@ -129,7 +128,7 @@ class OmniLogicNumberEntity(OmniLogicEntity, NumberEntity):
 
     @property
     def native_value(self) -> float:
-        if self.model == OMNI_MODEL_VARIABLE_SPEED_PUMP:
+        if self.model == OmniModels.VARIABLE_SPEED_PUMP:
             # Even though the omnilogic stores whether you want RPM or Percent, it always returns
             # the filter speed as a percent value.  We convert it here to what your preference is.
             if self._attr_native_unit_of_measurement == "RPM":
@@ -153,9 +152,7 @@ class OmniLogicNumberEntity(OmniLogicEntity, NumberEntity):
     def extra_state_attributes(self) -> Mapping[str, Any] | None:
         extra_state_attributes = {}
         match self.model:
-            # pylint only has partial support for match statements currently https://github.com/pylint-dev/pylint/issues/7470
-            # pylint: disable=redefined-outer-name,invalid-name,unused-variable
-            case OMNI_MODEL_VARIABLE_SPEED_PUMP:
+            case OmniModels.VARIABLE_SPEED_PUMP:
                 extra_state_attributes = {
                     "max_rpm": self.coordinator.data[self.data_system_id][
                         "omni_config"

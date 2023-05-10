@@ -90,7 +90,6 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
     def __init__(self, coordinator, context) -> None:
         """Pass coordinator to CoordinatorEntity."""
         light_data = coordinator.data[context]
-        # _LOGGER.debug(light_data)
         super().__init__(
             coordinator,
             context=context,
@@ -154,7 +153,8 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
         Example method how to request data updates.
         """
 
-        _LOGGER.debug("Turning on the light: %s", kwargs)
+        # TODO: We should ensure the light is not in "powering_off" or "cooldown" before turning it on
+        _LOGGER.debug("turning on light ID: %s", self.system_id)
         was_off = self.is_on is False
         params = {}
         params = {
@@ -170,13 +170,14 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
 
         # Set a few parameters so that we can assume the upcoming state
         if was_off:
-            self.omni_light_state = "fifteen_seconds_of_white"
-            self._attr_is_on = True
-            self._attr_brightness = to_hass_level(params["brightness"].value)
-            self._attr_effect = params["show"]
-            # TODO: This function calls a protected member _schedule_refresh, we should figure
-            # out how to use self.coordinator.async_set_updated_data() instead
-            self.push_assumed_state()
+            self.coordinator.data[self.context]["omni_telemetry"]["@lightState"] = 4
+            self.coordinator.data[self.context]["omni_telemetry"][
+                "@brightness"
+            ] = params["brightness"].value
+            self.coordinator.data[self.context]["omni_telemetry"][
+                "@currentShow"
+            ] = ColorLogicShow[kwargs.get(ATTR_EFFECT, self._attr_effect)].value
+            self.coordinator.async_set_updated_data(self.coordinator.data)
 
     async def async_turn_off(self, **kwargs):
         """Turn the light off.
@@ -184,14 +185,12 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
         Example method how to request data updates.
         """
 
-        _LOGGER.debug("Turning off the light")
+        _LOGGER.debug("turning off light ID: %s", self.system_id)
+        was_on = self.is_on is True
         await self.coordinator.omni_api.async_set_equipment(
             self.bow_id, self.system_id, False
         )
 
-        # Set a few parameters so that we can assume the upcoming state
-        self.omni_light_state = "powering_off"
-        self._attr_is_on = False
-        # TODO: This function calls a protected member _schedule_refresh, we should figure
-        # out how to use self.coordinator.async_set_updated_data() instead
-        self.push_assumed_state()
+        if was_on:
+            self.coordinator.data[self.context]["omni_telemetry"]["@lightState"] = 1
+            self.coordinator.async_set_updated_data(self.coordinator.data)

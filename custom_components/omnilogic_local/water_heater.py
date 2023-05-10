@@ -35,8 +35,6 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
         for system_id, data in all_heaters.items()
         if data["metadata"]["omni_type"] == "Heater-Equipment"
     ]
-    # _LOGGER.debug("Virtual Heater found")
-    # _LOGGER.debug(virtual_heater)
 
     entities = []
     for system_id, switch in virtual_heater.items():
@@ -156,15 +154,25 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity, WaterHeaterEntity):
             int(kwargs[ATTR_TEMPERATURE]),
             unit=self._attr_temperature_unit,
         )
-        self._attr_target_temperature = int(kwargs[ATTR_TEMPERATURE])
-        self.push_assumed_state()
+        self.coordinator.data[self.context]["omni_config"][
+            "Current-Set-Point"
+        ] = kwargs[ATTR_TEMPERATURE]
+        # self._attr_target_temperature = int(kwargs[ATTR_TEMPERATURE])
+        self.coordinator.async_set_updated_data(self.coordinator.data)
 
     async def async_set_operation_mode(self, operation_mode):
-        await self.coordinator.omni_api.async_set_heater_enable(
-            self.bow_id, self.system_id, operation_mode != STATE_OFF
-        )
-        self._attr_current_operation = operation_mode
-        self.push_assumed_state()
+        match operation_mode:
+            case "on":
+                await self.coordinator.omni_api.async_set_heater_enable(
+                    self.bow_id, self.system_id, True
+                )
+                self.coordinator.data[self.system_id]["omni_telemetry"]["@enable"] = "1"
+            case "off":
+                await self.coordinator.omni_api.async_set_heater_enable(
+                    self.bow_id, self.system_id, False
+                )
+                self.coordinator.data[self.system_id]["omni_telemetry"]["@enable"] = "0"
+        self.coordinator.async_set_updated_data(self.coordinator.data)
 
     @property
     def extra_state_attributes(self) -> Mapping[str, Any] | None:

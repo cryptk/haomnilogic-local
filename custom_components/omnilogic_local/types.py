@@ -51,9 +51,3 @@ class OmniLogicEntity(CoordinatorEntity):
         return {
             "omni_system_id": self.system_id,
         } | ({"omni_bow_id": self.bow_id} if self.bow_id is not None else {})
-
-    def push_assumed_state(self):
-        # It takes the controller ~1s to return back the new state in the telemetry data, so just in case the next poll is happening
-        # within that time period, we want to cancel it, and reschedule the next poll to occur after the full POLL_INTERVAL
-        self.coordinator._schedule_refresh()
-        self.async_write_ha_state()

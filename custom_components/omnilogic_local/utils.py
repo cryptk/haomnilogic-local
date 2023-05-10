@@ -20,7 +20,6 @@ def get_telemetry_by_systemid(telemetry: dict, system_id: int) -> dict[str, str]
     for omni_type, omni_data in telemetry.items():
         if omni_type in OMNI_DEVICE_TYPES:
             for entity in one_or_many(omni_data):
-                # _LOGGER.debug("entity: %s", entity)
                 if int(entity[KEY_TELEMETRY_SYSTEM_ID]) == system_id:
                     return entity
 
@@ -49,9 +48,7 @@ def get_entities_of_hass_type(
     found = {}
     for system_id, entity in entities.items():
         if entity["metadata"]["hass_type"] == hass_type:
-            # _LOGGER.debug(system_id)
             found[int(system_id)] = entity
-    # _LOGGER.debug(found)
     return found
 
 
@@ -61,9 +58,7 @@ def get_entities_of_omni_type(
     found = {}
     for system_id, entity in entities.items():
         if entity["metadata"]["omni_type"] == omni_type:
-            # _LOGGER.debug(system_id)
             found[int(system_id)] = entity
-    # _LOGGER.debug(found)
     return found
 
 
