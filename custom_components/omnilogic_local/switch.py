@@ -7,7 +7,7 @@ from homeassistant.core import HomeAssistant, callback
 
 from .const import DOMAIN, KEY_COORDINATOR, OmniModels, OmniTypes
 from .types import OmniLogicEntity
-from .utils import get_entities_of_hass_type, get_omni_model
+from .utils import get_entities_of_hass_type, get_omni_model, one_or_many
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -121,7 +121,8 @@ class OmniLogicSwitchEntity(OmniLogicEntity, SwitchEntity):
         await self.coordinator.omni_api.async_set_equipment(
             self.bow_id, self.system_id, False
         )
-        self.coordinator.data[self.system_id]["omni_telemetry"][telem_key] = "0"
+        for telem_key in one_or_many(kwargs["telem_key"]):
+            self.coordinator.data[self.system_id]["omni_telemetry"][telem_key] = "0"
         self.coordinator.async_set_updated_data(self.coordinator.data)
 
 
@@ -178,4 +179,4 @@ class OmniLogicFilterSwitchEntity(OmniLogicSwitchEntity):
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
-        await super().async_turn_off(telem_key="@filterState", **kwargs)
+        await super().async_turn_off(telem_key=["@filterState", '@filterSpeed'], **kwargs)
