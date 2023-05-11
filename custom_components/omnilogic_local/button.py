@@ -80,4 +80,7 @@ class OmniLogicButtonEntity(OmniLogicEntity, ButtonEntity):
         self.coordinator.data[self.filter_system_id]["omni_telemetry"][
             "@filterSpeed"
         ] = self.speed
+        self.coordinator.data[self.filter_system_id]["omni_telemetry"][
+            "@filterState"
+        ] = "1"
         self.coordinator.async_set_updated_data(self.coordinator.data)

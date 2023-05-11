@@ -32,4 +32,4 @@ This addon is not complete, initially I am implementing all functionality for th
 
 ## Credits
 
-The work on this integration would not have been possible without the efforts of [djtimca](https://github.com/djtimca/) and [John Sutherland]
+The work on this integration would not have been possible without the efforts of [djtimca](https://github.com/djtimca/) and [John Sutherland](garionphx@gmail.com)

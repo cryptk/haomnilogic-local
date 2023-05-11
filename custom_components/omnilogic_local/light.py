@@ -156,6 +156,11 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
         # TODO: We should ensure the light is not in "powering_off" or "cooldown" before turning it on
         _LOGGER.debug("turning on light ID: %s", self.system_id)
         was_off = self.is_on is False
+
+        # If a light go's from off to on, HASS sends kwargs of {'effect':''}, we don't want that
+        if kwargs.get(ATTR_EFFECT) == '':
+            kwargs.pop(ATTR_EFFECT)
+
         if kwargs:
             params = {}
             params = {
