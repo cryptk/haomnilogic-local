@@ -29,3 +29,7 @@ This addon is not complete, initially I am implementing all functionality for th
     - Turn on/off
     - View current temperature
     - Adjust set temperature
+
+## Credits
+
+The work on this integration would not have been possible without the efforts of [djtimca](https://github.com/djtimca/) and [John Sutherland]
