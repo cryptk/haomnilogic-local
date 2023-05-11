@@ -179,4 +179,6 @@ class OmniLogicFilterSwitchEntity(OmniLogicSwitchEntity):
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
-        await super().async_turn_off(telem_key=["@filterState", '@filterSpeed'], **kwargs)
+        await super().async_turn_off(
+            telem_key=["@filterState", "@filterSpeed"], **kwargs
+        )

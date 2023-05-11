@@ -193,5 +193,7 @@ class OmniLogicNumberEntity(OmniLogicEntity, NumberEntity):
                 new_speed_pct = round(self.speed / self.native_max_value * 100)
             else:
                 new_speed_pct = self.speed
-        self.coordinator.data[self.data_system_id]["omni_telemetry"]['@filterSpeed'] = new_speed_pct
+        self.coordinator.data[self.data_system_id]["omni_telemetry"][
+            "@filterSpeed"
+        ] = new_speed_pct
         self.coordinator.async_set_updated_data(self.coordinator.data)

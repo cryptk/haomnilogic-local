@@ -156,28 +156,34 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
         # TODO: We should ensure the light is not in "powering_off" or "cooldown" before turning it on
         _LOGGER.debug("turning on light ID: %s", self.system_id)
         was_off = self.is_on is False
-        params = {}
-        params = {
-            "show": ColorLogicShow[kwargs.get(ATTR_EFFECT, self._attr_effect)],
-            "speed": ColorLogicSpeed(self.speed),
-            "brightness": ColorLogicBrightness(
-                to_omni_level(kwargs.get(ATTR_BRIGHTNESS, self._attr_brightness))
-            ),
-        }
-        await self.coordinator.omni_api.async_set_light_show(
-            self.bow_id, self.system_id, **params
-        )
+        if kwargs:
+            params = {}
+            params = {
+                "show": ColorLogicShow[kwargs.get(ATTR_EFFECT, self._attr_effect)],
+                "speed": ColorLogicSpeed(self.speed),
+                "brightness": ColorLogicBrightness(
+                    to_omni_level(kwargs.get(ATTR_BRIGHTNESS, self._attr_brightness))
+                ),
+            }
+            await self.coordinator.omni_api.async_set_light_show(
+                self.bow_id, self.system_id, **params
+            )
+        else:
+            await self.coordinator.omni_api.async_set_equipment(
+                self.bow_id, self.system_id, True
+            )
 
         # Set a few parameters so that we can assume the upcoming state
         if was_off:
             self.coordinator.data[self.context]["omni_telemetry"]["@lightState"] = 4
+        if kwargs:
             self.coordinator.data[self.context]["omni_telemetry"][
                 "@brightness"
             ] = params["brightness"].value
             self.coordinator.data[self.context]["omni_telemetry"][
                 "@currentShow"
             ] = ColorLogicShow[kwargs.get(ATTR_EFFECT, self._attr_effect)].value
-            self.coordinator.async_set_updated_data(self.coordinator.data)
+        self.coordinator.async_set_updated_data(self.coordinator.data)
 
     async def async_turn_off(self, **kwargs):
         """Turn the light off.

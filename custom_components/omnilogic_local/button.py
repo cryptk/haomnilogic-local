@@ -77,5 +77,7 @@ class OmniLogicButtonEntity(OmniLogicEntity, ButtonEntity):
         await self.coordinator.omni_api.async_set_equipment(
             self.bow_id, self.filter_system_id, self.speed
         )
-        self.coordinator.data[self.filter_system_id]["omni_telemetry"]['@filterSpeed'] = self.speed
+        self.coordinator.data[self.filter_system_id]["omni_telemetry"][
+            "@filterSpeed"
+        ] = self.speed
         self.coordinator.async_set_updated_data(self.coordinator.data)
