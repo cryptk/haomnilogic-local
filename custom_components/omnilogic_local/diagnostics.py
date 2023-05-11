@@ -1,12 +1,10 @@
 """Diagnostics support for ESPHome."""
 from __future__ import annotations
 
-from typing import Any, cast
+from typing import Any
 
-from homeassistant.components.bluetooth import async_scanner_by_source
 from homeassistant.components.diagnostics import async_redact_data
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import CONF_PASSWORD
 from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN, KEY_COORDINATOR
@@ -21,11 +19,13 @@ async def async_get_config_entry_diagnostics(
 
     diag["config"] = config_entry.as_dict()
 
-    coordinator: OmniLogicCoordinator = hass.data[DOMAIN][config_entry.entry_id].get(KEY_COORDINATOR)
+    coordinator: OmniLogicCoordinator = hass.data[DOMAIN][config_entry.entry_id].get(
+        KEY_COORDINATOR
+    )
     if coordinator:
-        diag['msp_config'] = coordinator.msp_config
-        diag['telemetry'] = coordinator.telemetry
-        diag['data'] = coordinator.data
-    
+        diag["msp_config"] = coordinator.msp_config
+        diag["telemetry"] = coordinator.telemetry
+        diag["data"] = coordinator.data
+
     # There are no credentials or other secrets within the diagnostic data for this integration
     return async_redact_data(diag, [])

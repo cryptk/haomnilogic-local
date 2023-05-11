@@ -158,7 +158,7 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
         was_off = self.is_on is False
 
         # If a light go's from off to on, HASS sends kwargs of {'effect':''}, we don't want that
-        if kwargs.get(ATTR_EFFECT) == '':
+        if kwargs.get(ATTR_EFFECT) == "":
             kwargs.pop(ATTR_EFFECT)
 
         if kwargs:
