@@ -185,14 +185,16 @@ class OmniLogicNumberEntity(OmniLogicEntity, NumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         """Update the current value."""
-        await self.coordinator.omni_api.async_set_equipment(
-            self.bow_id, self.data_system_id, int(value)
-        )
+        _LOGGER.debug(value)
+
         if self.model == OmniModels.VARIABLE_SPEED_PUMP:
             if self._attr_native_unit_of_measurement == "RPM":
-                new_speed_pct = round(self.speed / self.native_max_value * 100)
+                new_speed_pct = round(value / self.native_max_value * 100)
             else:
-                new_speed_pct = self.speed
+                new_speed_pct = int(value)
+        await self.coordinator.omni_api.async_set_equipment(
+            self.bow_id, self.data_system_id, new_speed_pct
+        )
         self.coordinator.data[self.data_system_id]["omni_telemetry"][
             "@filterSpeed"
         ] = new_speed_pct

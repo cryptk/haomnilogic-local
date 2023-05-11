@@ -24,7 +24,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
         vol.Required(CONF_IP_ADDRESS): cv.string,
         vol.Required(CONF_NAME, default="Pool"): cv.string,
         vol.Optional(CONF_PORT, default=10444): cv.port,
-        vol.Optional(CONF_TIMEOUT, default=4.0): vol.All(
+        vol.Optional(CONF_TIMEOUT, default=5.0): vol.All(
             vol.Coerce(float), vol.Range(min=0.5, max=10.0)
         ),
     }
