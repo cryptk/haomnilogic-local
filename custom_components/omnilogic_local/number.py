@@ -88,6 +88,12 @@ class OmniLogicNumberEntity(OmniLogicEntity, NumberEntity):
             "MSPConfig"
         ]["System"].get("Msp-Vsp-Speed-Format")
 
+    @callback
+    def _handle_coordinator_update(self) -> None:
+        """Handle updated data from the coordinator."""
+        # number_data = self.coordinator.data[self.context]
+        self.async_write_ha_state()
+
     @property
     def native_max_value(self) -> float:
         if self.model == OmniModels.VARIABLE_SPEED_PUMP:

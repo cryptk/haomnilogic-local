@@ -104,7 +104,6 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity, WaterHeaterEntity):
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
-        water_heater_data = self.coordinator.data[self.context]
         self._attr_temperature_unit = (
             UnitOfTemperature.CELSIUS
             if self.coordinator.msp_config["MSPConfig"]["System"]["Units"] == "Metric"

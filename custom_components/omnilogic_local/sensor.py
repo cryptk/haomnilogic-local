@@ -100,9 +100,7 @@ class OmniLogicTemperatureSensorEntity(OmniLogicSensorEntity):
         """Pass coordinator to CoordinatorEntity."""
         sensor_data = coordinator.data[context]
         super().__init__(coordinator, context)
-        # self.units = sensor_data["omni_config"]["Units"]
         self.units = self.get_config()["Units"]
-        _LOGGER.debug(self.units)
         self.heater_system_id = find_sensor_heater_systemid(
             coordinator.data, sensor_data["metadata"]["system_id"]
         )
