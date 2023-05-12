@@ -1,15 +1,18 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any
+import logging
+from typing import TYPE_CHECKING, Any, overload
 
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, MANUFACTURER, UNIQUE_ID
+from .const import BACKYARD_SYSTEM_ID, DOMAIN, MANUFACTURER, UNIQUE_ID
 
 if TYPE_CHECKING:
     from .coordinator import OmniLogicCoordinator
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class OmniLogicEntity(CoordinatorEntity):
@@ -36,6 +39,52 @@ class OmniLogicEntity(CoordinatorEntity):
         self._attr_name = name
         self._attr_unique_id = system_id
         self._extra_attributes = extra_attributes
+
+    def get_config(self, system_id=None):
+        system_id = system_id if system_id is not None else self.system_id
+        return self.coordinator.data[system_id]["omni_config"]
+
+    def set_config(
+        self,
+        new_config: dict[str, str],
+        system_id: int | None = None,
+        coordinator_update: bool = True,
+    ):
+        system_id = system_id if system_id is not None else self.system_id
+
+        _LOGGER.debug(
+            "Updating config for system ID: %s with data: %s", system_id, new_config
+        )
+        self.coordinator.data[system_id]["omni_config"].update(new_config)
+        if coordinator_update:
+            self.coordinator.async_set_updated_data(self.coordinator.data)
+
+    def get_telemetry(self, system_id=None):
+        system_id = system_id if system_id is not None else self.system_id
+        return self.coordinator.data[system_id]["omni_telemetry"]
+
+    def set_telemetry(
+        self,
+        new_telemetry: dict[str, str],
+        system_id: int | None = None,
+        coordinator_update: bool = True,
+    ):
+        system_id = system_id if system_id is not None else self.system_id
+
+        _LOGGER.debug(
+            "Updating telemetry for system ID: %s with data: %s",
+            system_id,
+            new_telemetry,
+        )
+        self.coordinator.data[system_id]["omni_telemetry"].update(new_telemetry)
+        if coordinator_update:
+            self.coordinator.async_set_updated_data(self.coordinator.data)
+
+    @property
+    def available(self) -> bool:
+        return (
+            self.coordinator.data[BACKYARD_SYSTEM_ID]["omni_telemetry"]["@state"] == "1"
+        )
 
     @property
     def device_info(self) -> DeviceInfo:

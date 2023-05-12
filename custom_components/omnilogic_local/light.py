@@ -121,22 +121,19 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
     @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
-        light_data = self.coordinator.data[self.context]
         self.omni_light_state = COLOR_LOGIC_POWER_STATES[
-            int(light_data["omni_telemetry"]["@lightState"])
+            int(self.get_telemetry()["@lightState"])
         ]
-        self.speed = int(light_data["omni_telemetry"]["@speed"])
+        self.speed = int(self.get_telemetry()["@speed"])
         self._attr_is_on = self.omni_light_state not in [
             "off",
             "powering_off",
             "cooldown",
         ]
         self._attr_effect = ColorLogicShow(
-            int(light_data["omni_telemetry"]["@currentShow"])
+            int(self.get_telemetry()["@currentShow"])
         ).name
-        self._attr_brightness = to_hass_level(
-            light_data["omni_telemetry"]["@brightness"]
-        )
+        self._attr_brightness = to_hass_level(self.get_telemetry()["@brightness"])
         self.async_write_ha_state()
 
     @property
@@ -179,16 +176,19 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
             )
 
         # Set a few parameters so that we can assume the upcoming state
+        updated_data = {}
         if was_off:
-            self.coordinator.data[self.context]["omni_telemetry"]["@lightState"] = 4
+            updated_data.update({"@lightState": "4"})
         if kwargs:
-            self.coordinator.data[self.context]["omni_telemetry"][
-                "@brightness"
-            ] = params["brightness"].value
-            self.coordinator.data[self.context]["omni_telemetry"][
-                "@currentShow"
-            ] = ColorLogicShow[kwargs.get(ATTR_EFFECT, self._attr_effect)].value
-        self.coordinator.async_set_updated_data(self.coordinator.data)
+            updated_data.update(
+                {
+                    "@brightness": params["brightness"].value,
+                    "@currentShow": ColorLogicShow[
+                        kwargs.get(ATTR_EFFECT, self._attr_effect)
+                    ].value,
+                }
+            )
+        self.set_telemetry(updated_data)
 
     async def async_turn_off(self, **kwargs):
         """Turn the light off.
@@ -203,5 +203,4 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
         )
 
         if was_on:
-            self.coordinator.data[self.context]["omni_telemetry"]["@lightState"] = 1
-            self.coordinator.async_set_updated_data(self.coordinator.data)
+            self.set_telemetry({"@lightState": "1"})

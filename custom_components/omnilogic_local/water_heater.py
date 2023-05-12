@@ -89,20 +89,10 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity, WaterHeaterEntity):
             WaterHeaterEntityFeature.TARGET_TEMPERATURE
             | WaterHeaterEntityFeature.OPERATION_MODE
         )
-        self._attr_min_temp = int(
-            water_heater_data["omni_config"]["Min-Settable-Water-Temp"]
-        )
-        self._attr_max_temp = int(
-            water_heater_data["omni_config"]["Max-Settable-Water-Temp"]
-        )
-        self._attr_target_temperature = int(
-            water_heater_data["omni_config"]["Current-Set-Point"]
-        )
-        current_temp = int(
-            coordinator.data[water_heater_data["metadata"]["bow_id"]]["omni_telemetry"][
-                "@waterTemp"
-            ]
-        )
+        self._attr_min_temp = int(self.get_config()["Min-Settable-Water-Temp"])
+        self._attr_max_temp = int(self.get_config()["Max-Settable-Water-Temp"])
+        self._attr_target_temperature = int(self.get_config()["Current-Set-Point"])
+        current_temp = int(self.get_telemetry(self.bow_id)["@waterTemp"])
         self._attr_current_temperature = current_temp if current_temp != -1 else None
         self._attr_operation_list = [STATE_ON, STATE_OFF]
         self._attr_current_operation = (
@@ -124,26 +114,14 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity, WaterHeaterEntity):
             WaterHeaterEntityFeature.TARGET_TEMPERATURE
             | WaterHeaterEntityFeature.OPERATION_MODE
         )
-        self._attr_min_temp = int(
-            water_heater_data["omni_config"]["Min-Settable-Water-Temp"]
-        )
-        self._attr_max_temp = int(
-            water_heater_data["omni_config"]["Max-Settable-Water-Temp"]
-        )
-        self._attr_target_temperature = int(
-            water_heater_data["omni_config"]["Current-Set-Point"]
-        )
-        current_temp = int(
-            self.coordinator.data[water_heater_data["metadata"]["bow_id"]][
-                "omni_telemetry"
-            ]["@waterTemp"]
-        )
+        self._attr_min_temp = int(self.get_config()["Min-Settable-Water-Temp"])
+        self._attr_max_temp = int(self.get_config()["Max-Settable-Water-Temp"])
+        self._attr_target_temperature = int(self.get_config()["Current-Set-Point"])
+        current_temp = int(self.get_telemetry(self.bow_id)["@waterTemp"])
         self._attr_current_temperature = current_temp if current_temp != -1 else None
         self._attr_operation_list = [STATE_ON, STATE_OFF]
         self._attr_current_operation = (
-            STATE_ON
-            if int(water_heater_data["omni_telemetry"]["@enable"]) == 1
-            else STATE_OFF
+            STATE_ON if int(self.get_telemetry()["@enable"]) == 1 else STATE_OFF
         )
         self.async_write_ha_state()
 
@@ -154,11 +132,7 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity, WaterHeaterEntity):
             int(kwargs[ATTR_TEMPERATURE]),
             unit=self._attr_temperature_unit,
         )
-        self.coordinator.data[self.context]["omni_config"][
-            "Current-Set-Point"
-        ] = kwargs[ATTR_TEMPERATURE]
-        # self._attr_target_temperature = int(kwargs[ATTR_TEMPERATURE])
-        self.coordinator.async_set_updated_data(self.coordinator.data)
+        self.set_config({"Current-Set-Point": kwargs[ATTR_TEMPERATURE]})
 
     async def async_set_operation_mode(self, operation_mode):
         match operation_mode:
@@ -166,13 +140,12 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity, WaterHeaterEntity):
                 await self.coordinator.omni_api.async_set_heater_enable(
                     self.bow_id, self.system_id, True
                 )
-                self.coordinator.data[self.system_id]["omni_telemetry"]["@enable"] = "1"
+                self.set_telemetry({"@enable": "1"})
             case "off":
                 await self.coordinator.omni_api.async_set_heater_enable(
                     self.bow_id, self.system_id, False
                 )
-                self.coordinator.data[self.system_id]["omni_telemetry"]["@enable"] = "0"
-        self.coordinator.async_set_updated_data(self.coordinator.data)
+                self.set_telemetry({"@enable": "0"})
 
     @property
     def extra_state_attributes(self) -> Mapping[str, Any] | None:
@@ -181,15 +154,15 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity, WaterHeaterEntity):
             heater_equipment = self.coordinator.data[system_id]
             prefix = f"omni_heater_{heater_equipment['metadata']['name'].lower()}"
             extra_state_attributes = extra_state_attributes | {
-                f"{prefix}_enabled": heater_equipment["omni_config"]["Enabled"],
-                f"{prefix}_system_id": heater_equipment["metadata"]["system_id"],
+                f"{prefix}_enabled": self.get_config(system_id)["Enabled"],
+                f"{prefix}_system_id": system_id,
                 f"{prefix}_bow_id": heater_equipment["metadata"]["bow_id"],
-                f"{prefix}_supports_cooling": heater_equipment["omni_config"][
+                f"{prefix}_supports_cooling": self.get_config(system_id)[
                     "SupportsCooling"
                 ],
                 f"{prefix}_state": STATE_ON
-                if int(heater_equipment["omni_telemetry"]["@heaterState"]) == 1
+                if self.get_telemetry(system_id)["@heaterState"] == "1"
                 else STATE_OFF,
-                f"{prefix}_sensor_temp": heater_equipment["omni_telemetry"]["@temp"],
+                f"{prefix}_sensor_temp": self.get_telemetry(system_id)["@temp"],
             }
         return extra_state_attributes

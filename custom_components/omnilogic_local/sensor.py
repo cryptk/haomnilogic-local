@@ -100,7 +100,9 @@ class OmniLogicTemperatureSensorEntity(OmniLogicSensorEntity):
         """Pass coordinator to CoordinatorEntity."""
         sensor_data = coordinator.data[context]
         super().__init__(coordinator, context)
-        self.units = sensor_data["omni_config"]["Units"]
+        # self.units = sensor_data["omni_config"]["Units"]
+        self.units = self.get_config()["Units"]
+        _LOGGER.debug(self.units)
         self.heater_system_id = find_sensor_heater_systemid(
             coordinator.data, sensor_data["metadata"]["system_id"]
         )
@@ -116,20 +118,16 @@ class OmniLogicTemperatureSensorEntity(OmniLogicSensorEntity):
 
     @property
     def native_value(self) -> StateType | date | datetime | Decimal:
+        telem_temp: int = None
         match self.model:
             case "SENSOR_AIR_TEMP":
-                return self.coordinator.data[BACKYARD_SYSTEM_ID]["omni_telemetry"][
-                    "@airTemp"
-                ]
+                telem_temp = self.get_telemetry(BACKYARD_SYSTEM_ID)["@airTemp"]
             case "SENSOR_WATER_TEMP":
-                telem_temp = self.coordinator.data[self.bow_id]["omni_telemetry"][
-                    "@waterTemp"
-                ]
-                return telem_temp if int(telem_temp) != -1 else None
+                telem_temp = self.get_telemetry(self.bow_id)["@waterTemp"]
             case "SENSOR_SOLAR_TEMP":
-                return self.coordinator.data[self.heater_system_id]["omni_telemetry"][
-                    "@temp"
-                ]
+                telem_temp = self.get_telemetry(self.heater_system_id)["@temp"]
+        # Sometimes the Omni returns junk values for the temperatures, for example, when it first comes out of service mode
+        return telem_temp if int(telem_temp) not in [-1, 255, 65535] else None
 
 
 class OmniLogicFlowSensorEntity(OmniLogicSensorEntity):

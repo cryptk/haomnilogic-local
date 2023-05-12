@@ -97,12 +97,9 @@ class OmniLogicSwitchEntity(OmniLogicEntity, SwitchEntity):
         self.omni_type = switch_data["metadata"]["omni_type"]
         self._attr_is_on = get_power_state(switch_data)
 
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        switch_data = self.coordinator.data[self.context]
-        self._attr_is_on = get_power_state(switch_data)
-        self.async_write_ha_state()
+    @property
+    def is_on(self) -> bool | None:
+        return get_power_state(self.coordinator.data[self.context])
 
     async def async_turn_on(self, **kwargs):
         """Turn the entity on."""
@@ -111,8 +108,7 @@ class OmniLogicSwitchEntity(OmniLogicEntity, SwitchEntity):
         await self.coordinator.omni_api.async_set_equipment(
             self.bow_id, self.system_id, True
         )
-        self.coordinator.data[self.system_id]["omni_telemetry"][telem_key] = "1"
-        self.coordinator.async_set_updated_data(self.coordinator.data)
+        self.set_telemetry({telem_key: "1"})
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
@@ -121,9 +117,11 @@ class OmniLogicSwitchEntity(OmniLogicEntity, SwitchEntity):
         await self.coordinator.omni_api.async_set_equipment(
             self.bow_id, self.system_id, False
         )
-        for telem_key in one_or_many(kwargs["telem_key"]):
-            self.coordinator.data[self.system_id]["omni_telemetry"][telem_key] = "0"
-        self.coordinator.async_set_updated_data(self.coordinator.data)
+        # telem_key might be a list of items to set to 0, or just a single item
+        if isinstance(telem_key, list):
+            self.set_telemetry({key: "0" for key in telem_key})
+        else:
+            self.set_telemetry({telem_key: "0"})
 
 
 class OmniLogicRelayValveActuatorSwitchEntity(OmniLogicSwitchEntity):

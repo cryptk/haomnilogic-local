@@ -88,42 +88,20 @@ class OmniLogicNumberEntity(OmniLogicEntity, NumberEntity):
             "MSPConfig"
         ]["System"].get("Msp-Vsp-Speed-Format")
 
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        # number_data = self.coordinator.data[self.context]
-        self.async_write_ha_state()
-
     @property
     def native_max_value(self) -> float:
         if self.model == OmniModels.VARIABLE_SPEED_PUMP:
             if self._attr_native_unit_of_measurement == "RPM":
-                return int(
-                    self.coordinator.data[self.data_system_id]["omni_config"][
-                        "Max-Pump-RPM"
-                    ]
-                )
-            return int(
-                self.coordinator.data[self.data_system_id]["omni_config"][
-                    "Max-Pump-Speed"
-                ]
-            )
+                return int(self.get_config(self.data_system_id)["Max-Pump-RPM"])
+            return int(self.get_config(self.data_system_id)["Max-Pump-Speed"])
         return None
 
     @property
     def native_min_value(self) -> float:
         if self.model == OmniModels.VARIABLE_SPEED_PUMP:
             if self._attr_native_unit_of_measurement == "RPM":
-                return int(
-                    self.coordinator.data[self.data_system_id]["omni_config"][
-                        "Min-Pump-RPM"
-                    ]
-                )
-            return int(
-                self.coordinator.data[self.data_system_id]["omni_config"][
-                    "Min-Pump-Speed"
-                ]
-            )
+                return int(self.get_config(self.data_system_id)["Min-Pump-RPM"])
+            return int(self.get_config(self.data_system_id)["Min-Pump-Speed"])
         return None
 
     @property
@@ -135,17 +113,9 @@ class OmniLogicNumberEntity(OmniLogicEntity, NumberEntity):
                 return floor(
                     self.native_max_value
                     / 100
-                    * int(
-                        self.coordinator.data[self.data_system_id]["omni_telemetry"][
-                            "@filterSpeed"
-                        ]
-                    )
+                    * int(self.get_telemetry(self.data_system_id)["@filterSpeed"])
                 )
-            return int(
-                self.coordinator.data[self.data_system_id]["omni_telemetry"][
-                    "@filterSpeed"
-                ]
-            )
+            return int(self.get_telemetry(self.data_system_id)["@filterSpeed"])
         return None
 
     @property
@@ -154,32 +124,20 @@ class OmniLogicNumberEntity(OmniLogicEntity, NumberEntity):
         match self.model:
             case OmniModels.VARIABLE_SPEED_PUMP:
                 extra_state_attributes = {
-                    "max_rpm": self.coordinator.data[self.data_system_id][
-                        "omni_config"
-                    ]["Max-Pump-RPM"],
-                    "min_rpm": self.coordinator.data[self.data_system_id][
-                        "omni_config"
-                    ]["Min-Pump-RPM"],
-                    "max_percent": self.coordinator.data[self.data_system_id][
-                        "omni_config"
-                    ]["Max-Pump-Speed"],
-                    "min_percent": self.coordinator.data[self.data_system_id][
-                        "omni_config"
-                    ]["Min-Pump-RPM"],
+                    "max_rpm": self.get_config(self.data_system_id)["Max-Pump-RPM"],
+                    "min_rpm": self.get_config(self.data_system_id)["Min-Pump-RPM"],
+                    "max_percent": self.get_config(self.data_system_id)[
+                        "Max-Pump-Speed"
+                    ],
+                    "min_percent": self.get_config(self.data_system_id)["Min-Pump-RPM"],
                     "current_rpm": floor(
                         self.native_max_value
                         / 100
-                        * int(
-                            self.coordinator.data[self.data_system_id][
-                                "omni_telemetry"
-                            ]["@filterSpeed"]
-                        )
+                        * int(self.get_telemetry(self.data_system_id)["@filterSpeed"])
                     ),
-                    "current_percent": int(
-                        self.coordinator.data[self.data_system_id]["omni_telemetry"][
-                            "@filterSpeed"
-                        ]
-                    ),
+                    "current_percent": self.get_telemetry(self.data_system_id)[
+                        "@filterSpeed"
+                    ],
                 }
         return super().extra_state_attributes | extra_state_attributes
 
@@ -193,7 +151,8 @@ class OmniLogicNumberEntity(OmniLogicEntity, NumberEntity):
         await self.coordinator.omni_api.async_set_equipment(
             self.bow_id, self.data_system_id, new_speed_pct
         )
-        self.coordinator.data[self.data_system_id]["omni_telemetry"][
-            "@filterSpeed"
-        ] = new_speed_pct
-        self.coordinator.async_set_updated_data(self.coordinator.data)
+
+        self.set_telemetry(
+            {"@filterState": "1", "@filterSpeed": new_speed_pct},
+            system_id=self.data_system_id,
+        )
