@@ -19,12 +19,13 @@ from .const import DOMAIN, KEY_COORDINATOR, UNIQUE_ID
 from .coordinator import OmniLogicCoordinator
 
 PLATFORMS: list[Platform] = [
-    Platform.LIGHT,
-    Platform.SWITCH,
-    Platform.SENSOR,
-    Platform.WATER_HEATER,
+    Platform.BINARY_SENSOR,
     Platform.BUTTON,
+    Platform.LIGHT,
     Platform.NUMBER,
+    Platform.SENSOR,
+    Platform.SWITCH,
+    Platform.WATER_HEATER,
 ]
 
 

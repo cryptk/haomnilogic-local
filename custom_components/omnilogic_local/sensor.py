@@ -38,8 +38,8 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
 
     coordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
 
+    # Create a sensor entity for all temperature sensors
     all_sensors = get_entities_of_hass_type(coordinator.data, "sensor")
-
     entities = []
     for system_id, sensor in all_sensors.items():
         if sensor["omni_config"]["Type"] in SENSOR_TYPES_TEMPERATURE:
@@ -53,17 +53,6 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
                     coordinator=coordinator, context=system_id
                 )
             )
-    
-    _LOGGER.debug(
-        "Configuring service mode sensor with ID: %s",
-        BACKYARD_SYSTEM_ID,
-        "Service Mode",
-    )
-    entities.append(
-        OmniLogicServiceModeSensorEntity(
-            coordinator=coordinator, context=BACKYARD_SYSTEM_ID
-        )
-    )
 
     async_add_entities(entities)
 
@@ -86,8 +75,8 @@ class OmniLogicSensorEntity(OmniLogicEntity, SensorEntity):
         sensor_data = coordinator.data[context]
         super().__init__(
             coordinator,
-            context=context,
-            name=name if name != None else sensor_data["metadata"]["name"],
+            context,
+            name=name if name is not None else sensor_data["metadata"]["name"],
             system_id=sensor_data["metadata"]["system_id"],
             bow_id=sensor_data["metadata"]["bow_id"],
             extra_attributes=None,
@@ -107,7 +96,7 @@ class OmniLogicTemperatureSensorEntity(OmniLogicSensorEntity):
 
     """
 
-    def __init__(self, coordinator, context) -> None:
+    def __init__(self, coordinator, context, name: str = None) -> None:
         """Pass coordinator to CoordinatorEntity."""
         sensor_data = coordinator.data[context]
         super().__init__(coordinator, context)
@@ -137,18 +126,3 @@ class OmniLogicTemperatureSensorEntity(OmniLogicSensorEntity):
                 telem_temp = self.get_telemetry(self.heater_system_id)["@temp"]
         # Sometimes the Omni returns junk values for the temperatures, for example, when it first comes out of service mode
         return telem_temp if int(telem_temp) not in [-1, 255, 65535] else None
-
-class OmniLogicServiceModeSensorEntity(OmniLogicSensorEntity):
-
-    def __init__(self, coordinator, context) -> None:
-        """Pass coordinator to CoordinatorEntity."""
-        super().__init__(coordinator, context, name="Service Mode")
-    
-    @property
-    def available(self) -> bool:
-        # This is one of the few things we can pull from the telemetry even if we are in service mode
-        return True
-    
-    @property
-    def native_value(self) -> StateType | date | datetime | Decimal:
-        return self.get_telemetry()['@state'] == "2"
