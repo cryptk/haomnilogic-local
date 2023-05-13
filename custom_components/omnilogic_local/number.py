@@ -6,7 +6,7 @@ from math import floor
 from typing import Any
 
 from homeassistant.components.number import NumberEntity
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN, KEY_COORDINATOR, OmniModels
 from .types import OmniLogicEntity
@@ -87,12 +87,6 @@ class OmniLogicNumberEntity(OmniLogicEntity, NumberEntity):
         self._attr_native_unit_of_measurement = self.coordinator.msp_config[
             "MSPConfig"
         ]["System"].get("Msp-Vsp-Speed-Format")
-
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        # number_data = self.coordinator.data[self.context]
-        self.async_write_ha_state()
 
     @property
     def native_max_value(self) -> float:

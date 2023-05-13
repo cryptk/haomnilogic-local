@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 import logging
-from typing import TYPE_CHECKING, Any, overload
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -37,7 +37,7 @@ class OmniLogicEntity(CoordinatorEntity):
         self.bow_id = bow_id
         self.system_id = system_id
         self._attr_name = name
-        self._attr_unique_id = system_id
+        self._attr_unique_id = f"{system_id}_{name}"
         self._extra_attributes = extra_attributes
 
     def get_config(self, system_id=None):
@@ -61,7 +61,8 @@ class OmniLogicEntity(CoordinatorEntity):
 
     def get_telemetry(self, system_id=None):
         system_id = system_id if system_id is not None else self.system_id
-        return self.coordinator.data[system_id]["omni_telemetry"]
+        if self.available:
+            return self.coordinator.data[system_id]["omni_telemetry"]
 
     def set_telemetry(
         self,

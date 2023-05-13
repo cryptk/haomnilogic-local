@@ -17,7 +17,7 @@ from homeassistant.components.light import (
     LightEntity,
     LightEntityFeature,
 )
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN, KEY_COORDINATOR
 from .types import OmniLogicEntity
@@ -80,12 +80,11 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
 
     """
 
-    _attr_effect_list = None
-    _attr_effect = None
+    _attr_effect_list = list(ColorLogicShow.__members__)
+    # _attr_effect = None
     _attr_supported_features = LightEntityFeature.EFFECT
     _attr_supported_color_modes = [ColorMode.BRIGHTNESS]
-    _attr_color_mode = None
-    _attr_brightness = None
+    # _attr_color_mode = None
 
     def __init__(self, coordinator, context) -> None:
         """Pass coordinator to CoordinatorEntity."""
@@ -99,42 +98,30 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
             extra_attributes=None,
         )
         self.model = light_data["omni_config"]["Type"]
-        self.omni_light_state = COLOR_LOGIC_POWER_STATES[
-            int(light_data["omni_telemetry"]["@lightState"])
-        ]
-        self.speed = int(light_data["omni_telemetry"]["@speed"])
 
-        self._attr_is_on = self.omni_light_state not in [
+    @property
+    def omni_light_state(self):
+        return COLOR_LOGIC_POWER_STATES[int(self.get_telemetry()["@lightState"])]
+
+    @property
+    def speed(self):
+        return int(self.get_telemetry()["@speed"])
+
+    @property
+    def is_on(self) -> bool | None:
+        return self.omni_light_state not in [
             "off",
             "powering_off",
             "cooldown",
         ]
-        self._attr_brightness = to_hass_level(
-            light_data["omni_telemetry"]["@brightness"]
-        )
 
-        self._attr_effect_list = list(ColorLogicShow.__members__)
-        self._attr_effect = ColorLogicShow(
-            int(light_data["omni_telemetry"]["@currentShow"])
-        ).name
+    @property
+    def brightness(self) -> int | None:
+        return to_hass_level(self.get_telemetry()["@brightness"])
 
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        self.omni_light_state = COLOR_LOGIC_POWER_STATES[
-            int(self.get_telemetry()["@lightState"])
-        ]
-        self.speed = int(self.get_telemetry()["@speed"])
-        self._attr_is_on = self.omni_light_state not in [
-            "off",
-            "powering_off",
-            "cooldown",
-        ]
-        self._attr_effect = ColorLogicShow(
-            int(self.get_telemetry()["@currentShow"])
-        ).name
-        self._attr_brightness = to_hass_level(self.get_telemetry()["@brightness"])
-        self.async_write_ha_state()
+    @property
+    def effect(self) -> str | None:
+        return ColorLogicShow(int(self.get_telemetry()["@currentShow"])).name
 
     @property
     def extra_state_attributes(self) -> Mapping[str, Any] | None:
@@ -161,10 +148,10 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
         if kwargs:
             params = {}
             params = {
-                "show": ColorLogicShow[kwargs.get(ATTR_EFFECT, self._attr_effect)],
+                "show": ColorLogicShow[kwargs.get(ATTR_EFFECT, self.effect)],
                 "speed": ColorLogicSpeed(self.speed),
                 "brightness": ColorLogicBrightness(
-                    to_omni_level(kwargs.get(ATTR_BRIGHTNESS, self._attr_brightness))
+                    to_omni_level(kwargs.get(ATTR_BRIGHTNESS, self.brightness))
                 ),
             }
             await self.coordinator.omni_api.async_set_light_show(
@@ -184,7 +171,7 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
                 {
                     "@brightness": params["brightness"].value,
                     "@currentShow": ColorLogicShow[
-                        kwargs.get(ATTR_EFFECT, self._attr_effect)
+                        kwargs.get(ATTR_EFFECT, self.effect)
                     ].value,
                 }
             )

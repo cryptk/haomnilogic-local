@@ -9,7 +9,7 @@ from homeassistant.components.water_heater import (
     WaterHeaterEntityFeature,
 )
 from homeassistant.const import ATTR_TEMPERATURE, STATE_OFF, STATE_ON, UnitOfTemperature
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN, KEY_COORDINATOR
 from .types import OmniLogicEntity
@@ -80,20 +80,11 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity, WaterHeaterEntity):
         )
         self.omni_type = water_heater_data["metadata"]["omni_type"]
         self.heater_equipment_ids = heater_equipment_ids
-        self._attr_temperature_unit = (
-            UnitOfTemperature.CELSIUS
-            if self.coordinator.msp_config["MSPConfig"]["System"]["Units"] == "Metric"
-            else UnitOfTemperature.FAHRENHEIT
-        )
         self._attr_supported_features = (
             WaterHeaterEntityFeature.TARGET_TEMPERATURE
             | WaterHeaterEntityFeature.OPERATION_MODE
         )
-        self._attr_min_temp = int(self.get_config()["Min-Settable-Water-Temp"])
-        self._attr_max_temp = int(self.get_config()["Max-Settable-Water-Temp"])
-        self._attr_target_temperature = int(self.get_config()["Current-Set-Point"])
-        current_temp = int(self.get_telemetry(self.bow_id)["@waterTemp"])
-        self._attr_current_temperature = current_temp if current_temp != -1 else None
+
         self._attr_operation_list = [STATE_ON, STATE_OFF]
         self._attr_current_operation = (
             STATE_ON
@@ -101,35 +92,41 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity, WaterHeaterEntity):
             else STATE_OFF
         )
 
-    @callback
-    def _handle_coordinator_update(self) -> None:
-        """Handle updated data from the coordinator."""
-        self._attr_temperature_unit = (
+    @property
+    def temperature_unit(self) -> str:
+        return (
             UnitOfTemperature.CELSIUS
             if self.coordinator.msp_config["MSPConfig"]["System"]["Units"] == "Metric"
             else UnitOfTemperature.FAHRENHEIT
         )
-        self._attr_supported_features = (
-            WaterHeaterEntityFeature.TARGET_TEMPERATURE
-            | WaterHeaterEntityFeature.OPERATION_MODE
-        )
-        self._attr_min_temp = int(self.get_config()["Min-Settable-Water-Temp"])
-        self._attr_max_temp = int(self.get_config()["Max-Settable-Water-Temp"])
-        self._attr_target_temperature = int(self.get_config()["Current-Set-Point"])
+
+    @property
+    def min_temp(self) -> float:
+        return int(self.get_config()["Min-Settable-Water-Temp"])
+
+    @property
+    def max_temp(self) -> float:
+        return int(self.get_config()["Max-Settable-Water-Temp"])
+
+    @property
+    def target_temperature(self) -> float | None:
+        return int(self.get_config()["Current-Set-Point"])
+
+    @property
+    def current_temperature(self) -> float | None:
         current_temp = int(self.get_telemetry(self.bow_id)["@waterTemp"])
-        self._attr_current_temperature = current_temp if current_temp != -1 else None
-        self._attr_operation_list = [STATE_ON, STATE_OFF]
-        self._attr_current_operation = (
-            STATE_ON if int(self.get_telemetry()["@enable"]) == 1 else STATE_OFF
-        )
-        self.async_write_ha_state()
+        return current_temp if current_temp != -1 else None
+
+    @property
+    def current_operation(self) -> str | None:
+        return STATE_ON if int(self.get_telemetry()["@enable"]) == 1 else STATE_OFF
 
     async def async_set_temperature(self, **kwargs: Any):
         await self.coordinator.omni_api.async_set_heater(
             self.bow_id,
             self.system_id,
             int(kwargs[ATTR_TEMPERATURE]),
-            unit=self._attr_temperature_unit,
+            unit=self.temperature_unit,
         )
         self.set_config({"Current-Set-Point": kwargs[ATTR_TEMPERATURE]})
 

@@ -53,6 +53,17 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
                     coordinator=coordinator, context=system_id
                 )
             )
+    
+    _LOGGER.debug(
+        "Configuring service mode sensor with ID: %s",
+        BACKYARD_SYSTEM_ID,
+        "Service Mode",
+    )
+    entities.append(
+        OmniLogicServiceModeSensorEntity(
+            coordinator=coordinator, context=BACKYARD_SYSTEM_ID
+        )
+    )
 
     async_add_entities(entities)
 
@@ -70,19 +81,19 @@ class OmniLogicSensorEntity(OmniLogicEntity, SensorEntity):
 
     _attr_state_class = SensorStateClass.MEASUREMENT
 
-    def __init__(self, coordinator, context) -> None:
+    def __init__(self, coordinator, context, name: str = None) -> None:
         """Pass coordinator to CoordinatorEntity."""
         sensor_data = coordinator.data[context]
         super().__init__(
             coordinator,
             context=context,
-            name=sensor_data["metadata"]["name"],
+            name=name if name != None else sensor_data["metadata"]["name"],
             system_id=sensor_data["metadata"]["system_id"],
             bow_id=sensor_data["metadata"]["bow_id"],
             extra_attributes=None,
         )
         self.omni_type = sensor_data["metadata"]["omni_type"]
-        self.model = sensor_data["omni_config"]["Type"]
+        self.model = sensor_data["omni_config"].get("Type")
 
 
 class OmniLogicTemperatureSensorEntity(OmniLogicSensorEntity):
@@ -127,14 +138,17 @@ class OmniLogicTemperatureSensorEntity(OmniLogicSensorEntity):
         # Sometimes the Omni returns junk values for the temperatures, for example, when it first comes out of service mode
         return telem_temp if int(telem_temp) not in [-1, 255, 65535] else None
 
+class OmniLogicServiceModeSensorEntity(OmniLogicSensorEntity):
 
-class OmniLogicFlowSensorEntity(OmniLogicSensorEntity):
-    """An entity using CoordinatorEntity.
-
-    The CoordinatorEntity class provides:
-      should_poll
-      async_update
-      async_added_to_hass
-      available
-
-    """
+    def __init__(self, coordinator, context) -> None:
+        """Pass coordinator to CoordinatorEntity."""
+        super().__init__(coordinator, context, name="Service Mode")
+    
+    @property
+    def available(self) -> bool:
+        # This is one of the few things we can pull from the telemetry even if we are in service mode
+        return True
+    
+    @property
+    def native_value(self) -> StateType | date | datetime | Decimal:
+        return self.get_telemetry()['@state'] == "2"

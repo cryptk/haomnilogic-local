@@ -3,11 +3,11 @@ from __future__ import annotations
 import logging
 
 from homeassistant.components.switch import SwitchEntity
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN, KEY_COORDINATOR, OmniModels, OmniTypes
 from .types import OmniLogicEntity
-from .utils import get_entities_of_hass_type, get_omni_model, one_or_many
+from .utils import get_entities_of_hass_type, get_omni_model
 
 _LOGGER = logging.getLogger(__name__)
 
