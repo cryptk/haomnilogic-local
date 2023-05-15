@@ -18,7 +18,6 @@ from .const import (
     OMNI_TO_HASS_TYPES,
 )
 from .utils import get_telemetry_by_systemid, one_or_many
-from .test_msp_config import TEST_MSP_CONFIG
 
 _LOGGER = logging.getLogger(__name__)
 
