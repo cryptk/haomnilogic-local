@@ -153,9 +153,7 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity, WaterHeaterEntity):
                 f"{prefix}_enabled": self.get_config(system_id)["Enabled"],
                 f"{prefix}_system_id": system_id,
                 f"{prefix}_bow_id": heater_equipment["metadata"]["bow_id"],
-                f"{prefix}_supports_cooling": self.get_config(system_id)[
-                    "SupportsCooling"
-                ],
+                f"{prefix}_supports_cooling": self.get_config(system_id).get("SupportsCooling", "no"),
                 f"{prefix}_state": STATE_ON
                 if self.get_telemetry(system_id)["@heaterState"] == "1"
                 else STATE_OFF,

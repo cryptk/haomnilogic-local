@@ -15,8 +15,10 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
 
-from .const import DOMAIN, KEY_COORDINATOR, UNIQUE_ID
+from .const import DOMAIN, KEY_COORDINATOR, UNIQUE_ID, KEY_MSP_BACKYARD, KEY_MSP_BOW, BACKYARD_SYSTEM_ID
 from .coordinator import OmniLogicCoordinator
+from .utils import get_entities_of_omni_type
+import logging
 
 PLATFORMS: list[Platform] = [
     Platform.BINARY_SENSOR,
@@ -28,6 +30,7 @@ PLATFORMS: list[Platform] = [
     Platform.WATER_HEATER,
 ]
 
+_LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up OmniLogic Local from a config entry."""
@@ -48,20 +51,32 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await coordinator.async_config_entry_first_refresh()
 
     device_registry = dr.async_get(hass)
+
+    #Create a device for the Omni Backyard
+    backyard = get_entities_of_omni_type(coordinator.data, KEY_MSP_BACKYARD)[BACKYARD_SYSTEM_ID]
     device_registry.async_get_or_create(
         config_entry_id=entry.entry_id,
-        identifiers={(DOMAIN, UNIQUE_ID)},
+        identifiers={(KEY_MSP_BACKYARD, BACKYARD_SYSTEM_ID)},
         manufacturer="Hayward",
-        # TODO: Figure out how to manage device naming, the API does not return a name
-        name="omnilogic",
+        suggested_area="Back Yard",
+        name=f"{entry.data[CONF_NAME]}_{backyard['metadata']['name']}",
     )
+
+    # Create a device for each Body of Water
+    for system_id, bow in get_entities_of_omni_type(coordinator.data, KEY_MSP_BOW).items():
+        device_registry.async_get_or_create(
+            config_entry_id=entry.entry_id,
+            identifiers={(KEY_MSP_BOW, system_id)},
+            manufacturer="Hayward",
+            suggested_area="Back Yard",
+            # TODO: Figure out how to manage device naming, the API does not return a name
+            name=f"{entry.data[CONF_NAME]}_{bow['metadata']['name']}",
+        )
 
     # Store them for use later
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = {
         KEY_COORDINATOR: coordinator,
-        # KEY_DEVICE_REGISTRY: device_registry
-        # KEY_OMNI_API: omni_api,
     }
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
