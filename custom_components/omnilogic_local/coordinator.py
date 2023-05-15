@@ -22,7 +22,7 @@ from .utils import get_telemetry_by_systemid, one_or_many
 import json
 
 # Import diagnostic data to reproduce issues
-from .test_diagnostic_data import TEST_DIAGNOSTIC_DATA
+#from .test_diagnostic_data import TEST_DIAGNOSTIC_DATA
 
 _LOGGER = logging.getLogger(__name__)
 
