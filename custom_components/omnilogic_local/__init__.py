@@ -59,7 +59,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         identifiers={(KEY_MSP_BACKYARD, BACKYARD_SYSTEM_ID)},
         manufacturer="Hayward",
         suggested_area="Back Yard",
-        name=f"{entry.data[CONF_NAME]}_{backyard['metadata']['name']}",
+        name=f"{entry.data[CONF_NAME]} {backyard['metadata']['name']}",
     )
 
     # Create a device for each Body of Water
@@ -70,7 +70,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             manufacturer="Hayward",
             suggested_area="Back Yard",
             # TODO: Figure out how to manage device naming, the API does not return a name
-            name=f"{entry.data[CONF_NAME]}_{bow['metadata']['name']}",
+            name=f"{entry.data[CONF_NAME]} {bow['metadata']['name']}",
         )
 
     # Store them for use later
