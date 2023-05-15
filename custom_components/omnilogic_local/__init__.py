@@ -1,7 +1,7 @@
 """The OmniLogic Local integration."""
 from __future__ import annotations
 
-from pyomnilogic_local import OmniLogicAPI
+from pyomnilogic_local.api import OmniLogicAPI
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (

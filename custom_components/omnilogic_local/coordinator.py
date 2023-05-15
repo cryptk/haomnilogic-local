@@ -5,7 +5,7 @@ from datetime import timedelta
 import logging
 
 import async_timeout
-from pyomnilogic_local import OmniLogicAPI
+from pyomnilogic_local.api import OmniLogicAPI
 import xmltodict
 
 from homeassistant.core import HomeAssistant
@@ -18,6 +18,7 @@ from .const import (
     OMNI_TO_HASS_TYPES,
 )
 from .utils import get_telemetry_by_systemid, one_or_many
+from .test_msp_config import TEST_MSP_CONFIG
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -78,11 +79,12 @@ def build_entity_index(data: dict[str, str]) -> dict[int, dict[str, str]]:
         data["MSPConfig"]["Backyard"],
         data["MSPConfig"]["Backyard"]["Body-of-water"],
     ):
+        
         for item in one_or_many(tier):
             bow_id = (
                 int(item[KEY_MSP_SYSTEM_ID]) if item.get("Type") == "BOW_POOL" else None
             )
-            for omni_entity_type, entity_data in tier.items():
+            for omni_entity_type, entity_data in item.items():
                 if omni_entity_type not in OMNI_DEVICE_TYPES:
                     continue
                 for entity in build_entity_item(omni_entity_type, entity_data, bow_id):

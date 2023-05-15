@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from pyomnilogic_local import OmniLogicAPI
+from pyomnilogic_local.api import OmniLogicAPI
 import voluptuous as vol
 import xmltodict
 
