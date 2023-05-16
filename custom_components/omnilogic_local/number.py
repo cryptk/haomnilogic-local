@@ -30,11 +30,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
 
     entities = []
     for system_id, pump in all_pumps.items():
-        pump_type = (
-            pump["omni_config"]["Filter-Type"]
-            if pump["metadata"]["omni_type"] == OmniTypes.FILTER
-            else pump["omni_config"]["Type"]
-        )
+        pump_type = pump["omni_config"]["Filter-Type"] if pump["metadata"]["omni_type"] == OmniTypes.FILTER else pump["omni_config"]["Type"]
 
         _LOGGER.debug(
             "Configuring number for pump with ID: %s, Name: %s",
@@ -43,17 +39,9 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
         )
         match pump_type:
             case OmniModels.VARIABLE_SPEED_PUMP:
-                entities.append(
-                    OmniLogicPumpNumberEntity(
-                        coordinator=coordinator, context=system_id
-                    )
-                )
+                entities.append(OmniLogicPumpNumberEntity(coordinator=coordinator, context=system_id))
             case OmniModels.VARIABLE_SPEED_FILTER:
-                entities.append(
-                    OmniLogicFilterNumberEntity(
-                        coordinator=coordinator, context=system_id
-                    )
-                )
+                entities.append(OmniLogicFilterNumberEntity(coordinator=coordinator, context=system_id))
 
     async_add_entities(entities)
 
@@ -83,9 +71,7 @@ class OmniLogicNumberEntity(OmniLogicEntity, NumberEntity):
         )
         self.model = get_omni_model(number_data)
         self.omni_type = number_data["metadata"]["omni_type"]
-        self._attr_native_unit_of_measurement = self.coordinator.msp_config[
-            "MSPConfig"
-        ]["System"].get("Msp-Vsp-Speed-Format")
+        self._attr_native_unit_of_measurement = self.coordinator.msp_config["MSPConfig"]["System"].get("Msp-Vsp-Speed-Format")
 
 
 class OmniLogicPumpNumberEntity(OmniLogicNumberEntity):
@@ -93,9 +79,7 @@ class OmniLogicPumpNumberEntity(OmniLogicNumberEntity):
 
     def __init__(self, coordinator, context) -> None:
         number_data = coordinator.data[context]
-        super().__init__(
-            coordinator, context, name=f'{number_data["metadata"]["name"]} Speed'
-        )
+        super().__init__(coordinator, context, name=f'{number_data["metadata"]["name"]} Speed')
         self.telem_key_speed = "@pumpSpeed"
         self.telem_key_state = "@pumpState"
 
@@ -116,11 +100,7 @@ class OmniLogicPumpNumberEntity(OmniLogicNumberEntity):
         # Even though the omnilogic stores whether you want RPM or Percent, it always returns
         # the filter speed as a percent value.  We convert it here to what your preference is.
         if self._attr_native_unit_of_measurement == "RPM":
-            return floor(
-                self.native_max_value
-                / 100
-                * int(self.get_telemetry(self.system_id)[self.telem_key_speed])
-            )
+            return floor(self.native_max_value / 100 * int(self.get_telemetry(self.system_id)[self.telem_key_speed]))
         return int(self.get_telemetry(self.system_id)[self.telem_key_speed])
 
     @property
@@ -130,11 +110,7 @@ class OmniLogicPumpNumberEntity(OmniLogicNumberEntity):
             "min_rpm": self.get_config(self.system_id)["Min-Pump-RPM"],
             "max_percent": self.get_config(self.system_id)["Max-Pump-Speed"],
             "min_percent": self.get_config(self.system_id)["Min-Pump-RPM"],
-            "current_rpm": floor(
-                self.native_max_value
-                / 100
-                * int(self.get_telemetry(self.system_id)[self.telem_key_speed])
-            ),
+            "current_rpm": floor(self.native_max_value / 100 * int(self.get_telemetry(self.system_id)[self.telem_key_speed])),
             "current_percent": self.get_telemetry(self.system_id)[self.telem_key_speed],
         }
 
@@ -145,9 +121,7 @@ class OmniLogicPumpNumberEntity(OmniLogicNumberEntity):
         else:
             new_speed_pct = int(value)
 
-        await self.coordinator.omni_api.async_set_equipment(
-            self.bow_id, self.system_id, new_speed_pct
-        )
+        await self.coordinator.omni_api.async_set_equipment(self.bow_id, self.system_id, new_speed_pct)
 
         self.set_telemetry(
             {self.telem_key_state: "1", self.telem_key_speed: new_speed_pct},

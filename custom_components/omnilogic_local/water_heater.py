@@ -25,16 +25,8 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
 
     all_heaters = get_entities_of_hass_type(coordinator.data, "water_heater")
 
-    virtual_heater = {
-        system_id: data
-        for system_id, data in all_heaters.items()
-        if data["metadata"]["omni_type"] == "Heater"
-    }
-    heater_equipment_ids = [
-        system_id
-        for system_id, data in all_heaters.items()
-        if data["metadata"]["omni_type"] == "Heater-Equipment"
-    ]
+    virtual_heater = {system_id: data for system_id, data in all_heaters.items() if data["metadata"]["omni_type"] == "Heater"}
+    heater_equipment_ids = [system_id for system_id, data in all_heaters.items() if data["metadata"]["omni_type"] == "Heater-Equipment"]
 
     entities = []
     for system_id, switch in virtual_heater.items():
@@ -65,9 +57,7 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity, WaterHeaterEntity):
 
     """
 
-    def __init__(
-        self, coordinator, context: int, heater_equipment_ids: list[int]
-    ) -> None:
+    def __init__(self, coordinator, context: int, heater_equipment_ids: list[int]) -> None:
         """Pass coordinator to CoordinatorEntity."""
         water_heater_data = coordinator.data[context]
         super().__init__(
@@ -80,17 +70,10 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity, WaterHeaterEntity):
         )
         self.omni_type = water_heater_data["metadata"]["omni_type"]
         self.heater_equipment_ids = heater_equipment_ids
-        self._attr_supported_features = (
-            WaterHeaterEntityFeature.TARGET_TEMPERATURE
-            | WaterHeaterEntityFeature.OPERATION_MODE
-        )
+        self._attr_supported_features = WaterHeaterEntityFeature.TARGET_TEMPERATURE | WaterHeaterEntityFeature.OPERATION_MODE
 
         self._attr_operation_list = [STATE_ON, STATE_OFF]
-        self._attr_current_operation = (
-            STATE_ON
-            if int(water_heater_data["omni_telemetry"]["@enable"]) == 1
-            else STATE_OFF
-        )
+        self._attr_current_operation = STATE_ON if int(water_heater_data["omni_telemetry"]["@enable"]) == 1 else STATE_OFF
 
     @property
     def temperature_unit(self) -> str:
@@ -133,14 +116,10 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity, WaterHeaterEntity):
     async def async_set_operation_mode(self, operation_mode):
         match operation_mode:
             case "on":
-                await self.coordinator.omni_api.async_set_heater_enable(
-                    self.bow_id, self.system_id, True
-                )
+                await self.coordinator.omni_api.async_set_heater_enable(self.bow_id, self.system_id, True)
                 self.set_telemetry({"@enable": "1"})
             case "off":
-                await self.coordinator.omni_api.async_set_heater_enable(
-                    self.bow_id, self.system_id, False
-                )
+                await self.coordinator.omni_api.async_set_heater_enable(self.bow_id, self.system_id, False)
                 self.set_telemetry({"@enable": "0"})
 
     @property
@@ -153,12 +132,8 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity, WaterHeaterEntity):
                 f"{prefix}_enabled": self.get_config(system_id)["Enabled"],
                 f"{prefix}_system_id": system_id,
                 f"{prefix}_bow_id": heater_equipment["metadata"]["bow_id"],
-                f"{prefix}_supports_cooling": self.get_config(system_id).get(
-                    "SupportsCooling", "no"
-                ),
-                f"{prefix}_state": STATE_ON
-                if self.get_telemetry(system_id)["@heaterState"] == "1"
-                else STATE_OFF,
+                f"{prefix}_supports_cooling": self.get_config(system_id).get("SupportsCooling", "no"),
+                f"{prefix}_state": STATE_ON if self.get_telemetry(system_id)["@heaterState"] == "1" else STATE_OFF,
                 f"{prefix}_sensor_temp": self.get_telemetry(system_id)["@temp"],
             }
         return extra_state_attributes

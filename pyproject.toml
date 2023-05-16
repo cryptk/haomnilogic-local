@@ -7,6 +7,9 @@ license = "Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/cryptk/haomnilogic-local"
 
+[tool.black]
+line-length=140
+
 # All of the settings for isort, pylint, ruff, etc were shamelessly borrowed from homeassistant core
 [tool.isort]
 # https://github.com/PyCQA/isort/wiki/isort-Settings
@@ -121,6 +124,8 @@ mixin-class-rgx = ".*[Mm]ix[Ii]n"
 
 [tool.pylint.FORMAT]
 expected-line-ending-format = "LF"
+# Maximum number of characters on a single line.
+max-line-length=140
 
 [tool.pylint.EXCEPTIONS]
 overgeneral-exceptions = [
@@ -143,6 +148,7 @@ max-line-length-suggestions = 72
 
 [tool.ruff]
 target-version = "py310"
+line-length = 140
 
 select = [
     "B007", # Loop control variable {name} not used within loop body

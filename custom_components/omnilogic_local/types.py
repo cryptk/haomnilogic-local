@@ -52,9 +52,7 @@ class OmniLogicEntity(CoordinatorEntity):
     ):
         system_id = system_id if system_id is not None else self.system_id
 
-        _LOGGER.debug(
-            "Updating config for system ID: %s with data: %s", system_id, new_config
-        )
+        _LOGGER.debug("Updating config for system ID: %s with data: %s", system_id, new_config)
         self.coordinator.data[system_id]["omni_config"].update(new_config)
         if coordinator_update:
             self.coordinator.async_set_updated_data(self.coordinator.data)
@@ -83,9 +81,7 @@ class OmniLogicEntity(CoordinatorEntity):
 
     @property
     def available(self) -> bool:
-        return (
-            self.coordinator.data[BACKYARD_SYSTEM_ID]["omni_telemetry"]["@state"] == "1"
-        )
+        return self.coordinator.data[BACKYARD_SYSTEM_ID]["omni_telemetry"]["@state"] == "1"
 
     @property
     def device_info(self) -> DeviceInfo:

@@ -62,9 +62,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
             light["metadata"]["system_id"],
             light["metadata"]["name"],
         )
-        entities.append(
-            OmniLogicLightEntity(coordinator=coordinator, context=system_id)
-        )
+        entities.append(OmniLogicLightEntity(coordinator=coordinator, context=system_id))
 
     async_add_entities(entities)
 
@@ -150,17 +148,11 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
             params = {
                 "show": ColorLogicShow[kwargs.get(ATTR_EFFECT, self.effect)],
                 "speed": ColorLogicSpeed(self.speed),
-                "brightness": ColorLogicBrightness(
-                    to_omni_level(kwargs.get(ATTR_BRIGHTNESS, self.brightness))
-                ),
+                "brightness": ColorLogicBrightness(to_omni_level(kwargs.get(ATTR_BRIGHTNESS, self.brightness))),
             }
-            await self.coordinator.omni_api.async_set_light_show(
-                self.bow_id, self.system_id, **params
-            )
+            await self.coordinator.omni_api.async_set_light_show(self.bow_id, self.system_id, **params)
         else:
-            await self.coordinator.omni_api.async_set_equipment(
-                self.bow_id, self.system_id, True
-            )
+            await self.coordinator.omni_api.async_set_equipment(self.bow_id, self.system_id, True)
 
         # Set a few parameters so that we can assume the upcoming state
         updated_data = {}
@@ -170,9 +162,7 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
             updated_data.update(
                 {
                     "@brightness": params["brightness"].value,
-                    "@currentShow": ColorLogicShow[
-                        kwargs.get(ATTR_EFFECT, self.effect)
-                    ].value,
+                    "@currentShow": ColorLogicShow[kwargs.get(ATTR_EFFECT, self.effect)].value,
                 }
             )
         self.set_telemetry(updated_data)
@@ -185,9 +175,7 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
 
         _LOGGER.debug("turning off light ID: %s", self.system_id)
         was_on = self.is_on is True
-        await self.coordinator.omni_api.async_set_equipment(
-            self.bow_id, self.system_id, False
-        )
+        await self.coordinator.omni_api.async_set_equipment(self.bow_id, self.system_id, False)
 
         if was_on:
             self.set_telemetry({"@lightState": "1"})

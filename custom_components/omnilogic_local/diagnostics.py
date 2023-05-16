@@ -11,17 +11,13 @@ from .const import DOMAIN, KEY_COORDINATOR
 from .coordinator import OmniLogicCoordinator
 
 
-async def async_get_config_entry_diagnostics(
-    hass: HomeAssistant, config_entry: ConfigEntry
-) -> dict[str, Any]:
+async def async_get_config_entry_diagnostics(hass: HomeAssistant, config_entry: ConfigEntry) -> dict[str, Any]:
     """Return diagnostics for a config entry."""
     diag: dict[str, Any] = {}
 
     diag["config"] = config_entry.as_dict()
 
-    coordinator: OmniLogicCoordinator = hass.data[DOMAIN][config_entry.entry_id].get(
-        KEY_COORDINATOR
-    )
+    coordinator: OmniLogicCoordinator = hass.data[DOMAIN][config_entry.entry_id].get(KEY_COORDINATOR)
     if coordinator:
         diag["msp_config"] = coordinator.msp_config
         diag["telemetry"] = coordinator.telemetry

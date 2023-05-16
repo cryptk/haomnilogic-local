@@ -33,11 +33,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
 
     entities = []
     for system_id, pump in all_pumps.items():
-        pump_type = (
-            pump["omni_config"]["Filter-Type"]
-            if pump["metadata"]["omni_type"] == OmniTypes.FILTER
-            else pump["omni_config"]["Type"]
-        )
+        pump_type = pump["omni_config"]["Filter-Type"] if pump["metadata"]["omni_type"] == OmniTypes.FILTER else pump["omni_config"]["Type"]
 
         for speed in OMNI_SPEED_FRIENDLY_NAMES:
             _LOGGER.debug(
@@ -48,17 +44,9 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
             )
             match pump_type:
                 case OmniModels.VARIABLE_SPEED_PUMP:
-                    entities.append(
-                        OmniLogicPumpButtonEntity(
-                            coordinator=coordinator, context=system_id, speed=speed
-                        )
-                    )
+                    entities.append(OmniLogicPumpButtonEntity(coordinator=coordinator, context=system_id, speed=speed))
                 case OmniModels.VARIABLE_SPEED_FILTER:
-                    entities.append(
-                        OmniLogicFilterButtonEntity(
-                            coordinator=coordinator, context=system_id, speed=speed
-                        )
-                    )
+                    entities.append(OmniLogicFilterButtonEntity(coordinator=coordinator, context=system_id, speed=speed))
 
     async_add_entities(entities)
 
@@ -106,9 +94,7 @@ class OmniLogicPumpButtonEntity(OmniLogicButtonEntity):
         self.telem_key_state = "@pumpState"
 
     async def async_press(self):
-        await self.coordinator.omni_api.async_set_equipment(
-            self.bow_id, self.system_id, self.speed
-        )
+        await self.coordinator.omni_api.async_set_equipment(self.bow_id, self.system_id, self.speed)
 
         self.set_telemetry(
             {self.telem_key_speed: self.speed, self.telem_key_state: "1"},

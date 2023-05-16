@@ -45,9 +45,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up OmniLogic Local from a config entry."""
 
     # Create an API instance
-    omni_api = OmniLogicAPI(
-        (entry.data[CONF_IP_ADDRESS], entry.data[CONF_PORT]), entry.data[CONF_TIMEOUT]
-    )
+    omni_api = OmniLogicAPI((entry.data[CONF_IP_ADDRESS], entry.data[CONF_PORT]), entry.data[CONF_TIMEOUT])
 
     # Validate that we can talk to the API endpoint
     try:
@@ -62,9 +60,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     device_registry = dr.async_get(hass)
 
     # Create a device for the Omni Backyard
-    backyard = get_entities_of_omni_types(coordinator.data, [KEY_MSP_BACKYARD])[
-        BACKYARD_SYSTEM_ID
-    ]
+    backyard = get_entities_of_omni_types(coordinator.data, [KEY_MSP_BACKYARD])[BACKYARD_SYSTEM_ID]
     device_registry.async_get_or_create(
         config_entry_id=entry.entry_id,
         identifiers={(KEY_MSP_BACKYARD, BACKYARD_SYSTEM_ID)},
@@ -74,9 +70,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
 
     # Create a device for each Body of Water
-    for system_id, bow in get_entities_of_omni_types(
-        coordinator.data, [KEY_MSP_BOW]
-    ).items():
+    for system_id, bow in get_entities_of_omni_types(coordinator.data, [KEY_MSP_BOW]).items():
         device_registry.async_get_or_create(
             config_entry_id=entry.entry_id,
             identifiers={(KEY_MSP_BOW, system_id)},

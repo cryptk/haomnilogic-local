@@ -48,11 +48,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
                 sensor["metadata"]["system_id"],
                 sensor["metadata"]["name"],
             )
-            entities.append(
-                OmniLogicTemperatureSensorEntity(
-                    coordinator=coordinator, context=system_id
-                )
-            )
+            entities.append(OmniLogicTemperatureSensorEntity(coordinator=coordinator, context=system_id))
 
     async_add_entities(entities)
 
@@ -101,9 +97,7 @@ class OmniLogicTemperatureSensorEntity(OmniLogicSensorEntity):
         sensor_data = coordinator.data[context]
         super().__init__(coordinator, context)
         self.units = self.get_config()["Units"]
-        self.heater_system_id = find_sensor_heater_systemid(
-            coordinator.data, sensor_data["metadata"]["system_id"]
-        )
+        self.heater_system_id = find_sensor_heater_systemid(coordinator.data, sensor_data["metadata"]["system_id"])
         self._attr_device_class = SensorDeviceClass.TEMPERATURE
 
     @property

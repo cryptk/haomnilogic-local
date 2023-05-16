@@ -42,9 +42,7 @@ def get_config_by_systemid(mspconfig: dict[str, str], system_id: int) -> dict[st
     raise UnknownDevice("device config not found")
 
 
-def get_entities_of_hass_type(
-    entities: dict[int, OmniLogicEntity], hass_type: str
-) -> dict[int, OmniLogicEntity]:
+def get_entities_of_hass_type(entities: dict[int, OmniLogicEntity], hass_type: str) -> dict[int, OmniLogicEntity]:
     found = {}
     for system_id, entity in entities.items():
         if entity["metadata"]["hass_type"] == hass_type:
@@ -62,9 +60,7 @@ def get_entities_of_hass_type(
 #     return found
 
 
-def get_entities_of_omni_types(
-    entities: dict[int, OmniLogicEntity], omni_types: list[str]
-) -> dict[int, OmniLogicEntity]:
+def get_entities_of_omni_types(entities: dict[int, OmniLogicEntity], omni_types: list[str]) -> dict[int, OmniLogicEntity]:
     found = {}
     for system_id, entity in entities.items():
         if entity["metadata"]["omni_type"] in omni_types:

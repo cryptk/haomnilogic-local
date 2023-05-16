@@ -19,20 +19,14 @@ def get_power_state(data: dict[str, str]) -> int:
                 case OmniModels.RELAY_VALVE_ACTUATOR:
                     return int(data["omni_telemetry"]["@valveActuatorState"])
                 case _:
-                    state_prefix = (
-                        data["metadata"]["omni_type"][0].lower()
-                        + data["metadata"]["omni_type"][1:]
-                    )
+                    state_prefix = data["metadata"]["omni_type"][0].lower() + data["metadata"]["omni_type"][1:]
                     return int(data["omni_telemetry"]["@" + state_prefix + "State"])
         case _:
             # This pattern works for some "switch" devices I have, it does not work for everything. Notably, "Relays" represent
             # the physical relay within the Omni, but they are represented in the telemetry by what they control (I.E.: ValveActuator)
             # The generic pattern appears to be the omnilogic type, with the first letter lowercase, with "State" appended.
             # The @ is because the XML API is parsed with xmltodict and this was an XML attribute
-            state_prefix = (
-                data["metadata"]["omni_type"][0].lower()
-                + data["metadata"]["omni_type"][1:]
-            )
+            state_prefix = data["metadata"]["omni_type"][0].lower() + data["metadata"]["omni_type"][1:]
             return int(data["omni_telemetry"]["@" + state_prefix + "State"])
 
 
@@ -53,39 +47,23 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
                 )
                 match switch["omni_config"]["Type"]:
                     case OmniModels.RELAY_VALVE_ACTUATOR:
-                        entities.append(
-                            OmniLogicRelayValveActuatorSwitchEntity(
-                                coordinator=coordinator, context=system_id
-                            )
-                        )
+                        entities.append(OmniLogicRelayValveActuatorSwitchEntity(coordinator=coordinator, context=system_id))
                     case OmniModels.RELAY_HIGH_VOLTAGE:
-                        entities.append(
-                            OmniLogicRelayHighVoltageSwitchEntity(
-                                coordinator=coordinator, context=system_id
-                            )
-                        )
+                        entities.append(OmniLogicRelayHighVoltageSwitchEntity(coordinator=coordinator, context=system_id))
             case OmniTypes.FILTER:
                 _LOGGER.debug(
                     "Configuring switch for filter with ID: %s, Name: %s",
                     switch["metadata"]["system_id"],
                     switch["metadata"]["name"],
                 )
-                entities.append(
-                    OmniLogicFilterSwitchEntity(
-                        coordinator=coordinator, context=system_id
-                    )
-                )
+                entities.append(OmniLogicFilterSwitchEntity(coordinator=coordinator, context=system_id))
             case OmniTypes.PUMP:
                 _LOGGER.debug(
                     "Configuring switch for pump with ID: %s, Name: %s",
                     switch["metadata"]["system_id"],
                     switch["metadata"]["name"],
                 )
-                entities.append(
-                    OmniLogicPumpSwitchEntity(
-                        coordinator=coordinator, context=system_id
-                    )
-                )
+                entities.append(OmniLogicPumpSwitchEntity(coordinator=coordinator, context=system_id))
 
     async_add_entities(entities)
 
@@ -119,18 +97,14 @@ class OmniLogicSwitchEntity(OmniLogicEntity, SwitchEntity):
         """Turn the entity on."""
         _LOGGER.debug("turning on switch ID: %s", self.system_id)
         telem_key = kwargs["telem_key"]
-        await self.coordinator.omni_api.async_set_equipment(
-            self.bow_id, self.system_id, True
-        )
+        await self.coordinator.omni_api.async_set_equipment(self.bow_id, self.system_id, True)
         self.set_telemetry({telem_key: "1"})
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
         _LOGGER.debug("turning off switch ID: %s", self.system_id)
         telem_key = kwargs["telem_key"]
-        await self.coordinator.omni_api.async_set_equipment(
-            self.bow_id, self.system_id, False
-        )
+        await self.coordinator.omni_api.async_set_equipment(self.bow_id, self.system_id, False)
         # telem_key might be a list of items to set to 0, or just a single item
         if isinstance(telem_key, list):
             self.set_telemetry({key: "0" for key in telem_key})
@@ -179,11 +153,7 @@ class OmniLogicRelayHighVoltageSwitchEntity(OmniLogicSwitchEntity):
 
     @property
     def icon(self) -> str | None:
-        return (
-            "mdi:toggle-switch-variant"
-            if self.is_on
-            else "mdi:toggle-switch-variant-off"
-        )
+        return "mdi:toggle-switch-variant" if self.is_on else "mdi:toggle-switch-variant-off"
 
     @property
     def is_on(self) -> bool | None:
@@ -228,9 +198,7 @@ class OmniLogicPumpSwitchEntity(OmniLogicSwitchEntity):
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
-        await super().async_turn_off(
-            telem_key=[self.telem_key_state, self.telem_key_speed], **kwargs
-        )
+        await super().async_turn_off(telem_key=[self.telem_key_state, self.telem_key_speed], **kwargs)
 
 
 class OmniLogicFilterSwitchEntity(OmniLogicPumpSwitchEntity):

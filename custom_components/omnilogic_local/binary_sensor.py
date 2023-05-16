@@ -26,16 +26,10 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
 
     # Create a sensor entity indicating if we are in Service Mode
     _LOGGER.debug("Configuring service mode sensor with ID: %s", BACKYARD_SYSTEM_ID)
-    entities.append(
-        OmniLogicServiceModeBinarySensorEntity(
-            coordinator=coordinator, context=BACKYARD_SYSTEM_ID
-        )
-    )
+    entities.append(OmniLogicServiceModeBinarySensorEntity(coordinator=coordinator, context=BACKYARD_SYSTEM_ID))
 
     # Create sensor entities for each piece of Heater-Equipment
-    heater_equipments = get_entities_of_omni_types(
-        coordinator.data, ["Heater-Equipment"]
-    )
+    heater_equipments = get_entities_of_omni_types(coordinator.data, ["Heater-Equipment"])
     for system_id, equipment in heater_equipments.items():
         _LOGGER.debug(
             "Configuring heater equipment sensor with ID: %s, Name: %s",
