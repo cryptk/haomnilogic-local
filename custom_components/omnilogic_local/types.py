@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import BACKYARD_SYSTEM_ID, DOMAIN, MANUFACTURER, UNIQUE_ID, KEY_MSP_BOW, KEY_MSP_BACKYARD
+from .const import BACKYARD_SYSTEM_ID, KEY_MSP_BACKYARD, KEY_MSP_BOW, MANUFACTURER
 
 if TYPE_CHECKING:
     from .coordinator import OmniLogicCoordinator

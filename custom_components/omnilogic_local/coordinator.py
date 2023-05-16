@@ -14,15 +14,15 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from .const import (
     DEFAULT_POLL_INTERVAL,
     KEY_MSP_SYSTEM_ID,
+    OMNI_BOW_TYPES,
     OMNI_DEVICE_TYPES,
     OMNI_TO_HASS_TYPES,
-    OMNI_BOW_TYPES,
 )
 from .utils import get_telemetry_by_systemid, one_or_many
-import json
 
 # Import diagnostic data to reproduce issues
-#from .test_diagnostic_data import TEST_DIAGNOSTIC_DATA
+# import json
+# from .test_diagnostic_data import TEST_DIAGNOSTIC_DATA
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -83,10 +83,11 @@ def build_entity_index(data: dict[str, str]) -> dict[int, dict[str, str]]:
         data["MSPConfig"]["Backyard"],
         data["MSPConfig"]["Backyard"]["Body-of-water"],
     ):
-        
         for item in one_or_many(tier):
             bow_id = (
-                int(item[KEY_MSP_SYSTEM_ID]) if item.get("Type") in OMNI_BOW_TYPES else None
+                int(item[KEY_MSP_SYSTEM_ID])
+                if item.get("Type") in OMNI_BOW_TYPES
+                else None
             )
             for omni_entity_type, entity_data in item.items():
                 if omni_entity_type not in OMNI_DEVICE_TYPES:
@@ -145,8 +146,8 @@ class OmniLogicCoordinator(DataUpdateCoordinator):
 
                 # The below is used if we have a test_diagnostic_data.py populated with a diagnostic data file to reproduce an issue
                 # test_data = json.loads(TEST_DIAGNOSTIC_DATA)
-                # self.msp_config = test_data['data']['msp_config']
-                # self.telemetry = test_data['data']['telemetry']
+                # self.msp_config = test_data["data"]["msp_config"]
+                # self.telemetry = test_data["data"]["telemetry"]
 
                 omnilogic_data = self.msp_config | self.telemetry
 

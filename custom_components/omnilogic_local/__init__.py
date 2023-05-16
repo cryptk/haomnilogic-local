@@ -1,6 +1,8 @@
 """The OmniLogic Local integration."""
 from __future__ import annotations
 
+import logging
+
 from pyomnilogic_local.api import OmniLogicAPI
 
 from homeassistant.config_entries import ConfigEntry
@@ -15,10 +17,16 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
 
-from .const import DOMAIN, KEY_COORDINATOR, UNIQUE_ID, KEY_MSP_BACKYARD, KEY_MSP_BOW, BACKYARD_SYSTEM_ID
+from .const import (
+    BACKYARD_SYSTEM_ID,
+    DOMAIN,
+    KEY_COORDINATOR,
+    KEY_MSP_BACKYARD,
+    KEY_MSP_BOW,
+    UNIQUE_ID,
+)
 from .coordinator import OmniLogicCoordinator
-from .utils import get_entities_of_omni_type
-import logging
+from .utils import get_entities_of_omni_types
 
 PLATFORMS: list[Platform] = [
     Platform.BINARY_SENSOR,
@@ -31,6 +39,7 @@ PLATFORMS: list[Platform] = [
 ]
 
 _LOGGER = logging.getLogger(__name__)
+
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up OmniLogic Local from a config entry."""
@@ -52,8 +61,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     device_registry = dr.async_get(hass)
 
-    #Create a device for the Omni Backyard
-    backyard = get_entities_of_omni_type(coordinator.data, KEY_MSP_BACKYARD)[BACKYARD_SYSTEM_ID]
+    # Create a device for the Omni Backyard
+    backyard = get_entities_of_omni_types(coordinator.data, [KEY_MSP_BACKYARD])[
+        BACKYARD_SYSTEM_ID
+    ]
     device_registry.async_get_or_create(
         config_entry_id=entry.entry_id,
         identifiers={(KEY_MSP_BACKYARD, BACKYARD_SYSTEM_ID)},
@@ -63,13 +74,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
 
     # Create a device for each Body of Water
-    for system_id, bow in get_entities_of_omni_type(coordinator.data, KEY_MSP_BOW).items():
+    for system_id, bow in get_entities_of_omni_types(
+        coordinator.data, [KEY_MSP_BOW]
+    ).items():
         device_registry.async_get_or_create(
             config_entry_id=entry.entry_id,
             identifiers={(KEY_MSP_BOW, system_id)},
             manufacturer="Hayward",
             suggested_area="Back Yard",
-            # TODO: Figure out how to manage device naming, the API does not return a name
             name=f"{entry.data[CONF_NAME]} {bow['metadata']['name']}",
         )
 

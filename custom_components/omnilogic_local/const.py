@@ -21,13 +21,11 @@ KEY_TELEMETRY_SYSTEM_ID = "@systemId"
 
 OMNI_BOW_TYPE_POOL = "BOW_POOL"
 OMNI_BOW_TYPE_SPA = "BOW_SPA"
-OMNI_BOW_TYPES = [
-    OMNI_BOW_TYPE_POOL,
-    OMNI_BOW_TYPE_SPA
-]
+OMNI_BOW_TYPES = [OMNI_BOW_TYPE_POOL, OMNI_BOW_TYPE_SPA]
 
-OMNI_DEVICE_TYPES_FILTER = [
+OMNI_DEVICE_TYPES_PUMP = [
     "Filter",
+    "Pump",
 ]
 
 OMNI_DEVICE_TYPES_LIGHT = [
@@ -48,7 +46,7 @@ OMNI_DEVICE_TYPES = [
     KEY_MSP_BACKYARD,
     KEY_MSP_BOW,
     KEY_TELEMETRY_BOW,
-    *OMNI_DEVICE_TYPES_FILTER,
+    *OMNI_DEVICE_TYPES_PUMP,
     *OMNI_DEVICE_TYPES_LIGHT,
     *OMNI_DEVICE_TYPES_SWITCH,
     *OMNI_DEVICE_TYPES_SENSOR,
@@ -58,22 +56,26 @@ OMNI_DEVICE_TYPES = [
 OMNI_TO_HASS_TYPES = {
     "Backyard": "device",
     "Body-of-water": "device",
-    "Filter": "switch",
     "ColorLogic-Light": "light",
-    "ValveActuator": "switch",
-    "Relay": "switch",
-    "Sensor": "sensor",
+    "Filter": "switch",
     "Heater": "water_heater",
     "Heater-Equipment": "water_heater",
+    "Pump": "switch",
+    "Relay": "switch",
+    "Sensor": "sensor",
+    "ValveActuator": "switch",
     "VirtualHeater": "water_heater",
 }
 
 
 class OmniModels:
+    RELAY_HIGH_VOLTAGE = "RLY_HIGH_VOLTAGE_RELAY"
     RELAY_VALVE_ACTUATOR = "RLY_VALVE_ACTUATOR"
-    VARIABLE_SPEED_PUMP = "FMT_VARIABLE_SPEED_PUMP"
+    VARIABLE_SPEED_FILTER = "FMT_VARIABLE_SPEED_PUMP"
+    VARIABLE_SPEED_PUMP = "PMP_VARIABLE_SPEED_PUMP"
 
 
 class OmniTypes:
     FILTER = "Filter"
+    PUMP = "Pump"
     RELAY = "Relay"

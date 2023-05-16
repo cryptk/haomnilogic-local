@@ -52,12 +52,22 @@ def get_entities_of_hass_type(
     return found
 
 
-def get_entities_of_omni_type(
-    entities: dict[int, OmniLogicEntity], omni_type: str
+# def get_entities_of_omni_type(
+#     entities: dict[int, OmniLogicEntity], omni_type: str
+# ) -> dict[int, OmniLogicEntity]:
+#     found = {}
+#     for system_id, entity in entities.items():
+#         if entity["metadata"]["omni_type"] == omni_type:
+#             found[int(system_id)] = entity
+#     return found
+
+
+def get_entities_of_omni_types(
+    entities: dict[int, OmniLogicEntity], omni_types: list[str]
 ) -> dict[int, OmniLogicEntity]:
     found = {}
     for system_id, entity in entities.items():
-        if entity["metadata"]["omni_type"] == omni_type:
+        if entity["metadata"]["omni_type"] in omni_types:
             found[int(system_id)] = entity
     return found
 
