@@ -35,7 +35,7 @@ This addon is not complete, initially I am implementing all functionality for th
 ## Known Limitations
 Aside from not yet supporting all hardware that exists within the OmniLogic, there is currently a limitation of one installation of the integration.  This means one omnilogic per Home Assistant install.  I may be able to lift this limitation later, but it's low on the priority list.
 
-While I will eventually support turning schedules on/off and triggering themes, I have no current plans to add support for creating/deleting schedules/themes within the integration. If this functionality was added, it would need a custom service to do so, and I don't think the use case is there.  If you would like to see this functionality, plase [open an issue](https://github.com/cryptk/haomnilogic-local/issues)
+While I will eventually support turning schedules on/off and triggering themes, I have no current plans to add support for creating/deleting schedules/themes within the integration. If this functionality was added, it would need a custom service to do so, and I don't think the use case is there.  If you would like to see this functionality, please [open an issue](https://github.com/cryptk/haomnilogic-local/issues)
 
 ## Credits
 

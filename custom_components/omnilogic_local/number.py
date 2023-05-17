@@ -75,7 +75,7 @@ class OmniLogicNumberEntity(OmniLogicEntity, NumberEntity):
 
 
 class OmniLogicPumpNumberEntity(OmniLogicNumberEntity):
-    """An entity representing a number platform for an OmniLogic Pump"""
+    """An entity representing a number platform for an OmniLogic Pump."""
 
     def __init__(self, coordinator, context) -> None:
         number_data = coordinator.data[context]
@@ -130,7 +130,7 @@ class OmniLogicPumpNumberEntity(OmniLogicNumberEntity):
 
 
 class OmniLogicFilterNumberEntity(OmniLogicPumpNumberEntity):
-    """An OmniLogicFilterNumberEntity is a special case of an OmniLogicPumpNumberEntity"""
+    """An OmniLogicFilterNumberEntity is a special case of an OmniLogicPumpNumberEntity."""
 
     def __init__(self, coordinator, context) -> None:
         super().__init__(coordinator, context)

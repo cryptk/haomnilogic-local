@@ -1,4 +1,4 @@
-[project]
+[tool.poetry]
 name = "haomnilogic-local"
 version = "0.0.3"
 description = "A Home Assistant integration for Hayward OmniLogic/OmniHub pool controllers using the local UDP api"
@@ -7,8 +7,18 @@ license = "Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/cryptk/haomnilogic-local"
 
+[tool.poetry.dependencies]
+python = "^3.9"
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.0.0"
+mypy = "^1.2.0"
+
 [tool.black]
 line-length=140
+
+[tool.codespell]
+ignore-words-list="hass"
 
 # All of the settings for isort, pylint, ruff, etc were shamelessly borrowed from homeassistant core
 [tool.isort]
@@ -107,6 +117,11 @@ disable = [
     "consider-using-f-string",
     "consider-using-namedtuple-or-dataclass",
     "consider-using-assignment-expr",
+    # The below are only here for now, we should fully document once the codebase stops fluctuating so much
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "missing-module-docstring",
+
 ]
 enable = [
     "useless-suppression",  # temporarily every now and then to clean them up
@@ -184,6 +199,12 @@ ignore = [
     "E731",  # do not assign a lambda expression, use a def
     # Ignored due to performance: https://github.com/charliermarsh/ruff/issues/2923
     "UP038", # Use `X | Y` in `isinstance` call instead of `(X, Y)`
+    # The below should be removed once we have docstrings for everything
+    "D100",
+    "D101",
+    "D102",
+    "D103",
+    "D107"
 ]
 
 [tool.ruff.flake8-import-conventions.extend-aliases]

@@ -91,7 +91,7 @@ class OmniLogicServiceModeBinarySensorEntity(OmniLogicBinarySensorEntity):
 
 
 class OmniLogicTelemetryBinarySensorEntity(OmniLogicBinarySensorEntity):
-    """Expose a binary state via a sensor based on telemetry data"""
+    """Expose a binary state via a sensor based on telemetry data."""
 
     def __init__(
         self,

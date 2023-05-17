@@ -23,7 +23,6 @@ from .const import (
     KEY_COORDINATOR,
     KEY_MSP_BACKYARD,
     KEY_MSP_BOW,
-    UNIQUE_ID,
 )
 from .coordinator import OmniLogicCoordinator
 from .utils import get_entities_of_omni_types

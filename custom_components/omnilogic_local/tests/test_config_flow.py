@@ -17,9 +17,7 @@ pytestmark = pytest.mark.usefixtures("mock_setup_entry")
 
 async def test_form(hass: HomeAssistant, mock_setup_entry: AsyncMock) -> None:
     """Test we get the form."""
-    result = await hass.config_entries.flow.async_init(
-        DOMAIN, context={"source": config_entries.SOURCE_USER}
-    )
+    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": config_entries.SOURCE_USER})
     assert result["type"] == FlowResultType.FORM
     assert result["errors"] is None
 
@@ -49,9 +47,7 @@ async def test_form(hass: HomeAssistant, mock_setup_entry: AsyncMock) -> None:
 
 async def test_form_invalid_auth(hass: HomeAssistant) -> None:
     """Test we handle invalid auth."""
-    result = await hass.config_entries.flow.async_init(
-        DOMAIN, context={"source": config_entries.SOURCE_USER}
-    )
+    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": config_entries.SOURCE_USER})
 
     with patch(
         "homeassistant.components.omnilogic_local.config_flow.PlaceholderHub.authenticate",
@@ -72,9 +68,7 @@ async def test_form_invalid_auth(hass: HomeAssistant) -> None:
 
 async def test_form_cannot_connect(hass: HomeAssistant) -> None:
     """Test we handle cannot connect error."""
-    result = await hass.config_entries.flow.async_init(
-        DOMAIN, context={"source": config_entries.SOURCE_USER}
-    )
+    result = await hass.config_entries.flow.async_init(DOMAIN, context={"source": config_entries.SOURCE_USER})
 
     with patch(
         "homeassistant.components.omnilogic_local.config_flow.PlaceholderHub.authenticate",

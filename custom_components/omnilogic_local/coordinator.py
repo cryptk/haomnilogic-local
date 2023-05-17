@@ -29,7 +29,7 @@ _LOGGER = logging.getLogger(__name__)
 
 # This function filters out any entities that may be nested under the passes in entity
 def get_single_entity_config(raw_data: dict) -> dict:
-    return {key: value for key, value in raw_data.items() if not key in OMNI_DEVICE_TYPES}
+    return {key: value for key, value in raw_data.items() if key not in OMNI_DEVICE_TYPES}
 
 
 def build_entity_item(omni_entity_type: str, entity_config: dict, bow_id: int | None = None):

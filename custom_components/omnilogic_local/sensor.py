@@ -26,7 +26,7 @@ SENSOR_TYPES_TEMPERATURE = ["SENSOR_AIR_TEMP", "SENSOR_WATER_TEMP", "SENSOR_SOLA
 def find_sensor_heater_systemid(data: dict, sensor_system_id: int) -> int:
     heaters = get_entities_of_hass_type(data, "water_heater")
     for system_id, heater in heaters.items():
-        if not "Sensor-System-Id" in heater["omni_config"]:
+        if "Sensor-System-Id" not in heater["omni_config"]:
             continue
         if int(heater["omni_config"].get("Sensor-System-Id")) != sensor_system_id:
             continue
