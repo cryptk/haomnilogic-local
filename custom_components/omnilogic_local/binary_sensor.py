@@ -9,7 +9,7 @@ from homeassistant.components.binary_sensor import (
 from homeassistant.core import HomeAssistant
 
 from .const import BACKYARD_SYSTEM_ID, DOMAIN, KEY_COORDINATOR
-from .types import OmniLogicEntity
+from .types import OmniLogicEntity, OmniTypes
 from .utils import get_entities_of_omni_types
 
 _LOGGER = logging.getLogger(__name__)
@@ -29,7 +29,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     entities.append(OmniLogicServiceModeBinarySensorEntity(coordinator=coordinator, context=BACKYARD_SYSTEM_ID))
 
     # Create sensor entities for each piece of Heater-Equipment
-    heater_equipments = get_entities_of_omni_types(coordinator.data, ["Heater-Equipment"])
+    heater_equipments = get_entities_of_omni_types(coordinator.data, [OmniTypes.HEATER_EQUIP])
     for system_id, equipment in heater_equipments.items():
         _LOGGER.debug(
             "Configuring heater equipment sensor with ID: %s, Name: %s",
