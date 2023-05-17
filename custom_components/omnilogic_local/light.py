@@ -18,6 +18,7 @@ from homeassistant.components.light import (
     LightEntityFeature,
 )
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import HomeAssistantError
 
 from .const import DOMAIN, KEY_COORDINATOR
 from .types import OmniLogicEntity
@@ -40,12 +41,12 @@ COLOR_LOGIC_POWER_STATES = {
 # These were shamelessly borrowed from the lutron_caseta integration
 def to_omni_level(level):
     """Convert the given Home Assistant light level (0-255) to OmniLogic (0-4)."""
-    return int(round((int(level) * 4) / 255))
+    return int(round((level * 4) / 255))
 
 
 def to_hass_level(level):
     """Convert the given OmniLogic (0-4) light level to Home Assistant (0-255)."""
-    return int((int(level) * 255) // 4)
+    return int((level * 255) // 4)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
@@ -99,11 +100,11 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
 
     @property
     def omni_light_state(self):
-        return COLOR_LOGIC_POWER_STATES[int(self.get_telemetry()["@lightState"])]
+        return COLOR_LOGIC_POWER_STATES[self.get_telemetry()["@lightState"]]
 
     @property
     def speed(self):
-        return int(self.get_telemetry()["@speed"])
+        return self.get_telemetry()["@speed"]
 
     @property
     def is_on(self) -> bool | None:
@@ -119,7 +120,7 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
 
     @property
     def effect(self) -> str | None:
-        return ColorLogicShow(int(self.get_telemetry()["@currentShow"])).name
+        return ColorLogicShow(self.get_telemetry()["@currentShow"]).name
 
     @property
     def extra_state_attributes(self) -> Mapping[str, Any] | None:
@@ -135,7 +136,9 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
         Example method how to request data updates.
         """
 
-        # TODO: We should ensure the light is not in "powering_off" or "cooldown" before turning it on
+        # If the light is in either of these states, it will refuse to turn on, so we raise an error to the UI to let the user know
+        if self.omni_light_state in ["powering_off", "cooldown"]:
+            raise HomeAssistantError("Light must finish powering off before it can power back on.")
         _LOGGER.debug("turning on light ID: %s", self.system_id)
         was_off = self.is_on is False
 
@@ -157,7 +160,7 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
         # Set a few parameters so that we can assume the upcoming state
         updated_data = {}
         if was_off:
-            updated_data.update({"@lightState": "4"})
+            updated_data.update({"@lightState": 4})
         if kwargs:
             updated_data.update(
                 {
@@ -178,4 +181,4 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
         await self.coordinator.omni_api.async_set_equipment(self.bow_id, self.system_id, False)
 
         if was_on:
-            self.set_telemetry({"@lightState": "1"})
+            self.set_telemetry({"@lightState": 1})

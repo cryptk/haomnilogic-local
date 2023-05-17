@@ -97,6 +97,7 @@ class OmnilogicConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 _LOGGER.exception("Unexpected exception")
                 errors["base"] = "unknown"
             else:
+                # pylint: disable=fixme
                 # TODO: https://developers.home-assistant.io/docs/config_entries_config_flow_handler#unique-ids
                 # It would be nice to support unique IDs to prevent the same device being set up twice,
                 # but so far we don't have anything good that we can use for a unique ID. We could possibly leverage

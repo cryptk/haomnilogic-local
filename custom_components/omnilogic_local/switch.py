@@ -17,17 +17,17 @@ def get_power_state(data: dict[str, str]) -> int:
         case OmniTypes.RELAY:
             match data["omni_config"]["Type"]:
                 case OmniModels.RELAY_VALVE_ACTUATOR:
-                    return int(data["omni_telemetry"]["@valveActuatorState"])
+                    return data["omni_telemetry"]["@valveActuatorState"]
                 case _:
                     state_prefix = data["metadata"]["omni_type"][0].lower() + data["metadata"]["omni_type"][1:]
-                    return int(data["omni_telemetry"]["@" + state_prefix + "State"])
+                    return data["omni_telemetry"]["@" + state_prefix + "State"]
         case _:
             # This pattern works for some "switch" devices I have, it does not work for everything. Notably, "Relays" represent
             # the physical relay within the Omni, but they are represented in the telemetry by what they control (I.E.: ValveActuator)
             # The generic pattern appears to be the omnilogic type, with the first letter lowercase, with "State" appended.
             # The @ is because the XML API is parsed with xmltodict and this was an XML attribute
             state_prefix = data["metadata"]["omni_type"][0].lower() + data["metadata"]["omni_type"][1:]
-            return int(data["omni_telemetry"]["@" + state_prefix + "State"])
+            return data["omni_telemetry"]["@" + state_prefix + "State"]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
@@ -98,7 +98,7 @@ class OmniLogicSwitchEntity(OmniLogicEntity, SwitchEntity):
         _LOGGER.debug("turning on switch ID: %s", self.system_id)
         telem_key = kwargs["telem_key"]
         await self.coordinator.omni_api.async_set_equipment(self.bow_id, self.system_id, True)
-        self.set_telemetry({telem_key: "1"})
+        self.set_telemetry({telem_key: 1})
 
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
@@ -107,9 +107,9 @@ class OmniLogicSwitchEntity(OmniLogicEntity, SwitchEntity):
         await self.coordinator.omni_api.async_set_equipment(self.bow_id, self.system_id, False)
         # telem_key might be a list of items to set to 0, or just a single item
         if isinstance(telem_key, list):
-            self.set_telemetry({key: "0" for key in telem_key})
+            self.set_telemetry({key: 0 for key in telem_key})
         else:
-            self.set_telemetry({telem_key: "0"})
+            self.set_telemetry({telem_key: 0})
 
 
 class OmniLogicRelayValveActuatorSwitchEntity(OmniLogicSwitchEntity):
@@ -129,7 +129,7 @@ class OmniLogicRelayValveActuatorSwitchEntity(OmniLogicSwitchEntity):
 
     @property
     def is_on(self) -> bool | None:
-        return int(self.get_telemetry()["@valveActuatorState"])
+        return self.get_telemetry()["@valveActuatorState"]
 
     async def async_turn_on(self, **kwargs):
         """Turn the entity on."""
@@ -157,7 +157,7 @@ class OmniLogicRelayHighVoltageSwitchEntity(OmniLogicSwitchEntity):
 
     @property
     def is_on(self) -> bool | None:
-        return int(self.get_telemetry()["@relayState"])
+        return self.get_telemetry()["@relayState"]
 
     async def async_turn_on(self, **kwargs):
         """Turn the entity on."""
@@ -186,7 +186,7 @@ class OmniLogicPumpSwitchEntity(OmniLogicSwitchEntity):
 
     @property
     def is_on(self) -> bool | None:
-        return int(self.get_telemetry()[self.telem_key_state])
+        return self.get_telemetry()[self.telem_key_state]
 
     @property
     def icon(self) -> str | None:

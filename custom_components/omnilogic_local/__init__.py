@@ -17,13 +17,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
 
-from .const import (
-    BACKYARD_SYSTEM_ID,
-    DOMAIN,
-    KEY_COORDINATOR,
-    KEY_MSP_BACKYARD,
-    KEY_MSP_BOW,
-)
+from .const import BACKYARD_SYSTEM_ID, DOMAIN, KEY_COORDINATOR, OmniTypes
 from .coordinator import OmniLogicCoordinator
 from .utils import get_entities_of_omni_types
 
@@ -59,20 +53,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     device_registry = dr.async_get(hass)
 
     # Create a device for the Omni Backyard
-    backyard = get_entities_of_omni_types(coordinator.data, [KEY_MSP_BACKYARD])[BACKYARD_SYSTEM_ID]
+    backyard = get_entities_of_omni_types(coordinator.data, [OmniTypes.BACKYARD])[BACKYARD_SYSTEM_ID]
     device_registry.async_get_or_create(
         config_entry_id=entry.entry_id,
-        identifiers={(KEY_MSP_BACKYARD, BACKYARD_SYSTEM_ID)},
+        identifiers={(OmniTypes.BACKYARD, BACKYARD_SYSTEM_ID)},
         manufacturer="Hayward",
         suggested_area="Back Yard",
         name=f"{entry.data[CONF_NAME]} {backyard['metadata']['name']}",
     )
 
     # Create a device for each Body of Water
-    for system_id, bow in get_entities_of_omni_types(coordinator.data, [KEY_MSP_BOW]).items():
+    for system_id, bow in get_entities_of_omni_types(coordinator.data, [OmniTypes.BOW_MSP]).items():
         device_registry.async_get_or_create(
             config_entry_id=entry.entry_id,
-            identifiers={(KEY_MSP_BOW, system_id)},
+            identifiers={(OmniTypes.BOW_MSP, system_id)},
             manufacturer="Hayward",
             suggested_area="Back Yard",
             name=f"{entry.data[CONF_NAME]} {bow['metadata']['name']}",

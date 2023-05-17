@@ -8,13 +8,7 @@ from typing import Any
 from homeassistant.components.number import NumberEntity
 from homeassistant.core import HomeAssistant
 
-from .const import (
-    DOMAIN,
-    KEY_COORDINATOR,
-    OMNI_DEVICE_TYPES_PUMP,
-    OmniModels,
-    OmniTypes,
-)
+from .const import DOMAIN, KEY_COORDINATOR, OMNI_TYPES_PUMP, OmniModels
 from .types import OmniLogicEntity
 from .utils import get_entities_of_omni_types, get_omni_model
 
@@ -26,11 +20,12 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
 
     coordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
 
-    all_pumps = get_entities_of_omni_types(coordinator.data, OMNI_DEVICE_TYPES_PUMP)
+    all_pumps = get_entities_of_omni_types(coordinator.data, OMNI_TYPES_PUMP)
 
     entities = []
     for system_id, pump in all_pumps.items():
-        pump_type = pump["omni_config"]["Filter-Type"] if pump["metadata"]["omni_type"] == OmniTypes.FILTER else pump["omni_config"]["Type"]
+        pump_type = get_omni_model(pump)
+        # pump_type = pump["omni_config"]["Filter_Type"] if pump["metadata"]["omni_type"] == OmniTypes.FILTER else pump["omni_config"]["Type"]
 
         _LOGGER.debug(
             "Configuring number for pump with ID: %s, Name: %s",
@@ -71,7 +66,7 @@ class OmniLogicNumberEntity(OmniLogicEntity, NumberEntity):
         )
         self.model = get_omni_model(number_data)
         self.omni_type = number_data["metadata"]["omni_type"]
-        self._attr_native_unit_of_measurement = self.coordinator.msp_config["MSPConfig"]["System"].get("Msp-Vsp-Speed-Format")
+        self._attr_native_unit_of_measurement = self.coordinator.msp_config["MSPConfig"]["System"].get("Msp_Vsp_Speed_Format")
 
 
 class OmniLogicPumpNumberEntity(OmniLogicNumberEntity):
@@ -86,32 +81,32 @@ class OmniLogicPumpNumberEntity(OmniLogicNumberEntity):
     @property
     def native_max_value(self) -> float:
         if self._attr_native_unit_of_measurement == "RPM":
-            return int(self.get_config(self.system_id)["Max-Pump-RPM"])
-        return int(self.get_config(self.system_id)["Max-Pump-Speed"])
+            return self.get_config()["Max_Pump_RPM"]
+        return self.get_config()["Max_Pump_Speed"]
 
     @property
     def native_min_value(self) -> float:
         if self._attr_native_unit_of_measurement == "RPM":
-            return int(self.get_config(self.system_id)["Min-Pump-RPM"])
-        return int(self.get_config(self.system_id)["Min-Pump-Speed"])
+            return self.get_config()["Min_Pump_RPM"]
+        return self.get_config()["Min_Pump_Speed"]
 
     @property
     def native_value(self) -> float:
         # Even though the omnilogic stores whether you want RPM or Percent, it always returns
         # the filter speed as a percent value.  We convert it here to what your preference is.
         if self._attr_native_unit_of_measurement == "RPM":
-            return floor(self.native_max_value / 100 * int(self.get_telemetry(self.system_id)[self.telem_key_speed]))
-        return int(self.get_telemetry(self.system_id)[self.telem_key_speed])
+            return floor(self.native_max_value / 100 * self.get_telemetry()[self.telem_key_speed])
+        return self.get_telemetry()[self.telem_key_speed]
 
     @property
     def extra_state_attributes(self) -> Mapping[str, Any] | None:
         return super().extra_state_attributes | {
-            "max_rpm": self.get_config(self.system_id)["Max-Pump-RPM"],
-            "min_rpm": self.get_config(self.system_id)["Min-Pump-RPM"],
-            "max_percent": self.get_config(self.system_id)["Max-Pump-Speed"],
-            "min_percent": self.get_config(self.system_id)["Min-Pump-RPM"],
-            "current_rpm": floor(self.native_max_value / 100 * int(self.get_telemetry(self.system_id)[self.telem_key_speed])),
-            "current_percent": self.get_telemetry(self.system_id)[self.telem_key_speed],
+            "max_rpm": self.get_config()["Max_Pump_RPM"],
+            "min_rpm": self.get_config()["Min_Pump_RPM"],
+            "max_percent": self.get_config()["Max_Pump_Speed"],
+            "min_percent": self.get_config()["Min_Pump_RPM"],
+            "current_rpm": floor(self.native_max_value / 100 * self.get_telemetry()[self.telem_key_speed]),
+            "current_percent": self.get_telemetry()[self.telem_key_speed],
         }
 
     async def async_set_native_value(self, value: float) -> None:
@@ -123,10 +118,7 @@ class OmniLogicPumpNumberEntity(OmniLogicNumberEntity):
 
         await self.coordinator.omni_api.async_set_equipment(self.bow_id, self.system_id, new_speed_pct)
 
-        self.set_telemetry(
-            {self.telem_key_state: "1", self.telem_key_speed: new_speed_pct},
-            system_id=self.system_id,
-        )
+        self.set_telemetry({self.telem_key_state: 1, self.telem_key_speed: new_speed_pct})
 
 
 class OmniLogicFilterNumberEntity(OmniLogicPumpNumberEntity):

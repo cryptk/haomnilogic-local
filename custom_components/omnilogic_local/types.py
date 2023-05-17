@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import BACKYARD_SYSTEM_ID, KEY_MSP_BACKYARD, KEY_MSP_BOW, MANUFACTURER
+from .const import BACKYARD_SYSTEM_ID, MANUFACTURER, OmniTypes
 
 if TYPE_CHECKING:
     from .coordinator import OmniLogicCoordinator
@@ -32,8 +32,8 @@ class OmniLogicEntity(CoordinatorEntity):
         extra_attributes: dict[str, str],  # Extra attributes dictionary
     ) -> None:
         super().__init__(coordinator=coordinator, context=context)
-        self.coordinator = coordinator
-        self.context = context
+        # self.coordinator = coordinator
+        # self.context = context
         self.bow_id = bow_id
         self.system_id = system_id
         self._attr_name = name
@@ -57,14 +57,14 @@ class OmniLogicEntity(CoordinatorEntity):
         if coordinator_update:
             self.coordinator.async_set_updated_data(self.coordinator.data)
 
-    def get_telemetry(self, system_id=None):
+    def get_telemetry(self, system_id: int | None = None):
         system_id = system_id if system_id is not None else self.system_id
         if self.available:
             return self.coordinator.data[system_id]["omni_telemetry"]
 
     def set_telemetry(
         self,
-        new_telemetry: dict[str, str],
+        new_telemetry: dict[str, Any],
         system_id: int | None = None,
         coordinator_update: bool = True,
     ):
@@ -81,16 +81,16 @@ class OmniLogicEntity(CoordinatorEntity):
 
     @property
     def available(self) -> bool:
-        return self.coordinator.data[BACKYARD_SYSTEM_ID]["omni_telemetry"]["@state"] == "1"
+        return self.coordinator.data[BACKYARD_SYSTEM_ID]["omni_telemetry"]["@state"] == 1
 
     @property
     def device_info(self) -> DeviceInfo:
         """Return the device info."""
         # If we have a BOW ID, then we associate with that BOWs device, if not, we associate with the Backyard
         if self.bow_id is not None:
-            identifiers = {(KEY_MSP_BOW, self.bow_id)}
+            identifiers = {(OmniTypes.BOW_MSP, self.bow_id)}
         else:
-            identifiers = {(KEY_MSP_BACKYARD, BACKYARD_SYSTEM_ID)}
+            identifiers = {(OmniTypes.BACKYARD, BACKYARD_SYSTEM_ID)}
         return DeviceInfo(
             identifiers=identifiers,
             manufacturer=MANUFACTURER,

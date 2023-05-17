@@ -60,7 +60,7 @@ class OmniLogicBinarySensorEntity(OmniLogicEntity, BinarySensorEntity):
 
     """
 
-    def __init__(self, coordinator, context, name: str = None) -> None:
+    def __init__(self, coordinator, context, name: str | None = None) -> None:
         """Pass coordinator to CoordinatorEntity."""
         sensor_data = coordinator.data[context]
         super().__init__(
@@ -87,7 +87,7 @@ class OmniLogicServiceModeBinarySensorEntity(OmniLogicBinarySensorEntity):
 
     @property
     def is_on(self) -> bool | None:
-        return self.get_telemetry()["@state"] == "2"
+        return self.get_telemetry()["@state"] == 2
 
 
 class OmniLogicTelemetryBinarySensorEntity(OmniLogicBinarySensorEntity):
@@ -99,7 +99,7 @@ class OmniLogicTelemetryBinarySensorEntity(OmniLogicBinarySensorEntity):
         context,
         name: str,
         telem_key: str,
-        true_value="1",
+        true_value=1,
         device_class: BinarySensorDeviceClass = None,
     ) -> None:
         super().__init__(

@@ -26,9 +26,9 @@ SENSOR_TYPES_TEMPERATURE = ["SENSOR_AIR_TEMP", "SENSOR_WATER_TEMP", "SENSOR_SOLA
 def find_sensor_heater_systemid(data: dict, sensor_system_id: int) -> int:
     heaters = get_entities_of_hass_type(data, "water_heater")
     for system_id, heater in heaters.items():
-        if "Sensor-System-Id" not in heater["omni_config"]:
+        if "Sensor_System_Id" not in heater["omni_config"]:
             continue
-        if int(heater["omni_config"].get("Sensor-System-Id")) != sensor_system_id:
+        if heater["omni_config"].get("Sensor_System_Id") != sensor_system_id:
             continue
         return system_id
 
@@ -119,4 +119,4 @@ class OmniLogicTemperatureSensorEntity(OmniLogicSensorEntity):
             case "SENSOR_SOLAR_TEMP":
                 telem_temp = self.get_telemetry(self.heater_system_id)["@temp"]
         # Sometimes the Omni returns junk values for the temperatures, for example, when it first comes out of service mode
-        return telem_temp if int(telem_temp) not in [-1, 255, 65535] else None
+        return telem_temp if telem_temp not in [-1, 255, 65535] else None

@@ -11,12 +11,13 @@ import xmltodict
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import (
+from .const import (  # KEY_MSP_BACKYARD,; KEY_MSP_BOW,
     DEFAULT_POLL_INTERVAL,
     KEY_MSP_SYSTEM_ID,
-    OMNI_BOW_TYPES,
-    OMNI_DEVICE_TYPES,
     OMNI_TO_HASS_TYPES,
+    OMNI_TYPES,
+    OMNI_TYPES_BOW,
+    OmniTypes,
 )
 from .utils import get_telemetry_by_systemid, one_or_many
 
@@ -29,7 +30,7 @@ _LOGGER = logging.getLogger(__name__)
 
 # This function filters out any entities that may be nested under the passes in entity
 def get_single_entity_config(raw_data: dict) -> dict:
-    return {key: value for key, value in raw_data.items() if key not in OMNI_DEVICE_TYPES}
+    return {key: value for key, value in raw_data.items() if key not in OMNI_TYPES}
 
 
 def build_entity_item(omni_entity_type: str, entity_config: dict, bow_id: int | None = None):
@@ -44,15 +45,15 @@ def build_entity_item(omni_entity_type: str, entity_config: dict, bow_id: int | 
         # Heaters support "virtual devices" where multiple heaters work in coordination and are controlled
         # by the single "virtual heater" for temperature set points
         if omni_entity_type == "Heater":
-            heater_equipment = [entry for entry in entity["Operation"] if "Heater-Equipment" in entry][0]
-            for heater in one_or_many(heater_equipment["Heater-Equipment"]):
+            heater_equipment = [entry for entry in entity["Operation"] if OmniTypes.HEATER_EQUIP in entry][0]
+            for heater in one_or_many(heater_equipment[OmniTypes.HEATER_EQUIP]):
                 yield {
                     "metadata": {
                         "name": heater.get("Name", omni_entity_type),
-                        "hass_type": OMNI_TO_HASS_TYPES["Heater-Equipment"],
-                        "omni_type": "Heater-Equipment",
+                        "hass_type": OMNI_TO_HASS_TYPES[OmniTypes.HEATER_EQUIP],
+                        "omni_type": OmniTypes.HEATER_EQUIP.value,
                         "bow_id": bow_id,
-                        "system_id": int(heater[KEY_MSP_SYSTEM_ID]),
+                        "system_id": heater[KEY_MSP_SYSTEM_ID],
                     },
                     "omni_config": heater,
                 }
@@ -63,7 +64,7 @@ def build_entity_item(omni_entity_type: str, entity_config: dict, bow_id: int | 
                 "hass_type": OMNI_TO_HASS_TYPES[omni_entity_type],
                 "omni_type": omni_entity_type,
                 "bow_id": bow_id,
-                "system_id": int(config[KEY_MSP_SYSTEM_ID]),
+                "system_id": config[KEY_MSP_SYSTEM_ID],
             },
             "omni_config": config,
         }
@@ -74,20 +75,35 @@ def build_entity_index(data: dict[str, str]) -> dict[int, dict[str, str]]:
 
     for tier in (
         data["MSPConfig"],
-        data["MSPConfig"]["Backyard"],
-        data["MSPConfig"]["Backyard"]["Body-of-water"],
+        data["MSPConfig"][OmniTypes.BACKYARD],
+        data["MSPConfig"][OmniTypes.BACKYARD][OmniTypes.BOW_MSP],
     ):
         for item in one_or_many(tier):
-            bow_id = int(item[KEY_MSP_SYSTEM_ID]) if item.get("Type") in OMNI_BOW_TYPES else None
+            bow_id = item[KEY_MSP_SYSTEM_ID] if item.get("Type") in OMNI_TYPES_BOW else None
             for omni_entity_type, entity_data in item.items():
-                if omni_entity_type not in OMNI_DEVICE_TYPES:
+                if omni_entity_type not in OMNI_TYPES:
                     continue
                 for entity in build_entity_item(omni_entity_type, entity_data, bow_id):
                     entity["metadata"]["bow_id"] = bow_id
                     entity["omni_telemetry"] = get_telemetry_by_systemid(data["STATUS"], entity["metadata"]["system_id"])
-                    entity_index[int(entity["metadata"]["system_id"])] = entity
+                    entity_index[entity["metadata"]["system_id"]] = entity
 
     return entity_index
+
+
+def xml_postprocessor(_, key, value):
+    """Post process XML to convert hyphens to underscore and attempt to convert values to int."""
+    try:
+        newkey = key.replace("-", "_")
+    except (ValueError, TypeError):
+        newkey = key
+
+    try:
+        newvalue = int(value)
+    except (ValueError, TypeError):
+        newvalue = value
+
+    return newkey, newvalue
 
 
 class OmniLogicCoordinator(DataUpdateCoordinator):
@@ -123,10 +139,14 @@ class OmniLogicCoordinator(DataUpdateCoordinator):
                 # Then we learned that heater set points (which can change often enough) are stored
                 # within the MSP Config, not the telemetry, so now we pull the msp_config on every update
                 _LOGGER.debug("Fetching OmniLogic MSPConfig")
-                self.msp_config = xmltodict.parse(await self.omni_api.async_get_config())
+                # we postprocess the XML to convert hyphens to underscores to simplify typing with TypedDict later
+                # and attempt to convert values to int to make equality comparisons easier without having to constantly int() everything
+                self.msp_config = xmltodict.parse(await self.omni_api.async_get_config(), postprocessor=xml_postprocessor)
 
                 _LOGGER.debug("Fetching OmniLogic Telemetry")
-                self.telemetry = xmltodict.parse(await self.omni_api.async_get_telemetry())
+                # We postprocess the XML to convert hyphens to underscores to simplify typing with TypedDict later
+                # and attempt to convert values to int to make equality comparisons easier without having to constantly int() everything
+                self.telemetry = xmltodict.parse(await self.omni_api.async_get_telemetry(), postprocessor=xml_postprocessor)
 
                 # The below is used if we have a test_diagnostic_data.py populated with a diagnostic data file to reproduce an issue
                 # test_data = json.loads(TEST_DIAGNOSTIC_DATA)
@@ -136,6 +156,8 @@ class OmniLogicCoordinator(DataUpdateCoordinator):
                 omnilogic_data = self.msp_config | self.telemetry
 
                 entity_index = build_entity_index(omnilogic_data)
+
+                # pprint.pprint(entity_index)
 
                 return entity_index
         except TimeoutError as exc:

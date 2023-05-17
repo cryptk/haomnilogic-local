@@ -5,22 +5,16 @@ import logging
 from homeassistant.components.button import ButtonEntity
 from homeassistant.core import HomeAssistant
 
-from .const import (
-    DOMAIN,
-    KEY_COORDINATOR,
-    OMNI_DEVICE_TYPES_PUMP,
-    OmniModels,
-    OmniTypes,
-)
+from .const import DOMAIN, KEY_COORDINATOR, OMNI_TYPES_PUMP, OmniModels
 from .types import OmniLogicEntity
-from .utils import get_entities_of_omni_types
+from .utils import get_entities_of_omni_types, get_omni_model
 
 _LOGGER = logging.getLogger(__name__)
 
 OMNI_SPEED_FRIENDLY_NAMES = {
-    "Vsp-Low-Pump-Speed": "Low Speed",
-    "Vsp-Medium-Pump-Speed": "Medium Speed",
-    "Vsp-High-Pump-Speed": "High Speed",
+    "Vsp_Low_Pump_Speed": "Low Speed",
+    "Vsp_Medium_Pump_Speed": "Medium Speed",
+    "Vsp_High_Pump_Speed": "High Speed",
 }
 
 
@@ -29,11 +23,12 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
 
     coordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
 
-    all_pumps = get_entities_of_omni_types(coordinator.data, OMNI_DEVICE_TYPES_PUMP)
+    all_pumps = get_entities_of_omni_types(coordinator.data, OMNI_TYPES_PUMP)
 
     entities = []
     for system_id, pump in all_pumps.items():
-        pump_type = pump["omni_config"]["Filter-Type"] if pump["metadata"]["omni_type"] == OmniTypes.FILTER else pump["omni_config"]["Type"]
+        pump_type = get_omni_model(pump)
+        # pump_type = pump["omni_config"]["Filter-Type"] if pump["metadata"]["omni_type"] == OmniTypes.FILTER else pump["omni_config"]["Type"]
 
         for speed in OMNI_SPEED_FRIENDLY_NAMES:
             _LOGGER.debug(
@@ -89,17 +84,14 @@ class OmniLogicPumpButtonEntity(OmniLogicButtonEntity):
             context,
             name=f"{button_data['metadata']['name']} {OMNI_SPEED_FRIENDLY_NAMES[speed]}",
         )
-        self.speed = int(button_data["omni_config"][speed])
+        self.speed = button_data["omni_config"][speed]
         self.telem_key_speed = "@pumpSpeed"
         self.telem_key_state = "@pumpState"
 
     async def async_press(self):
         await self.coordinator.omni_api.async_set_equipment(self.bow_id, self.system_id, self.speed)
 
-        self.set_telemetry(
-            {self.telem_key_speed: self.speed, self.telem_key_state: "1"},
-            system_id=self.system_id,
-        )
+        self.set_telemetry({self.telem_key_speed: self.speed, self.telem_key_state: 1})
 
 
 class OmniLogicFilterButtonEntity(OmniLogicPumpButtonEntity):
