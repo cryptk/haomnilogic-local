@@ -5,8 +5,8 @@ import logging
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.core import HomeAssistant
 
-from .const import DOMAIN, KEY_COORDINATOR, OmniModels, OmniTypes
-from .types import OmniLogicEntity
+from .const import DOMAIN, KEY_COORDINATOR, OmniModel, OmniType
+from .entity import OmniLogicEntity
 from .utils import get_entities_of_hass_type, get_omni_model
 
 _LOGGER = logging.getLogger(__name__)
@@ -14,9 +14,9 @@ _LOGGER = logging.getLogger(__name__)
 
 def get_power_state(data: dict[str, str]) -> int:
     match data["metadata"]["omni_type"]:
-        case OmniTypes.RELAY:
+        case OmniType.RELAY:
             match data["omni_config"]["Type"]:
-                case OmniModels.RELAY_VALVE_ACTUATOR:
+                case OmniModel.RELAY_VALVE_ACTUATOR:
                     return data["omni_telemetry"]["@valveActuatorState"]
                 case _:
                     state_prefix = data["metadata"]["omni_type"][0].lower() + data["metadata"]["omni_type"][1:]
@@ -39,25 +39,25 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
 
     for system_id, switch in all_switches.items():
         match switch["metadata"]["omni_type"]:
-            case OmniTypes.RELAY:
+            case OmniType.RELAY:
                 _LOGGER.debug(
                     "Configuring switch for relay with ID: %s, Name: %s",
                     switch["metadata"]["system_id"],
                     switch["metadata"]["name"],
                 )
                 match switch["omni_config"]["Type"]:
-                    case OmniModels.RELAY_VALVE_ACTUATOR:
+                    case OmniModel.RELAY_VALVE_ACTUATOR:
                         entities.append(OmniLogicRelayValveActuatorSwitchEntity(coordinator=coordinator, context=system_id))
-                    case OmniModels.RELAY_HIGH_VOLTAGE:
+                    case OmniModel.RELAY_HIGH_VOLTAGE:
                         entities.append(OmniLogicRelayHighVoltageSwitchEntity(coordinator=coordinator, context=system_id))
-            case OmniTypes.FILTER:
+            case OmniType.FILTER:
                 _LOGGER.debug(
                     "Configuring switch for filter with ID: %s, Name: %s",
                     switch["metadata"]["system_id"],
                     switch["metadata"]["name"],
                 )
                 entities.append(OmniLogicFilterSwitchEntity(coordinator=coordinator, context=system_id))
-            case OmniTypes.PUMP:
+            case OmniType.PUMP:
                 _LOGGER.debug(
                     "Configuring switch for pump with ID: %s, Name: %s",
                     switch["metadata"]["system_id"],

@@ -21,7 +21,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 
 from .const import DOMAIN, KEY_COORDINATOR
-from .types import OmniLogicEntity
+from .entity import OmniLogicEntity
 from .utils import get_entities_of_hass_type
 
 _LOGGER = logging.getLogger(__name__)

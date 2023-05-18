@@ -13,14 +13,11 @@ from homeassistant.const import UnitOfTemperature
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import StateType
 
-from .const import BACKYARD_SYSTEM_ID, DOMAIN, KEY_COORDINATOR
-from .types import OmniLogicEntity
+from .const import BACKYARD_SYSTEM_ID, DOMAIN, KEY_COORDINATOR, OmniModel
+from .entity import OmniLogicEntity
 from .utils import get_entities_of_hass_type
 
 _LOGGER = logging.getLogger(__name__)
-
-# There is a SENSOR_FLOW as well, but I don't have one to test with
-SENSOR_TYPES_TEMPERATURE = ["SENSOR_AIR_TEMP", "SENSOR_WATER_TEMP", "SENSOR_SOLAR_TEMP"]
 
 
 def find_sensor_heater_systemid(data: dict, sensor_system_id: int) -> int:
@@ -42,7 +39,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     all_sensors = get_entities_of_hass_type(coordinator.data, "sensor")
     entities = []
     for system_id, sensor in all_sensors.items():
-        if sensor["omni_config"]["Type"] in SENSOR_TYPES_TEMPERATURE:
+        if sensor["omni_config"]["Type"] in [OmniModel.SENSOR_AIR, OmniModel.SENSOR_WATER, OmniModel.SENSOR_SOLAR]:
             _LOGGER.debug(
                 "Configuring temperature sensor with ID: %s, Name: %s",
                 sensor["metadata"]["system_id"],

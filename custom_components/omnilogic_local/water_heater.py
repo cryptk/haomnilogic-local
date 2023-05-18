@@ -12,7 +12,7 @@ from homeassistant.const import ATTR_TEMPERATURE, STATE_OFF, STATE_ON, UnitOfTem
 from homeassistant.core import HomeAssistant
 
 from .const import DOMAIN, KEY_COORDINATOR
-from .types import OmniLogicEntity
+from .entity import OmniLogicEntity
 from .utils import get_entities_of_hass_type
 
 _LOGGER = logging.getLogger(__name__)

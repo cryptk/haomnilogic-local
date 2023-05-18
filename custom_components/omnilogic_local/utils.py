@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import logging
 
-from .const import KEY_TELEMETRY_SYSTEM_ID, OMNI_TYPES, OmniTypes
+from .const import KEY_TELEMETRY_SYSTEM_ID, OMNI_TYPES, OmniType
+from .entity import OmniLogicEntity
 from .errors import UnknownDevice
-from .types import OmniLogicEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -60,7 +60,7 @@ def get_entities_of_omni_types(entities: dict[int, OmniLogicEntity], omni_types:
 
 def get_omni_model(data: dict[str, str]) -> str:
     match data["metadata"]["omni_type"]:
-        case OmniTypes.FILTER:
+        case OmniType.FILTER:
             return data["omni_config"]["Filter_Type"]
         case _:
             return data["omni_config"]["Type"]

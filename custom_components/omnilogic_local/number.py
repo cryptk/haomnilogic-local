@@ -8,8 +8,8 @@ from typing import Any
 from homeassistant.components.number import NumberEntity
 from homeassistant.core import HomeAssistant
 
-from .const import DOMAIN, KEY_COORDINATOR, OMNI_TYPES_PUMP, OmniModels
-from .types import OmniLogicEntity
+from .const import DOMAIN, KEY_COORDINATOR, OMNI_TYPES_PUMP, OmniModel
+from .entity import OmniLogicEntity
 from .utils import get_entities_of_omni_types, get_omni_model
 
 _LOGGER = logging.getLogger(__name__)
@@ -33,9 +33,9 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
             pump["metadata"]["name"],
         )
         match pump_type:
-            case OmniModels.VARIABLE_SPEED_PUMP:
+            case OmniModel.VARIABLE_SPEED_PUMP:
                 entities.append(OmniLogicPumpNumberEntity(coordinator=coordinator, context=system_id))
-            case OmniModels.VARIABLE_SPEED_FILTER:
+            case OmniModel.VARIABLE_SPEED_FILTER:
                 entities.append(OmniLogicFilterNumberEntity(coordinator=coordinator, context=system_id))
 
     async_add_entities(entities)

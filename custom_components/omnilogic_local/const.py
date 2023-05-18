@@ -2,6 +2,8 @@
 from enum import Enum
 from typing import Final
 
+# from homeassistant.backports.enum import StrEnum
+
 DOMAIN: Final[str] = "omnilogic_local"
 KEY_COORDINATOR: Final[str] = "coordinator"
 KEY_OMNI_API: Final[str] = "omni_api"
@@ -18,21 +20,32 @@ KEY_MSP_SYSTEM_ID: Final[str] = "System_Id"
 KEY_TELEMETRY_SYSTEM_ID: Final[str] = "@systemId"
 
 
-class OmniModels(str, Enum):
-    RELAY_HIGH_VOLTAGE = "RLY_HIGH_VOLTAGE_RELAY"
-    RELAY_VALVE_ACTUATOR = "RLY_VALVE_ACTUATOR"
-    VARIABLE_SPEED_FILTER = "FMT_VARIABLE_SPEED_PUMP"
-    VARIABLE_SPEED_PUMP = "PMP_VARIABLE_SPEED_PUMP"
-    BOW_POOL = "BOW_POOL"
-    BOW_SPA = "BOW_SPA"
+class OmniModel(str, Enum):
+    BOW_POOL: Final[str] = "BOW_POOL"
+    BOW_SPA: Final[str] = "BOW_SPA"
+    RELAY_LOW_VOLTAGE: Final[str] = "RLY_LOW_VOLTAGE_RELAY"
+    RELAY_HIGH_VOLTAGE: Final[str] = "RLY_HIGH_VOLTAGE_RELAY"
+    RELAY_VALVE_ACTUATOR: Final[str] = "RLY_VALVE_ACTUATOR"
+    SENSOR_AIR: Final[str] = "SENSOR_AIR_TEMP"
+    SENSOR_FLOW: Final[str] = "SENSOR_FLOW"
+    SENSOR_WATER: Final[str] = "SENSOR_WATER_TEMP"
+    SENSOR_SOLAR: Final[str] = "SENSOR_SOLAR_TEMP"
+    SINGLE_SPEED_PUMP: Final[str] = "PMP_SINGLE_SPEED"
+    VARIABLE_SPEED_PUMP: Final[str] = "PMP_VARIABLE_SPEED_PUMP"
+    SINGLE_SPEED_FILTER: Final[str] = "FMT_SINGLE_SPEED"
+    DUAL_SPEED_FILTER: Final[str] = "FMT_DUAL_SPEED"
+    VARIABLE_SPEED_FILTER: Final[str] = "FMT_VARIABLE_SPEED_PUMP"
 
 
-class OmniTypes(str, Enum):
+class OmniType(str, Enum):
     BACKYARD: Final[str] = "Backyard"
     BOW: Final[str] = "BodyOfWater"
     BOW_MSP: Final[str] = "Body_of_water"
+    CHLORINATOR: Final[str] = "Chlorinator"
+    CHLORINATOR_EQUIP: Final[str] = "Chlorinator_Equipment"
     CL_LIGHT: Final[str] = "ColorLogic_Light"
     FILTER: Final[str] = "Filter"
+    GROUP: Final[str] = "Group"
     HEATER: Final[str] = "Heater"
     HEATER_EQUIP: Final[str] = "Heater_Equipment"
     PUMP: Final[str] = "Pump"
@@ -43,23 +56,38 @@ class OmniTypes(str, Enum):
 
 
 OMNI_TO_HASS_TYPES: dict[str, str] = {
-    OmniTypes.BACKYARD: "device",
-    OmniTypes.BOW: "device",
-    OmniTypes.BOW_MSP: "device",
-    OmniTypes.CL_LIGHT: "light",
-    OmniTypes.FILTER: "switch",
-    OmniTypes.HEATER: "water_heater",
-    OmniTypes.HEATER_EQUIP: "water_heater",
-    OmniTypes.PUMP: "switch",
-    OmniTypes.RELAY: "switch",
-    OmniTypes.SENSOR: "sensor",
-    OmniTypes.VALVE_ACTUATOR: "switch",
-    OmniTypes.VIRT_HEATER: "water_heater",
+    OmniType.BACKYARD: "device",
+    OmniType.BOW: "device",
+    OmniType.BOW_MSP: "device",
+    OmniType.CHLORINATOR: "switch",
+    OmniType.CHLORINATOR_EQUIP: "switch",
+    OmniType.CL_LIGHT: "light",
+    OmniType.FILTER: "switch",
+    OmniType.HEATER: "water_heater",
+    OmniType.HEATER_EQUIP: "water_heater",
+    OmniType.PUMP: "switch",
+    OmniType.RELAY: "switch",
+    OmniType.SENSOR: "sensor",
+    OmniType.VALVE_ACTUATOR: "switch",
+    OmniType.VIRT_HEATER: "water_heater",
 }
 
-OMNI_TYPES = [k.value for k in OmniTypes]
-OMNI_TYPES_BOW = [OmniModels.BOW_POOL, OmniModels.BOW_SPA]
-OMNI_TYPES_PUMP = [OmniTypes.FILTER, OmniTypes.PUMP]
+
+class OmniRelayFunction(str, Enum):
+    WATER_FEATURE: Final[str] = "RLY_WATER_FEATURE"
+    WATERFALL: Final[str] = "RLY_WATERFALL"
+    FOUNTAIN: Final[str] = "RLY_FOUNTAIN"
+
+
+class OmniColorLogicLightType(str, Enum):
+    UCL: Final[str] = "COLOR_LOGIC_UCL"
+    FOUR_ZERO: Final[str] = "COLOR_LOGIC_4_0"
+    TWO_FIVE: Final[str] = "COLOR_LOGIC_2_5"
+
+
+OMNI_TYPES = [k.value for k in OmniType]
+OMNI_TYPES_BOW = [OmniModel.BOW_POOL, OmniModel.BOW_SPA]
+OMNI_TYPES_PUMP = [OmniType.FILTER, OmniType.PUMP]
 OMNI_TYPES_LIGHT: Final[list[str]] = [k for k, v in OMNI_TO_HASS_TYPES.items() if v == "light"]
 OMNI_TYPES_SWITCH: Final[list[str]] = [k for k, v in OMNI_TO_HASS_TYPES.items() if v == "switch"]
 OMNI_TYPES_SENSOR: Final[list[str]] = [k for k, v in OMNI_TO_HASS_TYPES.items() if v == "sensor"]

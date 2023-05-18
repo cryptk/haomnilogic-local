@@ -15,6 +15,7 @@ This addon is not complete, initially I am implementing all functionality for th
 
 - Multiple bodies of water represented as separate devices
 - Pumps/Filter Pumps
+    - Variable speed only
     - Turn on/off
     - Set speed to high/med/low presets
     - Set speed to custom value

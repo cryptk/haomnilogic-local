@@ -5,8 +5,8 @@ import logging
 from homeassistant.components.button import ButtonEntity
 from homeassistant.core import HomeAssistant
 
-from .const import DOMAIN, KEY_COORDINATOR, OMNI_TYPES_PUMP, OmniModels
-from .types import OmniLogicEntity
+from .const import DOMAIN, KEY_COORDINATOR, OMNI_TYPES_PUMP, OmniModel
+from .entity import OmniLogicEntity
 from .utils import get_entities_of_omni_types, get_omni_model
 
 _LOGGER = logging.getLogger(__name__)
@@ -38,9 +38,9 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
                 speed,
             )
             match pump_type:
-                case OmniModels.VARIABLE_SPEED_PUMP:
+                case OmniModel.VARIABLE_SPEED_PUMP:
                     entities.append(OmniLogicPumpButtonEntity(coordinator=coordinator, context=system_id, speed=speed))
-                case OmniModels.VARIABLE_SPEED_FILTER:
+                case OmniModel.VARIABLE_SPEED_FILTER:
                     entities.append(OmniLogicFilterButtonEntity(coordinator=coordinator, context=system_id, speed=speed))
 
     async_add_entities(entities)

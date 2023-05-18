@@ -17,7 +17,7 @@ from .const import (  # KEY_MSP_BACKYARD,; KEY_MSP_BOW,
     OMNI_TO_HASS_TYPES,
     OMNI_TYPES,
     OMNI_TYPES_BOW,
-    OmniTypes,
+    OmniType,
 )
 from .utils import get_telemetry_by_systemid, one_or_many
 
@@ -45,13 +45,13 @@ def build_entity_item(omni_entity_type: str, entity_config: dict, bow_id: int | 
         # Heaters support "virtual devices" where multiple heaters work in coordination and are controlled
         # by the single "virtual heater" for temperature set points
         if omni_entity_type == "Heater":
-            heater_equipment = [entry for entry in entity["Operation"] if OmniTypes.HEATER_EQUIP in entry][0]
-            for heater in one_or_many(heater_equipment[OmniTypes.HEATER_EQUIP]):
+            heater_equipment = [entry for entry in entity["Operation"] if OmniType.HEATER_EQUIP in entry][0]
+            for heater in one_or_many(heater_equipment[OmniType.HEATER_EQUIP]):
                 yield {
                     "metadata": {
                         "name": heater.get("Name", omni_entity_type),
-                        "hass_type": OMNI_TO_HASS_TYPES[OmniTypes.HEATER_EQUIP],
-                        "omni_type": OmniTypes.HEATER_EQUIP.value,
+                        "hass_type": OMNI_TO_HASS_TYPES[OmniType.HEATER_EQUIP],
+                        "omni_type": OmniType.HEATER_EQUIP.value,
                         "bow_id": bow_id,
                         "system_id": heater[KEY_MSP_SYSTEM_ID],
                     },
@@ -75,8 +75,8 @@ def build_entity_index(data: dict[str, str]) -> dict[int, dict[str, str]]:
 
     for tier in (
         data["MSPConfig"],
-        data["MSPConfig"][OmniTypes.BACKYARD],
-        data["MSPConfig"][OmniTypes.BACKYARD][OmniTypes.BOW_MSP],
+        data["MSPConfig"][OmniType.BACKYARD],
+        data["MSPConfig"][OmniType.BACKYARD][OmniType.BOW_MSP],
     ):
         for item in one_or_many(tier):
             bow_id = item[KEY_MSP_SYSTEM_ID] if item.get("Type") in OMNI_TYPES_BOW else None
