@@ -115,6 +115,8 @@ class OmniLogicRelayValveActuatorSwitchEntity(OmniLogicSwitchEntity[EntityDataVa
                 return "mdi:fountain"
             case "RLY_WATER_FEATURE":
                 return "mdi:fountain"
+            case "RLY_WATER_SLIDE":
+                return "mdi:slide"
             case _:
                 return "mdi:valve-open" if self.is_on else "mdi:valve-closed"
 
