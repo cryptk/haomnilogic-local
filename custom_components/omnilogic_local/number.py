@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from math import floor
-from typing import TYPE_CHECKING, Literal, TypeVar
+from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
 from homeassistant.components.number import NumberEntity
 
@@ -148,6 +148,10 @@ class OmniLogicPumpNumberEntity(OmniLogicNumberEntity[EntityDataPumpT]):
     telem_key_state: Literal["@pumpState"] = "@pumpState"
 
     @property
+    def name(self) -> Any:
+        return f"{super().name} Speed"
+
+    @property
     def current_rpm(self) -> int:
         return floor(int(self.native_max_value) / 100 * self.data["telemetry"]["@pumpSpeed"])
 
@@ -161,6 +165,10 @@ class OmniLogicFilterNumberEntity(OmniLogicNumberEntity[EntityDataFilterT]):
 
     telem_key_speed: Literal["@filterSpeed"] = "@filterSpeed"
     telem_key_state: Literal["@filterState"] = "@filterState"
+
+    @property
+    def name(self) -> Any:
+        return f"{super().name} Speed"
 
     @property
     def current_rpm(self) -> int:
