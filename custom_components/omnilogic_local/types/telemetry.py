@@ -1,8 +1,8 @@
-from typing import TypedDict
+from __future__ import annotations
+
+from typing import TypeAlias, TypedDict, TypeVar
 
 from typing_extensions import NotRequired
-
-from ..const import OmniType
 
 TelemetryBackyardT = TypedDict(
     "TelemetryBackyardT",
@@ -27,7 +27,14 @@ TelemetryFilterT = TypedDict(
     {"@systemId": int, "@filterState": int, "@filterSpeed": int, "@reportedFilterSpeed": int, "@power": int, "@lastSpeed": int},
 )
 
+TelemetryPumpT = TypedDict(
+    "TelemetryPumpT",
+    {"@systemId": int, "@pumpState": int, "@pumpSpeed": int, "@lastSpeed": int},
+)
+
 TelemetryValveActuatorT = TypedDict("TelemetryValveActuatorT", {"@systemId": int, "@valveActuatorState": int, "@whyOn": int})
+
+TelemetryRelayT = TypedDict("TelemetryRelayT", {"@systemId": int, "@relayState": int, "@whyOn": int})
 
 TelemetryColorLogicLightT = TypedDict(
     "TelemetryColorLogicLightT",
@@ -73,18 +80,33 @@ class TelemetryT(TypedDict):
     STATUS: TelemetryStatusT
 
 
-TelemetryTypeT = (
+TelemetryType: TypeAlias = (
     TelemetryBackyardT
     | TelemetryBodyOfWaterT
-    | TelemetryFilterT
-    | TelemetryValveActuatorT
     | TelemetryColorLogicLightT
+    | TelemetryFilterT
     | TelemetryVirtualHeaterT
     | TelemetryHeaterT
+    | TelemetryPumpT
+    | TelemetryRelayT
+    | TelemetryValveActuatorT
     | TelemetryGroupT
 )
-OMNI_TYPE_TO_TELEMETRY_TYPE: dict[OmniType, type[TelemetryTypeT]] = {
-    OmniType.BACKYARD: TelemetryBackyardT,
-    OmniType.BOW: TelemetryBodyOfWaterT,
-    OmniType.BOW_MSP: TelemetryBodyOfWaterT,
-}
+TelemetryTypeTypeVar = TypeVar(
+    "TelemetryTypeTypeVar",
+    TelemetryBackyardT,
+    TelemetryBodyOfWaterT,
+    TelemetryColorLogicLightT,
+    TelemetryFilterT,
+    TelemetryVirtualHeaterT,
+    TelemetryHeaterT,
+    TelemetryPumpT,
+    TelemetryRelayT,
+    TelemetryValveActuatorT,
+    TelemetryGroupT,
+)
+# OMNI_TYPE_TO_TELEMETRY_TYPE: dict[OmniType, type[TelemetryTypeT]] = {
+#     OmniType.BACKYARD: TelemetryBackyardT,
+#     OmniType.BOW: TelemetryBodyOfWaterT,
+#     OmniType.BOW_MSP: TelemetryBodyOfWaterT,
+# }

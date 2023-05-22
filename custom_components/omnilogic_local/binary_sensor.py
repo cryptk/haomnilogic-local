@@ -1,24 +1,28 @@
 from __future__ import annotations
 
 import logging
+from typing import TYPE_CHECKING
 
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
     BinarySensorEntity,
 )
-from homeassistant.core import HomeAssistant
 
 from .const import BACKYARD_SYSTEM_ID, DOMAIN, KEY_COORDINATOR, OmniType
 from .entity import OmniLogicEntity
+from .types.entity_index import EntityDataBackyardT, EntityDataHeaterEquipT
 from .utils import get_entities_of_omni_types
+
+if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
 
 _LOGGER = logging.getLogger(__name__)
 
-# There is a SENSOR_FLOW as well, but I don't have one to test with
-SENSOR_TYPES_TEMPERATURE = ["SENSOR_AIR_TEMP", "SENSOR_WATER_TEMP", "SENSOR_SOLAR_TEMP"]
 
-
-async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
     """Set up the switch platform."""
 
     coordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
@@ -37,48 +41,17 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
             equipment["metadata"]["name"],
         )
         entities.append(
-            OmniLogicTelemetryBinarySensorEntity(
+            OmniLogicHeaterEquipBinarySensorEntity(
                 coordinator=coordinator,
                 context=system_id,
-                name=f'{equipment["metadata"]["name"]} Status',
-                telem_key="@heaterState",
-                device_class=BinarySensorDeviceClass.HEAT,
             )
         )
 
     async_add_entities(entities)
 
 
-class OmniLogicBinarySensorEntity(OmniLogicEntity, BinarySensorEntity):
-    """An entity using CoordinatorEntity.
-
-    The CoordinatorEntity class provides:
-      should_poll
-      async_update
-      async_added_to_hass
-      available
-
-    """
-
-    def __init__(self, coordinator, context, name: str | None = None) -> None:
-        """Pass coordinator to CoordinatorEntity."""
-        sensor_data = coordinator.data[context]
-        super().__init__(
-            coordinator,
-            context,
-            name=name if name is not None else sensor_data["metadata"]["name"],
-            system_id=sensor_data["metadata"]["system_id"],
-            bow_id=sensor_data["metadata"]["bow_id"],
-            extra_attributes=None,
-        )
-        self.omni_type = sensor_data["metadata"]["omni_type"]
-        self.model = sensor_data["omni_config"].get("Type")
-
-
-class OmniLogicServiceModeBinarySensorEntity(OmniLogicBinarySensorEntity):
-    def __init__(self, coordinator, context) -> None:
-        """Pass coordinator to CoordinatorEntity."""
-        super().__init__(coordinator, context, name="Service Mode")
+class OmniLogicServiceModeBinarySensorEntity(OmniLogicEntity[EntityDataBackyardT], BinarySensorEntity):
+    _attr_name = "Service Mode"
 
     @property
     def available(self) -> bool:
@@ -86,31 +59,19 @@ class OmniLogicServiceModeBinarySensorEntity(OmniLogicBinarySensorEntity):
         return True
 
     @property
-    def is_on(self) -> bool | None:
-        return self.get_telemetry()["@state"] == 2
+    def is_on(self) -> bool:
+        return self.data["telemetry"]["@state"] == 2
 
 
-class OmniLogicTelemetryBinarySensorEntity(OmniLogicBinarySensorEntity):
+class OmniLogicHeaterEquipBinarySensorEntity(OmniLogicEntity[EntityDataHeaterEquipT], BinarySensorEntity):
     """Expose a binary state via a sensor based on telemetry data."""
 
-    def __init__(
-        self,
-        coordinator,
-        context,
-        name: str,
-        telem_key: str,
-        true_value=1,
-        device_class: BinarySensorDeviceClass = None,
-    ) -> None:
-        super().__init__(
-            coordinator,
-            context,
-            name=name,
-        )
-        self.telem_key = telem_key
-        self.true_value = true_value
-        self._attr_device_class = device_class
+    device_class = BinarySensorDeviceClass.HEAT
 
     @property
-    def is_on(self) -> bool | None:
-        return self.get_telemetry()[self.telem_key] == self.true_value
+    def name(self) -> str:
+        return f'{self.data["metadata"]["name"]} Status'
+
+    @property
+    def is_on(self) -> bool:
+        return self.data["telemetry"]["@heaterState"] == 1

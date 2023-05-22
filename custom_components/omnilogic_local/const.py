@@ -35,6 +35,9 @@ class OmniModel(str, Enum):
     SINGLE_SPEED_FILTER: Final[str] = "FMT_SINGLE_SPEED"
     DUAL_SPEED_FILTER: Final[str] = "FMT_DUAL_SPEED"
     VARIABLE_SPEED_FILTER: Final[str] = "FMT_VARIABLE_SPEED_PUMP"
+    LIGHT_CL_UCL: Final[str] = "COLOR_LOGIC_UCL"
+    LIGHT_CL_2_5: Final[str] = "COLOR_LOGIC_2_5"
+    LIGHT_CL_4_0: Final[str] = "COLOR_LOGIC_2_5"
 
 
 class OmniType(str, Enum):

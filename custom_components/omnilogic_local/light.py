@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pyomnilogic_local.types import (
     ColorLogicBrightness,
@@ -17,10 +16,17 @@ from homeassistant.components.light import (
     LightEntity,
     LightEntityFeature,
 )
-from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 
-from .const import DOMAIN, KEY_COORDINATOR
+from .types.entity_index import EntityDataColorLogicLightT
+
+if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.entity_platform import AddEntitiesCallback
+    from .coordinator import OmniLogicCoordinator
+
+from .const import DOMAIN, KEY_COORDINATOR, OmniModel
 from .entity import OmniLogicEntity
 from .utils import get_entities_of_hass_type
 
@@ -39,17 +45,17 @@ COLOR_LOGIC_POWER_STATES = {
 
 
 # These were shamelessly borrowed from the lutron_caseta integration
-def to_omni_level(level):
+def to_omni_level(level: int) -> int:
     """Convert the given Home Assistant light level (0-255) to OmniLogic (0-4)."""
     return int(round((level * 4) / 255))
 
 
-def to_hass_level(level):
+def to_hass_level(level: int) -> int:
     """Convert the given OmniLogic (0-4) light level to Home Assistant (0-255)."""
     return int((level * 255) // 4)
 
 
-async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
     """Set up the light platform."""
 
     coordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
@@ -68,7 +74,7 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     async_add_entities(entities)
 
 
-class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
+class OmniLogicLightEntity(OmniLogicEntity[EntityDataColorLogicLightT], LightEntity):
     """An entity using CoordinatorEntity.
 
     The CoordinatorEntity class provides:
@@ -80,31 +86,26 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
     """
 
     _attr_effect_list = list(ColorLogicShow.__members__)
-    # _attr_effect = None
     _attr_supported_features = LightEntityFeature.EFFECT
     _attr_supported_color_modes = [ColorMode.BRIGHTNESS]
-    # _attr_color_mode = None
 
-    def __init__(self, coordinator, context) -> None:
+    def __init__(self, coordinator: OmniLogicCoordinator, context: int) -> None:
         """Pass coordinator to CoordinatorEntity."""
-        light_data = coordinator.data[context]
-        super().__init__(
-            coordinator,
-            context=context,
-            name=light_data["metadata"]["name"],
-            system_id=light_data["metadata"]["system_id"],
-            bow_id=light_data["metadata"]["bow_id"],
-            extra_attributes=None,
-        )
-        self.model = light_data["omni_config"]["Type"]
+        super().__init__(coordinator, context=context)
+        try:
+            self.model = OmniModel(self.data["config"]["Type"])
+        except ValueError:
+            _LOGGER.error(
+                "Your light is not currently supported, please raise an issue: https://github.com/cryptk/haomnilogic-local/issues"
+            )
 
     @property
-    def omni_light_state(self):
-        return COLOR_LOGIC_POWER_STATES[self.get_telemetry()["@lightState"]]
+    def omni_light_state(self) -> str:
+        return COLOR_LOGIC_POWER_STATES[self.data["telemetry"]["@lightState"]]
 
     @property
-    def speed(self):
-        return self.get_telemetry()["@speed"]
+    def speed(self) -> int:
+        return self.data["telemetry"]["@speed"]
 
     @property
     def is_on(self) -> bool | None:
@@ -116,21 +117,24 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
 
     @property
     def brightness(self) -> int | None:
-        return to_hass_level(self.get_telemetry()["@brightness"])
+        return to_hass_level(self.data["telemetry"]["@brightness"])
 
     @property
     def effect(self) -> str | None:
-        return ColorLogicShow(self.get_telemetry()["@currentShow"]).name
+        try:
+            return ColorLogicShow(self.data["telemetry"]["@currentShow"]).name  # type: ignore[no-any-return]
+        except ValueError:
+            return None
 
     @property
-    def extra_state_attributes(self) -> Mapping[str, Any] | None:
+    def extra_state_attributes(self) -> dict[str, int | str]:
         return super().extra_state_attributes | {
             "omnilogic_state": self.omni_light_state,
-            "model": self.model,
             "speed": self.speed,
         }
 
-    async def async_turn_on(self, **kwargs):
+    # The "Any" below here isn't great, we should create a type for this later
+    async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the light on.
 
         Example method how to request data updates.
@@ -147,7 +151,7 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
             kwargs.pop(ATTR_EFFECT)
 
         if kwargs:
-            params = {}
+            # params = {}
             params = {
                 "show": ColorLogicShow[kwargs.get(ATTR_EFFECT, self.effect)],
                 "speed": ColorLogicSpeed(self.speed),
@@ -170,7 +174,8 @@ class OmniLogicLightEntity(OmniLogicEntity, LightEntity):
             )
         self.set_telemetry(updated_data)
 
-    async def async_turn_off(self, **kwargs):
+    # The "Any" below here isn't great, we should create a type for this later
+    async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the light off.
 
         Example method how to request data updates.

@@ -1,36 +1,41 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 import logging
+from typing import TYPE_CHECKING, Literal, TypeVar
 
 from homeassistant.components.button import ButtonEntity
-from homeassistant.core import HomeAssistant
 
-from .const import DOMAIN, KEY_COORDINATOR, OMNI_TYPES_PUMP, OmniModel
+from .const import DOMAIN, KEY_COORDINATOR, OmniModel, OmniType
 from .entity import OmniLogicEntity
+from .types.entity_index import EntityDataFilterT, EntityDataPumpT
 from .utils import get_entities_of_omni_types, get_omni_model
+
+if TYPE_CHECKING:
+    from homeassistant.config_entries import ConfigEntry
+    from homeassistant.core import HomeAssistant
+    from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
+    from .coordinator import OmniLogicCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
-OMNI_SPEED_FRIENDLY_NAMES = {
-    "Vsp_Low_Pump_Speed": "Low Speed",
-    "Vsp_Medium_Pump_Speed": "Medium Speed",
-    "Vsp_High_Pump_Speed": "High Speed",
-}
+SpeedT = Literal["Vsp_Low_Pump_Speed", "Vsp_Medium_Pump_Speed", "Vsp_High_Pump_Speed"]
+SPEED_NAMES: Sequence[SpeedT] = ["Vsp_Low_Pump_Speed", "Vsp_Medium_Pump_Speed", "Vsp_High_Pump_Speed"]
 
 
-async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
     """Set up the switch platform."""
 
     coordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
 
-    all_pumps = get_entities_of_omni_types(coordinator.data, OMNI_TYPES_PUMP)
+    all_pumps = get_entities_of_omni_types(coordinator.data, [OmniType.FILTER, OmniType.PUMP])
 
     entities = []
     for system_id, pump in all_pumps.items():
         pump_type = get_omni_model(pump)
-        # pump_type = pump["omni_config"]["Filter-Type"] if pump["metadata"]["omni_type"] == OmniTypes.FILTER else pump["omni_config"]["Type"]
 
-        for speed in OMNI_SPEED_FRIENDLY_NAMES:
+        for speed in SPEED_NAMES:
             _LOGGER.debug(
                 "Configuring button for pump with ID: %s, Name: %s, Speed: %s",
                 pump["metadata"]["system_id"],
@@ -46,7 +51,10 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     async_add_entities(entities)
 
 
-class OmniLogicButtonEntity(OmniLogicEntity, ButtonEntity):
+T = TypeVar("T", EntityDataFilterT, EntityDataPumpT)
+
+
+class OmniLogicButtonEntity(OmniLogicEntity[T], ButtonEntity):
     """An entity using CoordinatorEntity.
 
     The CoordinatorEntity class provides:
@@ -57,45 +65,47 @@ class OmniLogicButtonEntity(OmniLogicEntity, ButtonEntity):
 
     """
 
-    def __init__(self, coordinator, context, name=None) -> None:
-        """Pass coordinator to CoordinatorEntity."""
-        button_data = coordinator.data[context]
-        name = button_data["metadata"]["name"] if name is None else name
-        super().__init__(
-            coordinator,
-            context=context,
-            name=name,
-            # The system_id is used for the entity unique_id, the filters system_id is already used for the filter switch
-            # so we can't use it directly for these buttons.
-            system_id=context,
-            bow_id=button_data["metadata"]["bow_id"],
-            extra_attributes=None,
-        )
-        self.omni_type = button_data["metadata"]["omni_type"]
+    speed: SpeedT
+    telem_key_speed: Literal["@pumpSpeed", "@filterSpeed"]
+    telem_key_state: Literal["@pumpState", "@filterState"]
+
+    @property
+    def name(self) -> str:
+        match self.speed:
+            case "Vsp_Low_Pump_Speed":
+                return f"{self.data['metadata']['name']} Low Speed"
+            case "Vsp_Medium_Pump_Speed":
+                return f"{self.data['metadata']['name']} Medium Speed"
+            case "Vsp_High_Pump_Speed":
+                return f"{self.data['metadata']['name']} High Speed"
+
+    @property
+    def omni_speed(self) -> int:
+        return self.data["config"][self.speed]
+
+    async def async_press(self) -> None:
+        await self.coordinator.omni_api.async_set_equipment(self.bow_id, self.system_id, self.omni_speed)
+
+        self.set_telemetry({self.telem_key_speed: self.omni_speed, self.telem_key_state: 1})
 
 
-class OmniLogicPumpButtonEntity(OmniLogicButtonEntity):
-    # button_data['metadata']['name']} {OMNI_SPEED_FRIENDLY_NAMES[speed]}",
+class OmniLogicPumpButtonEntity(OmniLogicButtonEntity[EntityDataPumpT]):
+    telem_key_speed = "@pumpSpeed"
+    telem_key_state = "@pumpState"
 
-    def __init__(self, coordinator, context, speed) -> None:
-        button_data = coordinator.data[context]
-        super().__init__(
-            coordinator,
-            context,
-            name=f"{button_data['metadata']['name']} {OMNI_SPEED_FRIENDLY_NAMES[speed]}",
-        )
-        self.speed = button_data["omni_config"][speed]
-        self.telem_key_speed = "@pumpSpeed"
-        self.telem_key_state = "@pumpState"
-
-    async def async_press(self):
-        await self.coordinator.omni_api.async_set_equipment(self.bow_id, self.system_id, self.speed)
-
-        self.set_telemetry({self.telem_key_speed: self.speed, self.telem_key_state: 1})
+    def __init__(self, coordinator: OmniLogicCoordinator, context: int, speed: SpeedT) -> None:
+        # It is important that the speed and data members are assigned BEFORE we run the __init__ as they are used to
+        # determine the name of the button inside the base class
+        self.speed: SpeedT = speed
+        super().__init__(coordinator, context)
 
 
-class OmniLogicFilterButtonEntity(OmniLogicPumpButtonEntity):
-    def __init__(self, coordinator, context, speed) -> None:
-        super().__init__(coordinator, context, speed)
-        self.telem_key_speed = "@filterSpeed"
-        self.telem_key_state = "@filterState"
+class OmniLogicFilterButtonEntity(OmniLogicButtonEntity[EntityDataFilterT]):
+    telem_key_speed = "@filterSpeed"
+    telem_key_state = "@filterState"
+
+    def __init__(self, coordinator: OmniLogicCoordinator, context: int, speed: SpeedT) -> None:
+        # It is important that the speed and data members are assigned BEFORE we run the __init__ as they are used to
+        # determine the name of the button inside the base class
+        self.speed: SpeedT = speed
+        super().__init__(coordinator, context)

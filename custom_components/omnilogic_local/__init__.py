@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import logging
+from typing import cast
 
 from pyomnilogic_local.api import OmniLogicAPI
 
@@ -87,5 +88,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     if unload_ok := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
         hass.data[DOMAIN].pop(entry.entry_id)
-
-    return unload_ok
+    # I think it is a bug that the await for async_unload_platforms above has a signature that indicates it returns a bool, yet unload_ok
+    # is detected as "Any" by mypy
+    return cast(bool, unload_ok)

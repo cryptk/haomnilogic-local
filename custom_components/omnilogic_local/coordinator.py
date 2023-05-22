@@ -19,6 +19,9 @@ from .const import (  # KEY_MSP_BACKYARD,; KEY_MSP_BOW,
     OMNI_TYPES_BOW,
     OmniType,
 )
+from .types.entity_index import EntityIndexT
+from .types.mspconfig import MSPConfigT
+from .types.telemetry import TelemetryType
 from .utils import get_telemetry_by_systemid, one_or_many
 
 # Import diagnostic data to reproduce issues
@@ -55,7 +58,7 @@ def build_entity_item(omni_entity_type: str, entity_config: dict, bow_id: int | 
                         "bow_id": bow_id,
                         "system_id": heater[KEY_MSP_SYSTEM_ID],
                     },
-                    "omni_config": heater,
+                    "config": heater,
                 }
 
         yield {
@@ -66,7 +69,7 @@ def build_entity_item(omni_entity_type: str, entity_config: dict, bow_id: int | 
                 "bow_id": bow_id,
                 "system_id": config[KEY_MSP_SYSTEM_ID],
             },
-            "omni_config": config,
+            "config": config,
         }
 
 
@@ -85,7 +88,7 @@ def build_entity_index(data: dict[str, str]) -> dict[int, dict[str, str]]:
                     continue
                 for entity in build_entity_item(omni_entity_type, entity_data, bow_id):
                     entity["metadata"]["bow_id"] = bow_id
-                    entity["omni_telemetry"] = get_telemetry_by_systemid(data["STATUS"], entity["metadata"]["system_id"])
+                    entity["telemetry"] = get_telemetry_by_systemid(data["STATUS"], entity["metadata"]["system_id"])
                     entity_index[entity["metadata"]["system_id"]] = entity
 
     return entity_index
@@ -109,8 +112,9 @@ def xml_postprocessor(_, key, value):
 class OmniLogicCoordinator(DataUpdateCoordinator):
     """Hayward OmniLogic API coordinator."""
 
-    msp_config: dict = None
-    telemetry: dict = None
+    msp_config: MSPConfigT
+    telemetry: TelemetryType
+    data: EntityIndexT
 
     def __init__(self, hass: HomeAssistant, omni_api: OmniLogicAPI) -> None:
         """Initialize my coordinator."""
