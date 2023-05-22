@@ -47,7 +47,7 @@ class OmniLogicEntity(CoordinatorEntity, Generic[EntityIndexTypeVar]):
     ) -> None:
         super().__init__(coordinator=coordinator, context=context)
         self.data = cast(EntityIndexTypeVar, coordinator.data[context])
-        self.bow_id = coordinator.data[context]["metadata"]["bow_id"]
+        self.bow_id = coordinator.data[context]["metadata"].get("bow_id", None)
         self.system_id = context
         self._extra_attributes = extra_attributes
 
@@ -129,7 +129,7 @@ class OmniLogicEntity(CoordinatorEntity, Generic[EntityIndexTypeVar]):
         )
 
     @property
-    def extra_state_attributes(self) -> dict[str, str | int]:
+    def extra_state_attributes(self) -> dict[str, str | int | None]:
         return {
             "omni_system_id": self.system_id,
             "omni_bow_id": self.bow_id,

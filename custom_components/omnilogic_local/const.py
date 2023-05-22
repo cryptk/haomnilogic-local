@@ -21,41 +21,41 @@ KEY_TELEMETRY_SYSTEM_ID: Final[str] = "@systemId"
 
 
 class OmniModel(str, Enum):
-    BOW_POOL: Final[str] = "BOW_POOL"
-    BOW_SPA: Final[str] = "BOW_SPA"
-    RELAY_LOW_VOLTAGE: Final[str] = "RLY_LOW_VOLTAGE_RELAY"
-    RELAY_HIGH_VOLTAGE: Final[str] = "RLY_HIGH_VOLTAGE_RELAY"
-    RELAY_VALVE_ACTUATOR: Final[str] = "RLY_VALVE_ACTUATOR"
-    SENSOR_AIR: Final[str] = "SENSOR_AIR_TEMP"
-    SENSOR_FLOW: Final[str] = "SENSOR_FLOW"
-    SENSOR_WATER: Final[str] = "SENSOR_WATER_TEMP"
-    SENSOR_SOLAR: Final[str] = "SENSOR_SOLAR_TEMP"
-    SINGLE_SPEED_PUMP: Final[str] = "PMP_SINGLE_SPEED"
-    VARIABLE_SPEED_PUMP: Final[str] = "PMP_VARIABLE_SPEED_PUMP"
-    SINGLE_SPEED_FILTER: Final[str] = "FMT_SINGLE_SPEED"
-    DUAL_SPEED_FILTER: Final[str] = "FMT_DUAL_SPEED"
-    VARIABLE_SPEED_FILTER: Final[str] = "FMT_VARIABLE_SPEED_PUMP"
-    LIGHT_CL_UCL: Final[str] = "COLOR_LOGIC_UCL"
-    LIGHT_CL_2_5: Final[str] = "COLOR_LOGIC_2_5"
-    LIGHT_CL_4_0: Final[str] = "COLOR_LOGIC_2_5"
+    BOW_POOL = "BOW_POOL"
+    BOW_SPA = "BOW_SPA"
+    RELAY_LOW_VOLTAGE = "RLY_LOW_VOLTAGE_RELAY"
+    RELAY_HIGH_VOLTAGE = "RLY_HIGH_VOLTAGE_RELAY"
+    RELAY_VALVE_ACTUATOR = "RLY_VALVE_ACTUATOR"
+    SENSOR_AIR = "SENSOR_AIR_TEMP"
+    SENSOR_FLOW = "SENSOR_FLOW"
+    SENSOR_WATER = "SENSOR_WATER_TEMP"
+    SENSOR_SOLAR = "SENSOR_SOLAR_TEMP"
+    SINGLE_SPEED_PUMP = "PMP_SINGLE_SPEED"
+    VARIABLE_SPEED_PUMP = "PMP_VARIABLE_SPEED_PUMP"
+    SINGLE_SPEED_FILTER = "FMT_SINGLE_SPEED"
+    DUAL_SPEED_FILTER = "FMT_DUAL_SPEED"
+    VARIABLE_SPEED_FILTER = "FMT_VARIABLE_SPEED_PUMP"
+    LIGHT_CL_UCL = "COLOR_LOGIC_UCL"
+    LIGHT_CL_2_5 = "COLOR_LOGIC_2_5"
+    LIGHT_CL_4_0 = "COLOR_LOGIC_2_5"
 
 
 class OmniType(str, Enum):
-    BACKYARD: Final[str] = "Backyard"
-    BOW: Final[str] = "BodyOfWater"
-    BOW_MSP: Final[str] = "Body_of_water"
-    CHLORINATOR: Final[str] = "Chlorinator"
-    CHLORINATOR_EQUIP: Final[str] = "Chlorinator_Equipment"
-    CL_LIGHT: Final[str] = "ColorLogic_Light"
-    FILTER: Final[str] = "Filter"
-    GROUP: Final[str] = "Group"
-    HEATER: Final[str] = "Heater"
-    HEATER_EQUIP: Final[str] = "Heater_Equipment"
-    PUMP: Final[str] = "Pump"
-    RELAY: Final[str] = "Relay"
-    SENSOR: Final[str] = "Sensor"
-    VALVE_ACTUATOR: Final[str] = "ValveActuator"
-    VIRT_HEATER: Final[str] = "VirtualHeater"
+    BACKYARD = "Backyard"
+    BOW = "BodyOfWater"
+    BOW_MSP = "Body_of_water"
+    CHLORINATOR = "Chlorinator"
+    CHLORINATOR_EQUIP = "Chlorinator_Equipment"
+    CL_LIGHT = "ColorLogic_Light"
+    FILTER = "Filter"
+    GROUP = "Group"
+    HEATER = "Heater"
+    HEATER_EQUIP = "Heater_Equipment"
+    PUMP = "Pump"
+    RELAY = "Relay"
+    SENSOR = "Sensor"
+    VALVE_ACTUATOR = "ValveActuator"
+    VIRT_HEATER = "VirtualHeater"
 
 
 OMNI_TO_HASS_TYPES: dict[str, str] = {
@@ -77,15 +77,15 @@ OMNI_TO_HASS_TYPES: dict[str, str] = {
 
 
 class OmniRelayFunction(str, Enum):
-    WATER_FEATURE: Final[str] = "RLY_WATER_FEATURE"
-    WATERFALL: Final[str] = "RLY_WATERFALL"
-    FOUNTAIN: Final[str] = "RLY_FOUNTAIN"
+    WATER_FEATURE = "RLY_WATER_FEATURE"
+    WATERFALL = "RLY_WATERFALL"
+    FOUNTAIN = "RLY_FOUNTAIN"
 
 
 class OmniColorLogicLightType(str, Enum):
-    UCL: Final[str] = "COLOR_LOGIC_UCL"
-    FOUR_ZERO: Final[str] = "COLOR_LOGIC_4_0"
-    TWO_FIVE: Final[str] = "COLOR_LOGIC_2_5"
+    UCL = "COLOR_LOGIC_UCL"
+    FOUR_ZERO = "COLOR_LOGIC_4_0"
+    TWO_FIVE = "COLOR_LOGIC_2_5"
 
 
 OMNI_TYPES = [k.value for k in OmniType]
