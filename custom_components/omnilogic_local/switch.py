@@ -108,7 +108,15 @@ class OmniLogicRelayValveActuatorSwitchEntity(OmniLogicSwitchEntity[EntityDataVa
 
     @property
     def icon(self) -> str | None:
-        return "mdi:valve-open" if self.is_on else "mdi:valve-closed"
+        match self.data["config"]["Function"]:
+            case "RLY_WATERFALL":
+                return "mdi:waterfall"
+            case "RLY_FOUNTAIN":
+                return "mdi:fountain"
+            case "RLY_WATER_FEATURE":
+                return "mdi:fountain"
+            case _:
+                return "mdi:valve-open" if self.is_on else "mdi:valve-closed"
 
     @property
     def is_on(self) -> bool | None:
@@ -178,6 +186,10 @@ class OmniLogicFilterSwitchEntity(OmniLogicSwitchEntity[EntityDataFilterT]):
 
     telem_key_speed = "@filterSpeed"
     telem_key_state = "@filterState"
+
+    @property
+    def icon(self) -> str | None:
+        return "mdi:pump" if self.is_on else "mdi:pump-off"
 
     @property
     def is_on(self) -> bool | None:

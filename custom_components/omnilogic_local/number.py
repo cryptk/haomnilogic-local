@@ -63,6 +63,7 @@ class OmniLogicNumberEntity(OmniLogicEntity[T], NumberEntity):
 
     telem_key_speed: Literal["@pumpSpeed", "@filterSpeed"]
     telem_key_state: Literal["@pumpState", "@filterState"]
+    _attr_icon: str = "mdi:gauge"
 
     def __init__(self, coordinator: OmniLogicCoordinator, context: int) -> None:
         """Pass coordinator to CoordinatorEntity."""

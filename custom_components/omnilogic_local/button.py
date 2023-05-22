@@ -70,6 +70,16 @@ class OmniLogicButtonEntity(OmniLogicEntity[T], ButtonEntity):
     telem_key_state: Literal["@pumpState", "@filterState"]
 
     @property
+    def icon(self) -> str:
+        match self.speed:
+            case "Vsp_Low_Pump_Speed":
+                return "mdi:speedometer-slow"
+            case "Vsp_Medium_Pump_Speed":
+                return "mdi:speedometer-medium"
+            case "Vsp_High_Pump_Speed":
+                return "mdi:speedometer"
+
+    @property
     def name(self) -> str:
         match self.speed:
             case "Vsp_Low_Pump_Speed":

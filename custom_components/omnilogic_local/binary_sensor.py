@@ -69,6 +69,10 @@ class OmniLogicHeaterEquipBinarySensorEntity(OmniLogicEntity[EntityDataHeaterEqu
     device_class = BinarySensorDeviceClass.HEAT
 
     @property
+    def icon(self) -> str | None:
+        return "mdi:water-boiler" if self.is_on else "mdi:water-boiler-off"
+
+    @property
     def name(self) -> str:
         return f'{self.data["metadata"]["name"]} Status'
 

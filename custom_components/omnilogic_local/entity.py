@@ -141,5 +141,4 @@ class OmniLogicEntity(CoordinatorEntity, Generic[EntityIndexTypeVar]):
 
     @property
     def unique_id(self) -> str | None:
-        # _LOGGER.debug(f"{self.bow_id} {self.system_id} {self.name}")
         return f"{self.bow_id} {self.system_id} {self.name}"
