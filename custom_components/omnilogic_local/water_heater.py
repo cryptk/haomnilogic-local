@@ -126,7 +126,6 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity[EntityDataHeaterT], WaterHeater
     def extra_state_attributes(self) -> dict[str, str | int]:
         extra_state_attributes = super().extra_state_attributes
         for system_id in self.heater_equipment_ids:
-            _LOGGER.debug("Adding heater equip")
             heater_equipment = cast(EntityDataHeaterEquipT, self.coordinator.data[system_id])
             prefix = f"omni_heater_{heater_equipment['metadata']['name'].lower()}"
             extra_state_attributes = extra_state_attributes | {
