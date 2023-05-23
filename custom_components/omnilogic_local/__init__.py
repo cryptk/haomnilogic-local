@@ -55,6 +55,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Create a device for the Omni Backyard
     backyard = get_entities_of_omni_types(coordinator.data, [OmniType.BACKYARD])[BACKYARD_SYSTEM_ID]
+    _LOGGER.debug("Creating device for backyard: %s", backyard)
     device_registry.async_get_or_create(
         config_entry_id=entry.entry_id,
         identifiers={(OmniType.BACKYARD, BACKYARD_SYSTEM_ID)},
@@ -65,6 +66,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     # Create a device for each Body of Water
     for system_id, bow in get_entities_of_omni_types(coordinator.data, [OmniType.BOW_MSP]).items():
+        _LOGGER.debug("Creating device for BOW: %s", bow)
         device_registry.async_get_or_create(
             config_entry_id=entry.entry_id,
             identifiers={(OmniType.BOW_MSP, system_id)},
