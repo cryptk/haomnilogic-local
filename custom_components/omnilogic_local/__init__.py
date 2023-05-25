@@ -39,7 +39,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Set up OmniLogic Local from a config entry."""
 
     # Create an API instance
-    omni_api = OmniLogicAPI((entry.data[CONF_IP_ADDRESS], entry.data[CONF_PORT]), entry.data[CONF_TIMEOUT])
+    omni_api = OmniLogicAPI(entry.data[CONF_IP_ADDRESS], entry.data[CONF_PORT], entry.data[CONF_TIMEOUT])
 
     # Validate that we can talk to the API endpoint
     try:
