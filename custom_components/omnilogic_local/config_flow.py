@@ -6,7 +6,6 @@ from typing import Any
 
 from pyomnilogic_local.api import OmniLogicAPI
 import voluptuous as vol
-import xmltodict
 
 from homeassistant import config_entries
 from homeassistant.const import CONF_IP_ADDRESS, CONF_NAME, CONF_PORT, CONF_TIMEOUT
@@ -34,7 +33,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
 
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
-    omni = OmniLogicAPI((data[CONF_IP_ADDRESS], data[CONF_PORT]), data[CONF_TIMEOUT])
+    omni = OmniLogicAPI(data[CONF_IP_ADDRESS], data[CONF_PORT], data[CONF_TIMEOUT])
     try:
         config = await omni.async_get_config()
     except TimeoutError as exc:
@@ -45,7 +44,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     telemetry = await omni.async_get_telemetry()
 
     # Return info that you want to store in the config entry.
-    return {"config": xmltodict.parse(config), "telemetry": xmltodict.parse(telemetry)}
+    return {"config": config, "telemetry": telemetry}
 
 
 class OptionsFlowHandler(config_entries.OptionsFlow):
@@ -78,7 +77,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         )
 
 
-class OmnilogicConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class OmnilogicConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg]
     """Handle a config flow for OmniLogic Local."""
 
     VERSION = 1

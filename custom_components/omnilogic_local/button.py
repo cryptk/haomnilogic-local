@@ -2,14 +2,16 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 import logging
-from typing import TYPE_CHECKING, Literal, TypeVar
+from typing import TYPE_CHECKING, Final, Literal, TypeVar
+
+from pyomnilogic_local.types import FilterState, OmniType, PumpState
 
 from homeassistant.components.button import ButtonEntity
 
-from .const import DOMAIN, KEY_COORDINATOR, OmniModel, OmniType
+from .const import DOMAIN, KEY_COORDINATOR, OmniModel
 from .entity import OmniLogicEntity
-from .types.entity_index import EntityDataFilterT, EntityDataPumpT
-from .utils import get_entities_of_omni_types, get_omni_model
+from .types.entity_index import EntityIndexFilter, EntityIndexPump
+from .utils import get_entities_of_omni_types
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
@@ -20,8 +22,8 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 
-SpeedT = Literal["Vsp_Low_Pump_Speed", "Vsp_Medium_Pump_Speed", "Vsp_High_Pump_Speed"]
-SPEED_NAMES: Sequence[SpeedT] = ["Vsp_Low_Pump_Speed", "Vsp_Medium_Pump_Speed", "Vsp_High_Pump_Speed"]
+SpeedT = Literal["low", "medium", "high"]
+SPEED_NAMES: Final[Sequence[SpeedT]] = ["low", "medium", "high"]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
@@ -33,16 +35,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 
     entities = []
     for system_id, pump in all_pumps.items():
-        pump_type = get_omni_model(pump)
 
         for speed in SPEED_NAMES:
             _LOGGER.debug(
                 "Configuring button for pump with ID: %s, Name: %s, Speed: %s",
-                pump["metadata"]["system_id"],
-                pump["metadata"]["name"],
+                pump.msp_config.system_id,
+                pump.msp_config.name,
                 speed,
             )
-            match pump_type:
+            match pump.msp_config.type:
                 case OmniModel.VARIABLE_SPEED_PUMP:
                     entities.append(OmniLogicPumpButtonEntity(coordinator=coordinator, context=system_id, speed=speed))
                 case OmniModel.VARIABLE_SPEED_FILTER:
@@ -51,7 +52,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     async_add_entities(entities)
 
 
-T = TypeVar("T", EntityDataFilterT, EntityDataPumpT)
+T = TypeVar("T", EntityIndexFilter, EntityIndexPump)
 
 
 class OmniLogicButtonEntity(OmniLogicEntity[T], ButtonEntity):
@@ -72,50 +73,54 @@ class OmniLogicButtonEntity(OmniLogicEntity[T], ButtonEntity):
     @property
     def icon(self) -> str:
         match self.speed:
-            case "Vsp_Low_Pump_Speed":
+            case "low":
                 return "mdi:speedometer-slow"
-            case "Vsp_Medium_Pump_Speed":
+            case "medium":
                 return "mdi:speedometer-medium"
-            case "Vsp_High_Pump_Speed":
+            case "high":
                 return "mdi:speedometer"
 
     @property
     def name(self) -> str:
-        match self.speed:
-            case "Vsp_Low_Pump_Speed":
-                return f"{self.data['metadata']['name']} Low Speed"
-            case "Vsp_Medium_Pump_Speed":
-                return f"{self.data['metadata']['name']} Medium Speed"
-            case "Vsp_High_Pump_Speed":
-                return f"{self.data['metadata']['name']} High Speed"
+        return f"{self.data.msp_config.name} {self.speed.capitalize()} Speed"
 
     @property
     def omni_speed(self) -> int:
-        return self.data["config"][self.speed]
+        match self.speed:
+            case "low":
+                return self.data.msp_config.low_speed
+            case "medium":
+                return self.data.msp_config.medium_speed
+            case "high":
+                return self.data.msp_config.high_speed
 
     async def async_press(self) -> None:
         await self.coordinator.omni_api.async_set_equipment(self.bow_id, self.system_id, self.omni_speed)
 
-        self.set_telemetry({self.telem_key_speed: self.omni_speed, self.telem_key_state: 1})
+        self.set_telemetry({"speed": self.omni_speed, "state": 1})
 
 
-class OmniLogicPumpButtonEntity(OmniLogicButtonEntity[EntityDataPumpT]):
-    telem_key_speed = "@pumpSpeed"
-    telem_key_state = "@pumpState"
-
+class OmniLogicPumpButtonEntity(OmniLogicButtonEntity[EntityIndexPump]):
     def __init__(self, coordinator: OmniLogicCoordinator, context: int, speed: SpeedT) -> None:
         # It is important that the speed and data members are assigned BEFORE we run the __init__ as they are used to
         # determine the name of the button inside the base class
         self.speed: SpeedT = speed
         super().__init__(coordinator, context)
 
+    async def async_press(self) -> None:
+        await self.coordinator.omni_api.async_set_equipment(self.bow_id, self.system_id, self.omni_speed)
 
-class OmniLogicFilterButtonEntity(OmniLogicButtonEntity[EntityDataFilterT]):
-    telem_key_speed = "@filterSpeed"
-    telem_key_state = "@filterState"
+        self.set_telemetry({"speed": self.omni_speed, "state": PumpState.ON})
 
+
+class OmniLogicFilterButtonEntity(OmniLogicButtonEntity[EntityIndexFilter]):
     def __init__(self, coordinator: OmniLogicCoordinator, context: int, speed: SpeedT) -> None:
         # It is important that the speed and data members are assigned BEFORE we run the __init__ as they are used to
         # determine the name of the button inside the base class
         self.speed: SpeedT = speed
         super().__init__(coordinator, context)
+
+    async def async_press(self) -> None:
+        await self.coordinator.omni_api.async_set_equipment(self.bow_id, self.system_id, self.omni_speed)
+
+        self.set_telemetry({"speed": self.omni_speed, "state": FilterState.ON})
