@@ -5,13 +5,13 @@ from decimal import Decimal
 import logging
 from typing import TYPE_CHECKING, Generic, TypeVar, cast
 
-from pyomnilogic_local.types import OmniType, SensorUnits
+from pyomnilogic_local.types import OmniType, SensorType, SensorUnits
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.const import UnitOfTemperature
 from homeassistant.helpers.typing import StateType
 
-from .const import BACKYARD_SYSTEM_ID, DOMAIN, KEY_COORDINATOR, OmniModel
+from .const import BACKYARD_SYSTEM_ID, DOMAIN, KEY_COORDINATOR
 from .entity import OmniLogicEntity
 from .errors import OmniLogicError
 from .types.entity_index import (
@@ -47,11 +47,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
             sensor.msp_config.name,
         )
         match sensor.msp_config.type:
-            case OmniModel.SENSOR_AIR:
+            case SensorType.AIR_TEMP:
                 entities.append(OmniLogicAirTemperatureSensorEntity(coordinator=coordinator, context=system_id))
-            case OmniModel.SENSOR_WATER:
+            case SensorType.WATER_TEMP:
                 entities.append(OmniLogicWaterTemperatureSensorEntity(coordinator=coordinator, context=system_id))
-            case OmniModel.SENSOR_SOLAR:
+            case SensorType.SOLAR_TEMP:
                 entities.append(OmniLogicSolarTemperatureSensorEntity(coordinator=coordinator, context=system_id))
             case _:
                 _LOGGER.warning(

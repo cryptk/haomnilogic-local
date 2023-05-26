@@ -32,17 +32,6 @@ from .utils import get_entities_of_hass_type
 
 _LOGGER = logging.getLogger(__name__)
 
-COLOR_LOGIC_POWER_STATES = {
-    0: "off",
-    1: "powering_off",
-    2: "unknown",
-    3: "changing_show",
-    4: "fifteen_seconds_of_white",
-    5: "unknown",
-    6: "on",
-    7: "cooldown",
-}
-
 
 # These were shamelessly borrowed from the lutron_caseta integration
 def to_omni_level(level: int) -> int:
