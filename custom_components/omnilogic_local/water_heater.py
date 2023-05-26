@@ -110,7 +110,7 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity[EntityIndexHeater], WaterHeater
             int(kwargs[ATTR_TEMPERATURE]),
             unit=self.temperature_unit,
         )
-        self.set_config({"set_point": kwargs[ATTR_TEMPERATURE]})
+        self.set_config({"set_point": int(kwargs[ATTR_TEMPERATURE])})
 
     async def async_set_operation_mode(self, operation_mode: Literal["on", "off"]) -> None:
         match operation_mode:

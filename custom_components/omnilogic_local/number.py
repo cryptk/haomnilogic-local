@@ -12,12 +12,13 @@ from pyomnilogic_local.types import (
     PumpType,
 )
 
-from homeassistant.components.number import NumberEntity
+from homeassistant.components.number import NumberDeviceClass, NumberEntity
+from homeassistant.const import UnitOfTemperature
 
 from .const import DOMAIN, KEY_COORDINATOR
 from .entity import OmniLogicEntity
-from .types.entity_index import EntityIndexFilter, EntityIndexPump
-from .utils import get_entities_of_omni_types
+from .types.entity_index import EntityIndexFilter, EntityIndexHeater, EntityIndexPump
+from .utils import get_entities_of_hass_type, get_entities_of_omni_types
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
@@ -34,10 +35,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 
     coordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
 
-    all_pumps = get_entities_of_omni_types(coordinator.data, [OmniType.FILTER, OmniType.PUMP])
+    filters_and_pumps = get_entities_of_omni_types(coordinator.data, [OmniType.FILTER, OmniType.PUMP])
 
     entities = []
-    for system_id, pump in all_pumps.items():
+    for system_id, pump in filters_and_pumps.items():
 
         _LOGGER.debug(
             "Configuring number for pump with ID: %s, Name: %s",
@@ -50,13 +51,25 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
             case FilterType.VARIABLE_SPEED:
                 entities.append(OmniLogicFilterNumberEntity(coordinator=coordinator, context=system_id))
 
+    all_heaters = get_entities_of_hass_type(coordinator.data, "water_heater")
+    virtual_heater = {system_id: data for system_id, data in all_heaters.items() if data.msp_config.omni_type == OmniType.VIRT_HEATER}
+
+    for system_id, vheater in virtual_heater.items():
+        if hasattr(vheater.msp_config, "solar_set_point"):
+            _LOGGER.debug(
+                "Configuring number solar set point for heater with ID: %s, Name: %s",
+                vheater.msp_config.system_id,
+                vheater.msp_config.name,
+            )
+            entities.append(OmniLogicSolarSetPointNumberEntity(coordinator=coordinator, context=system_id))
+
     async_add_entities(entities)
 
 
 T = TypeVar("T", EntityIndexPump, EntityIndexFilter)
 
 
-class OmniLogicNumberEntity(OmniLogicEntity[T], NumberEntity):
+class OmniLogicVSPNumberEntity(OmniLogicEntity[T], NumberEntity):
     """An entity using CoordinatorEntity.
 
     The CoordinatorEntity class provides:
@@ -141,7 +154,7 @@ class OmniLogicNumberEntity(OmniLogicEntity[T], NumberEntity):
         raise NotImplementedError
 
 
-class OmniLogicPumpNumberEntity(OmniLogicNumberEntity[EntityIndexPump]):
+class OmniLogicPumpNumberEntity(OmniLogicVSPNumberEntity[EntityIndexPump]):
     """An entity representing a number platform for an OmniLogic Pump."""
 
     async def async_set_native_value(self, value: float) -> None:
@@ -156,7 +169,7 @@ class OmniLogicPumpNumberEntity(OmniLogicNumberEntity[EntityIndexPump]):
         self.set_telemetry({"state": PumpState.ON, "speed": new_speed_pct})
 
 
-class OmniLogicFilterNumberEntity(OmniLogicNumberEntity[EntityIndexFilter]):
+class OmniLogicFilterNumberEntity(OmniLogicVSPNumberEntity[EntityIndexFilter]):
     """An OmniLogicFilterNumberEntity is a special case of an OmniLogicPumpNumberEntity."""
 
     async def async_set_native_value(self, value: float) -> None:
@@ -169,3 +182,36 @@ class OmniLogicFilterNumberEntity(OmniLogicNumberEntity[EntityIndexFilter]):
         await self.coordinator.omni_api.async_set_equipment(self.bow_id, self.system_id, new_speed_pct)
 
         self.set_telemetry({"state": FilterState.ON, "speed": new_speed_pct})
+
+
+class OmniLogicSolarSetPointNumberEntity(OmniLogicEntity[EntityIndexHeater], NumberEntity):
+    """An OmniLogicFilterNumberEntity is a special case of an OmniLogicPumpNumberEntity."""
+
+    _attr_device_class = NumberDeviceClass.TEMPERATURE
+    _attr_name = "Solar Set Point"
+    _attr_mode = "box"
+
+    @property
+    def native_max_value(self) -> float:
+        return self.data.msp_config.max_temp
+
+    @property
+    def native_min_value(self) -> float:
+        return self.data.msp_config.min_temp
+
+    @property
+    def native_value(self) -> float | None:
+        return self.data.msp_config.solar_set_point
+
+    @property
+    def native_unit_of_measurement(self) -> str | None:
+        return str(UnitOfTemperature.CELSIUS) if self.get_system_config().units == "Metric" else str(UnitOfTemperature.FAHRENHEIT)
+
+    async def async_set_native_value(self, value: float) -> None:
+        await self.coordinator.omni_api.async_set_solar_heater(
+            self.bow_id,
+            self.system_id,
+            int(value),
+            unit=self.native_unit_of_measurement,
+        )
+        self.set_config({"solar_set_point": int(value)})
