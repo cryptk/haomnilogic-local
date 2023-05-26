@@ -1,7 +1,6 @@
 {
   "domain": "omnilogic_local",
   "name": "OmniLogic Local",
-  "version": "0.0.1",
   "codeowners": [
     "@cryptk"
   ],
@@ -17,5 +16,6 @@
     "python_omnilogic_local==0.1.0"
   ],
   "ssdp": [],
+  "version": "0.0.1",
   "zeroconf": []
 }
