@@ -1,130 +1,143 @@
 from __future__ import annotations
 
-from typing import TypeAlias, TypedDict, TypeVar
+from dataclasses import dataclass
+from typing import TypeVar
 
-from typing_extensions import NotRequired
-
-from ..const import OmniType
-from .mspconfig import (
-    MSPBackyardT,
-    MSPBodyOfWaterT,
-    MSPColorLogicLightT,
-    MSPFilterT,
-    MSPHeaterEquipT,
-    MSPHeaterT,
-    MSPPumpT,
-    MSPRelayT,
-    MSPSensorT,
+from pyomnilogic_local.models.mspconfig import (
+    MSPBackyard,
+    MSPBoW,
+    MSPColorLogicLight,
+    MSPFilter,
+    MSPHeaterEquip,
+    MSPPump,
+    MSPRelay,
+    MSPSchedule,
+    MSPSensor,
+    MSPVirtualHeater,
 )
-from .telemetry import (
-    TelemetryBackyardT,
-    TelemetryBodyOfWaterT,
-    TelemetryColorLogicLightT,
-    TelemetryFilterT,
-    TelemetryHeaterT,
-    TelemetryPumpT,
-    TelemetryRelayT,
-    TelemetryValveActuatorT,
-    TelemetryVirtualHeaterT,
+from pyomnilogic_local.models.telemetry import (
+    TelemetryBackyard,
+    TelemetryBoW,
+    TelemetryChlorinator,
+    TelemetryColorLogicLight,
+    TelemetryFilter,
+    TelemetryGroup,
+    TelemetryHeater,
+    TelemetryPump,
+    TelemetryRelay,
+    TelemetryValveActuator,
+    TelemetryVirtualHeater,
 )
 
-
-class EntityMetadataT(TypedDict):
-    name: str
-    hass_type: str
-    omni_type: OmniType
-    bow_id: NotRequired[int]
-    system_id: int
-
-
-class EntityDataBackyardT(TypedDict):
-    metadata: EntityMetadataT
-    config: MSPBackyardT
-    telemetry: TelemetryBackyardT
+# from .mspconfig import (
+#     MSPBackyardT,
+#     MSPBodyOfWaterT,
+#     MSPColorLogicLightT,
+#     MSPFilterT,
+#     MSPHeaterEquipT,
+#     MSPHeaterT,
+#     MSPPumpT,
+#     MSPRelayT,
+#     MSPSensorT,
+# )
 
 
-class EntityDataBodyOfWaterT(TypedDict):
-    metadata: EntityMetadataT
-    config: MSPBodyOfWaterT
-    telemetry: TelemetryBodyOfWaterT
+@dataclass
+class EntityIndexData:
+    msp_config: MSPSchedule | MSPBackyard | MSPBoW | MSPVirtualHeater | MSPHeaterEquip | MSPRelay | MSPFilter | MSPSensor | MSPColorLogicLight
+    telemetry: TelemetryBackyard | TelemetryBoW | TelemetryChlorinator | TelemetryColorLogicLight | TelemetryFilter | TelemetryGroup | TelemetryHeater | TelemetryPump | TelemetryRelay | TelemetryValveActuator | TelemetryVirtualHeater
 
 
-class EntityDataColorLogicLightT(TypedDict):
-    metadata: EntityMetadataT
-    config: MSPColorLogicLightT
-    telemetry: TelemetryColorLogicLightT
+EntityIndexT = dict[int, EntityIndexData]
 
 
-class EntityDataFilterT(TypedDict):
-    metadata: EntityMetadataT
-    config: MSPFilterT
-    telemetry: TelemetryFilterT
+# OLD TYPES BELOW
+# class EntityMetadataT(TypedDict):
+#     name: str
+#     hass_type: str
+#     omni_type: OmniType
+#     bow_id: NotRequired[int]
+#     system_id: int
 
 
-class EntityDataHeaterT(TypedDict):
-    metadata: EntityMetadataT
-    config: MSPHeaterT
-    telemetry: TelemetryVirtualHeaterT
+class EntityIndexBackyard:
+    msp_config: MSPBackyard
+    telemetry: TelemetryBackyard
 
 
-class EntityDataHeaterEquipT(TypedDict):
-    metadata: EntityMetadataT
-    config: MSPHeaterEquipT
-    telemetry: TelemetryHeaterT
+class EntityIndexBodyOfWater:
+    msp_config: MSPBoW
+    telemetry: TelemetryBoW
 
 
-class EntityDataPumpT(TypedDict):
-    metadata: EntityMetadataT
-    config: MSPPumpT
-    telemetry: TelemetryPumpT
+class EntityIndexColorLogicLight:
+    msp_config: MSPColorLogicLight
+    telemetry: TelemetryColorLogicLight
 
 
-class EntityDataRelayT(TypedDict):
-    metadata: EntityMetadataT
-    config: MSPRelayT
-    telemetry: TelemetryRelayT
+class EntityIndexFilter:
+    msp_config: MSPFilter
+    telemetry: TelemetryFilter
 
 
-class EntityDataSensorT(TypedDict):
-    metadata: EntityMetadataT
-    config: MSPSensorT
+class EntityIndexHeater:
+    msp_config: MSPVirtualHeater
+    telemetry: TelemetryVirtualHeater
+
+
+class EntityIndexHeaterEquip:
+    msp_config: MSPHeaterEquip
+    telemetry: TelemetryHeater
+
+
+class EntityIndexPump:
+    msp_config: MSPPump
+    telemetry: TelemetryPump
+
+
+class EntityIndexRelay:
+    msp_config: MSPRelay
+    telemetry: TelemetryRelay
+
+
+class EntityIndexSensor:
+    msp_config: MSPSensor
     telemetry: None
 
 
-class EntityDataValveActuatorT(TypedDict):
-    metadata: EntityMetadataT
-    config: MSPRelayT
-    telemetry: TelemetryValveActuatorT
+class EntityIndexValveActuator:
+    msp_config: MSPRelay
+    telemetry: TelemetryValveActuator
 
 
-EntityIndexType: TypeAlias = (
-    EntityDataBackyardT
-    | EntityDataBodyOfWaterT
-    | EntityDataColorLogicLightT
-    | EntityDataFilterT
-    | EntityDataHeaterT
-    | EntityDataHeaterEquipT
-    | EntityDataPumpT
-    | EntityDataRelayT
-    | EntityDataSensorT
-    | EntityDataValveActuatorT
-)
+# EntityIndexType: TypeAlias = (
+#     EntityDataBackyardT
+#     | EntityDataBodyOfWaterT
+#     | EntityDataColorLogicLightT
+#     | EntityDataFilterT
+#     | EntityDataHeaterT
+#     | EntityDataHeaterEquipT
+#     | EntityDataPumpT
+#     | EntityDataRelayT
+#     | EntityDataSensorT
+#     | EntityDataValveActuatorT
+# )
 
 EntityIndexTypeVar = TypeVar(
     "EntityIndexTypeVar",
-    EntityDataBackyardT,
-    EntityDataBodyOfWaterT,
-    EntityDataColorLogicLightT,
-    EntityDataFilterT,
-    EntityDataHeaterT,
-    EntityDataHeaterEquipT,
-    EntityDataPumpT,
-    EntityDataRelayT,
-    EntityDataSensorT,
-    EntityDataValveActuatorT,
+    EntityIndexBackyard,
+    EntityIndexBodyOfWater,
+    EntityIndexColorLogicLight,
+    EntityIndexFilter,
+    EntityIndexHeater,
+    EntityIndexHeaterEquip,
+    EntityIndexPump,
+    EntityIndexRelay,
+    EntityIndexSensor,
+    EntityIndexValveActuator,
 )
 
-EntityIndexT = dict[int, EntityIndexType]
+# EntityIndexT = dict[int, EntityIndexType]
 
 
 # OMNI_TYPE_TO_ENTITY_TYPE: dict[OmniType, type[EntityIndexTypeT]] = {

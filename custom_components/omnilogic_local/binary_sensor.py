@@ -3,14 +3,16 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
+from pyomnilogic_local.types import BackyardState, HeaterState, OmniType
+
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
     BinarySensorEntity,
 )
 
-from .const import BACKYARD_SYSTEM_ID, DOMAIN, KEY_COORDINATOR, OmniType
+from .const import BACKYARD_SYSTEM_ID, DOMAIN, KEY_COORDINATOR
 from .entity import OmniLogicEntity
-from .types.entity_index import EntityDataBackyardT, EntityDataHeaterEquipT
+from .types.entity_index import EntityIndexBackyard, EntityIndexHeaterEquip
 from .utils import get_entities_of_omni_types
 
 if TYPE_CHECKING:
@@ -38,7 +40,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
         _LOGGER.debug(
             "Configuring heater equipment sensor with ID: %s, Name: %s",
             system_id,
-            equipment["metadata"]["name"],
+            equipment.msp_config.name,
         )
         entities.append(
             OmniLogicHeaterEquipBinarySensorEntity(
@@ -50,7 +52,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     async_add_entities(entities)
 
 
-class OmniLogicServiceModeBinarySensorEntity(OmniLogicEntity[EntityDataBackyardT], BinarySensorEntity):
+class OmniLogicServiceModeBinarySensorEntity(OmniLogicEntity[EntityIndexBackyard], BinarySensorEntity):
     _attr_name = "Service Mode"
 
     @property
@@ -60,10 +62,10 @@ class OmniLogicServiceModeBinarySensorEntity(OmniLogicEntity[EntityDataBackyardT
 
     @property
     def is_on(self) -> bool:
-        return self.data["telemetry"]["@state"] == 2
+        return self.data.telemetry.state in [BackyardState.SERVICE_MODE, BackyardState.CONFIG_MODE, BackyardState.TIMED_SERVICE_MODE]
 
 
-class OmniLogicHeaterEquipBinarySensorEntity(OmniLogicEntity[EntityDataHeaterEquipT], BinarySensorEntity):
+class OmniLogicHeaterEquipBinarySensorEntity(OmniLogicEntity[EntityIndexHeaterEquip], BinarySensorEntity):
     """Expose a binary state via a sensor based on telemetry data."""
 
     device_class = BinarySensorDeviceClass.HEAT
@@ -74,8 +76,8 @@ class OmniLogicHeaterEquipBinarySensorEntity(OmniLogicEntity[EntityDataHeaterEqu
 
     @property
     def name(self) -> str:
-        return f'{self.data["metadata"]["name"]} Status'
+        return f"{self.data.msp_config.name} Status"
 
     @property
     def is_on(self) -> bool:
-        return self.data["telemetry"]["@heaterState"] == 1
+        return self.data.telemetry.state is HeaterState.ON

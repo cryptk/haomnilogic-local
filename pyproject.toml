@@ -14,10 +14,10 @@ python = "^3.10"
 pre-commit = "^3.0.0"
 mypy = "^1.2.0"
 homeassistant = "^2023.5.0"
-python_omnilogic_local="0.0.6"
-xmltodict = "^0.13.0"
+python_omnilogic_local="0.1.0"
 pylint = "^2.17.0"
 pydantic = "^1.10.7"
+pytest = "^7.3.1"
 
 [tool.black]
 line-length=140
@@ -44,27 +44,34 @@ combine_as_imports = true
 python_version = "3.10"
 plugins = "pydantic.mypy"
 follow_imports = "silent"
+strict = true
 ignore_missing_imports = true
-local_partial_types = true
-strict_equality = true
-no_implicit_optional = true
-warn_incomplete_stub = true
-warn_redundant_casts = true
-warn_unused_configs = true
-warn_unused_ignores = true
-enable_error_code = "ignore-without-code, redundant-self, truthy-iterable"
-disable_error_code = "annotation-unchecked"
-strict_concatenate = false
-check_untyped_defs = true
-disallow_incomplete_defs = true
-# disallow_subclassing_any = true
-disallow_untyped_calls = true
-disallow_untyped_decorators = true
-disallow_untyped_defs = true
-warn_return_any = true
-warn_unreachable = true
-no_implicit_reexport = true
-disallow_any_generics = true
+disallow_subclassing_any = false
+warn_return_any = false
+# local_partial_types = true
+# strict_equality = true
+# no_implicit_optional = true
+# warn_incomplete_stub = true
+# warn_redundant_casts = true
+# warn_unused_configs = true
+# warn_unused_ignores = true
+# enable_error_code = "ignore-without-code, redundant-self, truthy-iterable"
+# disable_error_code = "annotation-unchecked"
+# strict_concatenate = false
+# check_untyped_defs = true
+# disallow_incomplete_defs = true
+# disallow_untyped_calls = true
+# disallow_untyped_decorators = true
+# disallow_untyped_defs = true
+# warn_unreachable = true
+# no_implicit_reexport = true
+# disallow_any_generics = true
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+warn_untyped_fields = true
 
 [tool.pylint.MAIN]
 py-version = "3.10"

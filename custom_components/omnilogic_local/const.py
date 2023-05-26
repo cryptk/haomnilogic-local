@@ -2,6 +2,8 @@
 from enum import Enum
 from typing import Final
 
+from pyomnilogic_local.types import OmniType
+
 # from homeassistant.backports.enum import StrEnum
 
 DOMAIN: Final[str] = "omnilogic_local"
@@ -40,24 +42,6 @@ class OmniModel(str, Enum):
     LIGHT_CL_4_0 = "COLOR_LOGIC_2_5"
 
 
-class OmniType(str, Enum):
-    BACKYARD = "Backyard"
-    BOW = "BodyOfWater"
-    BOW_MSP = "Body_of_water"
-    CHLORINATOR = "Chlorinator"
-    CHLORINATOR_EQUIP = "Chlorinator_Equipment"
-    CL_LIGHT = "ColorLogic_Light"
-    FILTER = "Filter"
-    GROUP = "Group"
-    HEATER = "Heater"
-    HEATER_EQUIP = "Heater_Equipment"
-    PUMP = "Pump"
-    RELAY = "Relay"
-    SENSOR = "Sensor"
-    VALVE_ACTUATOR = "ValveActuator"
-    VIRT_HEATER = "VirtualHeater"
-
-
 OMNI_TO_HASS_TYPES: dict[str, str] = {
     OmniType.BACKYARD: "device",
     OmniType.BOW: "device",
@@ -80,12 +64,6 @@ class OmniRelayFunction(str, Enum):
     WATER_FEATURE = "RLY_WATER_FEATURE"
     WATERFALL = "RLY_WATERFALL"
     FOUNTAIN = "RLY_FOUNTAIN"
-
-
-class OmniColorLogicLightType(str, Enum):
-    UCL = "COLOR_LOGIC_UCL"
-    FOUR_ZERO = "COLOR_LOGIC_4_0"
-    TWO_FIVE = "COLOR_LOGIC_2_5"
 
 
 OMNI_TYPES = [k.value for k in OmniType]

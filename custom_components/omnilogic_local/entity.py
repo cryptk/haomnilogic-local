@@ -1,32 +1,23 @@
-# We do a lot of work with altering data in TypeDicts, until we figure out a better way, we need to just silence the type checker
-# mypy: disable-error-code="typeddict-item"
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Generic, cast
+
+from pyomnilogic_local.models.mspconfig import MSPSystem
+from pyomnilogic_local.models.telemetry import TelemetryBackyard, TelemetryType
+from pyomnilogic_local.types import BackyardState, OmniType
 
 from homeassistant.core import callback
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import BACKYARD_SYSTEM_ID, MANUFACTURER, OmniModel, OmniType
-from .types.entity_index import EntityDataBackyardT, EntityIndexTypeVar
-from .types.telemetry import (
-    TelemetryBackyardT,
-    TelemetryBodyOfWaterT,
-    TelemetryColorLogicLightT,
-    TelemetryFilterT,
-    TelemetryGroupT,
-    TelemetryHeaterT,
-    TelemetryPumpT,
-    TelemetryType,
-    TelemetryValveActuatorT,
-    TelemetryVirtualHeaterT,
-)
+from .const import BACKYARD_SYSTEM_ID, MANUFACTURER, OmniModel
+from .types.entity_index import EntityIndexTypeVar
 
 if TYPE_CHECKING:
+    from pyomnilogic_local.models.mspconfig import MSPConfigType
+
     from .coordinator import OmniLogicCoordinator
-    from .types.mspconfig import MSPSystemT, MSPType
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -47,7 +38,7 @@ class OmniLogicEntity(CoordinatorEntity, Generic[EntityIndexTypeVar]):
     ) -> None:
         super().__init__(coordinator=coordinator, context=context)
         self.data = cast(EntityIndexTypeVar, coordinator.data[context])
-        self.bow_id = coordinator.data[context]["metadata"].get("bow_id", None)
+        self.bow_id = coordinator.data[context].msp_config.bow_id
         self.system_id = context
         self._extra_attributes = extra_attributes
 
@@ -57,9 +48,8 @@ class OmniLogicEntity(CoordinatorEntity, Generic[EntityIndexTypeVar]):
         self.data = cast(EntityIndexTypeVar, self.coordinator.data[self.system_id])
         self.async_write_ha_state()
 
-    def get_config_by_systemid(self, system_id: int) -> MSPType:
-        # system_id = system_id if system_id is not None else self.system_id
-        return self.coordinator.data[system_id]["config"]
+    def get_config_by_systemid(self, system_id: int) -> MSPConfigType:
+        return self.coordinator.data[system_id].msp_config
 
     def set_config(
         self,
@@ -70,30 +60,19 @@ class OmniLogicEntity(CoordinatorEntity, Generic[EntityIndexTypeVar]):
         system_id = system_id if system_id is not None else self.system_id
 
         _LOGGER.debug("Updating config for system ID: %s with data: %s", system_id, new_config)
-        self.coordinator.data[system_id]["config"].update(new_config)
+
+        for key, value in new_config.items():
+            setattr(self.coordinator.data[system_id].msp_config, key, value)
         if coordinator_update:
             self.coordinator.async_set_updated_data(self.coordinator.data)
 
-    TelT = TypeVar(
-        "TelT",
-        TelemetryBackyardT,
-        TelemetryBodyOfWaterT,
-        TelemetryColorLogicLightT,
-        TelemetryFilterT,
-        TelemetryVirtualHeaterT,
-        TelemetryHeaterT,
-        TelemetryPumpT,
-        TelemetryValveActuatorT,
-        TelemetryGroupT,
-    )
-
     def get_telemetry_by_systemid(self, system_id: int) -> TelemetryType | None:
         if self.available:
-            return self.coordinator.data[system_id]["telemetry"]
+            return self.coordinator.data[system_id].telemetry
         return None
 
-    def get_system_config(self) -> MSPSystemT:
-        return self.coordinator.msp_config["MSPConfig"]["System"]
+    def get_system_config(self) -> MSPSystem:
+        return self.coordinator.msp_config.system
 
     def set_telemetry(
         self,
@@ -106,21 +85,22 @@ class OmniLogicEntity(CoordinatorEntity, Generic[EntityIndexTypeVar]):
             new_telemetry,
         )
         try:
-            self.coordinator.data[self.system_id]["telemetry"].update(new_telemetry)  # type: ignore[union-attr]
+            for key, value in new_telemetry.items():
+                setattr(self.coordinator.data[self.system_id].telemetry, key, value)
         except KeyError:
             return None
         self.coordinator.async_set_updated_data(self.coordinator.data)
 
     @property
     def available(self) -> bool:
-        return cast(EntityDataBackyardT, self.coordinator.data[BACKYARD_SYSTEM_ID])["telemetry"]["@state"] == 1
+        return cast(TelemetryBackyard, self.coordinator.data[BACKYARD_SYSTEM_ID].telemetry).state is BackyardState.ON
 
     @property
     def device_info(self) -> DeviceInfo:
         """Return the device info."""
         # If we have a BOW ID, then we associate with that BOWs device, if not, we associate with the Backyard
         if self.bow_id is not None:
-            identifiers = {(OmniType.BOW_MSP, self.bow_id)}
+            identifiers = {(OmniType.BOW, self.bow_id)}
         else:
             identifiers = {(OmniType.BACKYARD, BACKYARD_SYSTEM_ID)}
         return DeviceInfo(
@@ -129,7 +109,7 @@ class OmniLogicEntity(CoordinatorEntity, Generic[EntityIndexTypeVar]):
         )
 
     @property
-    def extra_state_attributes(self) -> dict[str, str | int | None]:
+    def extra_state_attributes(self) -> dict[str, str | int]:
         return {
             "omni_system_id": self.system_id,
             "omni_bow_id": self.bow_id,
@@ -137,7 +117,7 @@ class OmniLogicEntity(CoordinatorEntity, Generic[EntityIndexTypeVar]):
 
     @property
     def name(self) -> Any:
-        return self._attr_name if self._attr_name is not None else self.data["metadata"]["name"]
+        return self._attr_name if self._attr_name is not None else self.data.msp_config.name
 
     @property
     def unique_id(self) -> str | None:

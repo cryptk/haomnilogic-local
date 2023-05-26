@@ -41,19 +41,17 @@ repos:
             -   id: ruff
                 args:
                     - --fix
-    -   repo: local
+    -   repo: https://github.com/pylint-dev/pylint
+        rev: v2.17.0
         hooks:
             -   id: pylint
-                name: pylint
-                entry: poetry run -- pylint
-                language: system
-                types: [python]
+                additional_dependencies: [ "homeassistant", "python-omnilogic-local" ]
                 exclude: "custom_components/omnilogic_local/tests/.*"
-    # -   repo: https://github.com/pre-commit/mirrors-mypy
-    #     rev: v1.2.0
-    #     hooks:
-    #         -   id: mypy
-    #             args:
-    #                 - --pretty
-    #             additional_dependencies:
-    #                 - "pydantic"
+    -   repo: https://github.com/pre-commit/mirrors-mypy
+        rev: v1.2.0
+        hooks:
+            -   id: mypy
+                args:
+                    - --pretty
+                additional_dependencies:
+                    - "pydantic"
