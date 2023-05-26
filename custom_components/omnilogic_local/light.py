@@ -47,7 +47,7 @@ COLOR_LOGIC_POWER_STATES = {
 # These were shamelessly borrowed from the lutron_caseta integration
 def to_omni_level(level: int) -> int:
     """Convert the given Home Assistant light level (0-255) to OmniLogic (0-4)."""
-    return int(round((level * 5) / 255))
+    return int(round((level * 4) / 255))
 
 
 def to_hass_level(level: ColorLogicBrightness) -> int:
