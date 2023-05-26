@@ -103,6 +103,10 @@ class OmniLogicButtonEntity(OmniLogicEntity[T], ButtonEntity):
 
         self.set_telemetry({"speed": self.omni_speed, "state": 1})
 
+    @property
+    def extra_state_attributes(self) -> dict[str, str | int]:
+        return super().extra_state_attributes | {"speed": self.omni_speed}
+
 
 class OmniLogicPumpButtonEntity(OmniLogicButtonEntity[EntityIndexPump]):
     def __init__(self, coordinator: OmniLogicCoordinator, context: int, speed: SpeedT) -> None:

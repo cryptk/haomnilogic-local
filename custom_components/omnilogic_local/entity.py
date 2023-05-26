@@ -52,7 +52,7 @@ class OmniLogicEntity(CoordinatorEntity, Generic[EntityIndexTypeVar]):
 
     def set_config(
         self,
-        new_config: dict[str, str],
+        new_config: dict[str, int | str],
         system_id: int | None = None,
         coordinator_update: bool = True,
     ) -> None:
