@@ -88,12 +88,14 @@ class OmnilogicConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ig
         if user_input is not None:
             try:
                 await validate_input(self.hass, user_input)
-            except CannotConnect:
+            except CannotConnect as exc:
                 errors["base"] = "cannot_connect"
-            except OmniLogicTimeout:
+                _LOGGER.exception("Failed to connect: %s", exc)
+            except OmniLogicTimeout as exc:
                 errors["base"] = "timeout"
-            except Exception:  # pylint: disable=broad-except
-                _LOGGER.exception("Unexpected exception")
+                _LOGGER.exception("Connection timed out: %s", exc)
+            except Exception as exc:  # pylint: disable=broad-except
+                _LOGGER.exception("Unexpected exception: %s", exc)
                 errors["base"] = "unknown"
             else:
                 # pylint: disable=fixme
