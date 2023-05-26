@@ -4,11 +4,17 @@ from collections.abc import Sequence
 import logging
 from typing import TYPE_CHECKING, Final, Literal, TypeVar
 
-from pyomnilogic_local.types import FilterState, OmniType, PumpState
+from pyomnilogic_local.types import (
+    FilterState,
+    FilterType,
+    OmniType,
+    PumpState,
+    PumpType,
+)
 
 from homeassistant.components.button import ButtonEntity
 
-from .const import DOMAIN, KEY_COORDINATOR, OmniModel
+from .const import DOMAIN, KEY_COORDINATOR
 from .entity import OmniLogicEntity
 from .types.entity_index import EntityIndexFilter, EntityIndexPump
 from .utils import get_entities_of_omni_types
@@ -44,9 +50,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
                 speed,
             )
             match pump.msp_config.type:
-                case OmniModel.VARIABLE_SPEED_PUMP:
+                case PumpType.VARIABLE_SPEED:
                     entities.append(OmniLogicPumpButtonEntity(coordinator=coordinator, context=system_id, speed=speed))
-                case OmniModel.VARIABLE_SPEED_FILTER:
+                case FilterType.VARIABLE_SPEED:
                     entities.append(OmniLogicFilterButtonEntity(coordinator=coordinator, context=system_id, speed=speed))
 
     async_add_entities(entities)
@@ -67,8 +73,6 @@ class OmniLogicButtonEntity(OmniLogicEntity[T], ButtonEntity):
     """
 
     speed: SpeedT
-    telem_key_speed: Literal["@pumpSpeed", "@filterSpeed"]
-    telem_key_state: Literal["@pumpState", "@filterState"]
 
     @property
     def icon(self) -> str:

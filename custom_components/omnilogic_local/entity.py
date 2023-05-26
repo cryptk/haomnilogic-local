@@ -11,7 +11,7 @@ from homeassistant.core import callback
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import BACKYARD_SYSTEM_ID, MANUFACTURER, OmniModel
+from .const import BACKYARD_SYSTEM_ID, MANUFACTURER
 from .types.entity_index import EntityIndexTypeVar
 
 if TYPE_CHECKING:
@@ -26,7 +26,6 @@ class OmniLogicEntity(CoordinatorEntity, Generic[EntityIndexTypeVar]):
     _attr_has_entity_name = True
     _attr_name: str | None = None
 
-    model: OmniModel | None = None
     data: EntityIndexTypeVar
     coordinator: OmniLogicCoordinator
 

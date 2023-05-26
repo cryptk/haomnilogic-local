@@ -4,11 +4,17 @@ import logging
 from math import floor
 from typing import TYPE_CHECKING, Any, TypeVar
 
-from pyomnilogic_local.types import FilterState, PumpState
+from pyomnilogic_local.types import (
+    FilterState,
+    FilterType,
+    OmniType,
+    PumpState,
+    PumpType,
+)
 
 from homeassistant.components.number import NumberEntity
 
-from .const import DOMAIN, KEY_COORDINATOR, OMNI_TYPES_PUMP, OmniModel
+from .const import DOMAIN, KEY_COORDINATOR
 from .entity import OmniLogicEntity
 from .types.entity_index import EntityIndexFilter, EntityIndexPump
 from .utils import get_entities_of_omni_types
@@ -28,7 +34,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 
     coordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
 
-    all_pumps = get_entities_of_omni_types(coordinator.data, OMNI_TYPES_PUMP)
+    all_pumps = get_entities_of_omni_types(coordinator.data, [OmniType.FILTER, OmniType.PUMP])
 
     entities = []
     for system_id, pump in all_pumps.items():
@@ -39,9 +45,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
             pump.msp_config.name,
         )
         match pump.msp_config.type:
-            case OmniModel.VARIABLE_SPEED_PUMP:
+            case PumpType.VARIABLE_SPEED:
                 entities.append(OmniLogicPumpNumberEntity(coordinator=coordinator, context=system_id))
-            case OmniModel.VARIABLE_SPEED_FILTER:
+            case FilterType.VARIABLE_SPEED:
                 entities.append(OmniLogicFilterNumberEntity(coordinator=coordinator, context=system_id))
 
     async_add_entities(entities)
