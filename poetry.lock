@@ -126,24 +126,25 @@ frozenlist = ">=1.1.0"
 
 [[package]]
 name = "anyio"
-version = "3.6.2"
+version = "3.7.0"
 description = "High level compatibility layer for multiple asynchronous event loop implementations"
 category = "dev"
 optional = false
-python-versions = ">=3.6.2"
+python-versions = ">=3.7"
 files = [
-    {file = "anyio-3.6.2-py3-none-any.whl", hash = "sha256:fbbe32bd270d2a2ef3ed1c5d45041250284e31fc0a4df4a5a6071842051a51e3"},
-    {file = "anyio-3.6.2.tar.gz", hash = "sha256:25ea0d673ae30af41a0c442f81cf3b38c7e79fdc7b60335a4c14e05eb0947421"},
+    {file = "anyio-3.7.0-py3-none-any.whl", hash = "sha256:eddca883c4175f14df8aedce21054bfca3adb70ffe76a9f607aef9d7fa2ea7f0"},
+    {file = "anyio-3.7.0.tar.gz", hash = "sha256:275d9973793619a5374e1c89a4f4ad3f4b0a5510a2b5b939444bee8f4c4d37ce"},
 ]
 
 [package.dependencies]
+exceptiongroup = {version = "*", markers = "python_version < \"3.11\""}
 idna = ">=2.8"
 sniffio = ">=1.1"
 
 [package.extras]
-doc = ["packaging", "sphinx-autodoc-typehints (>=1.2.0)", "sphinx-rtd-theme"]
-test = ["contextlib2", "coverage[toml] (>=4.5)", "hypothesis (>=4.0)", "mock (>=4)", "pytest (>=7.0)", "pytest-mock (>=3.6.1)", "trustme", "uvloop (<0.15)", "uvloop (>=0.15)"]
-trio = ["trio (>=0.16,<0.22)"]
+doc = ["Sphinx (>=6.1.0)", "packaging", "sphinx-autodoc-typehints (>=1.2.0)", "sphinx-rtd-theme", "sphinxcontrib-jquery"]
+test = ["anyio[trio]", "coverage[toml] (>=4.5)", "hypothesis (>=4.0)", "mock (>=4)", "psutil (>=5.9)", "pytest (>=7.0)", "pytest-mock (>=3.6.1)", "trustme", "uvloop (>=0.17)"]
+trio = ["trio (<0.22)"]
 
 [[package]]
 name = "astral"
@@ -1561,14 +1562,14 @@ testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "no
 
 [[package]]
 name = "python-omnilogic-local"
-version = "0.3.0"
+version = "0.3.1"
 description = "A library for local control of Hayward OmniHub/OmniLogic pool controllers using their local API"
 category = "dev"
 optional = false
 python-versions = ">=3.10,<4.0"
 files = [
-    {file = "python_omnilogic_local-0.3.0-py3-none-any.whl", hash = "sha256:1718541924570fced8b4eac5fe186c75dcb15f55ae2c83661e522a47c542027d"},
-    {file = "python_omnilogic_local-0.3.0.tar.gz", hash = "sha256:92cef3dfe8ab8644265f35eb2bc41d78fff65dd0b6751414fc6bd1c7fbe3cd9c"},
+    {file = "python_omnilogic_local-0.3.1-py3-none-any.whl", hash = "sha256:f83d784935c5fe5a699e2653b534143ff6d2c81595ac52df027f7ed8d145cec0"},
+    {file = "python_omnilogic_local-0.3.1.tar.gz", hash = "sha256:adcf4377b696f700e9dbcc4d5089902a47338212417d4d85dc067bb72c6ed8d5"},
 ]
 
 [package.dependencies]
@@ -2033,4 +2034,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "27db9684e207d0d9b4d14e079a629e6569f2001dbe4d043f6d6831aef8bb24a7"
+content-hash = "83acc339c89faa1dfdf3d31e3ed8cedfc3ea9e5129c531d5d172258577d59569"
