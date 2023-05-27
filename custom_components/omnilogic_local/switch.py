@@ -129,6 +129,12 @@ class OmniLogicRelayValveActuatorSwitchEntity(OmniLogicSwitchEntity[EntityIndexV
                 return "mdi:fountain"
             case RelayFunction.WATER_SLIDE:
                 return "mdi:slide"
+            case RelayFunction.LAMINARS:
+                return "mdi:light"
+            case RelayFunction.LIGHT:
+                return "mdi:light"
+            case RelayFunction.BACKYARD_LIGHT:
+                return "mdi:light"
             case _:
                 return "mdi:valve-open" if self.is_on else "mdi:valve-closed"
 
@@ -144,7 +150,7 @@ class OmniLogicRelayHighVoltageSwitchEntity(OmniLogicSwitchEntity[EntityIndexRel
 
     """
 
-    telem_key_state = RelayState
+    telem_value_state = RelayState
 
     @property
     def icon(self) -> str | None:
