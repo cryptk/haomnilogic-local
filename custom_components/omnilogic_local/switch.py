@@ -144,7 +144,7 @@ class OmniLogicRelayHighVoltageSwitchEntity(OmniLogicSwitchEntity[EntityIndexRel
 
     """
 
-    telem_key_state = RelayState
+    telem_value_state = RelayState
 
     @property
     def icon(self) -> str | None:
