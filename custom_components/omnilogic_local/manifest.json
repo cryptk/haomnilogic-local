@@ -13,7 +13,7 @@
   "issue_tracker": "https://github.com/cryptk/haomnilogic-local/issues",
   "loggers": ["pyomnilogic_local"],
   "requirements": [
-    "python_omnilogic_local==0.3.1"
+    "python_omnilogic_local==0.3.3"
   ],
   "ssdp": [],
   "version": "0.0.1",
