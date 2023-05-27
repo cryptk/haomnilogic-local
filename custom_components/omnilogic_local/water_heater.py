@@ -92,7 +92,7 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity[EntityIndexHeater], WaterHeater
 
     @property
     def target_temperature(self) -> float | None:
-        return self.data.msp_config.set_point
+        return self.data.telemetry.current_set_point
 
     @property
     def current_temperature(self) -> float | None:
@@ -110,7 +110,7 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity[EntityIndexHeater], WaterHeater
             int(kwargs[ATTR_TEMPERATURE]),
             unit=self.temperature_unit,
         )
-        self.set_config({"set_point": int(kwargs[ATTR_TEMPERATURE])})
+        self.set_telemetry({"current_set_point": int(kwargs[ATTR_TEMPERATURE])})
 
     async def async_set_operation_mode(self, operation_mode: Literal["on", "off"]) -> None:
         match operation_mode:
