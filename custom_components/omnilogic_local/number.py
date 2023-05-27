@@ -55,7 +55,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     virtual_heater = {system_id: data for system_id, data in all_heaters.items() if data.msp_config.omni_type == OmniType.VIRT_HEATER}
 
     for system_id, vheater in virtual_heater.items():
-        if hasattr(vheater.msp_config, "solar_set_point"):
+        if vheater.msp_config.solar_set_point is not None:
             _LOGGER.debug(
                 "Configuring number solar set point for heater with ID: %s, Name: %s",
                 vheater.msp_config.system_id,
