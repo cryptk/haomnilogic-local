@@ -1508,13 +1508,13 @@ testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "no
 
 [[package]]
 name = "python-omnilogic-local"
-version = "0.4.0"
+version = "0.4.1"
 description = "A library for local control of Hayward OmniHub/OmniLogic pool controllers using their local API"
 optional = false
 python-versions = ">=3.10,<4.0"
 files = [
-    {file = "python_omnilogic_local-0.4.0-py3-none-any.whl", hash = "sha256:8d2be069c285c5a04bd89fa6bab579a0ea31ad22d0b03f261d722110d0d5236d"},
-    {file = "python_omnilogic_local-0.4.0.tar.gz", hash = "sha256:0aded60192b5bcb729a4800d602e979b4d5fb3e16ded9e3b41adff98ed1fb262"},
+    {file = "python_omnilogic_local-0.4.1-py3-none-any.whl", hash = "sha256:d60ad9d8a290d3577ed28011f49b97685985dda9f8f2f4008a1e6261ead069b6"},
+    {file = "python_omnilogic_local-0.4.1.tar.gz", hash = "sha256:e411e80b299a26f2f1710ac2f550b8fdef06c9a70d041a4d6b9b20c67d5f60c2"},
 ]
 
 [package.dependencies]
@@ -1961,4 +1961,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "b69af253afe59f52e46728e52e089791b50abbc60a96074f4bfe58f17ddbaf66"
+content-hash = "991ab2c1b07aa713ee444b1b321503c88bbd54abcc6df5c263fc349321996b3c"
