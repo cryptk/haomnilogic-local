@@ -41,23 +41,30 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     all_sensors = get_entities_of_hass_type(coordinator.data, "sensor")
     entities = []
     for system_id, sensor in all_sensors.items():
-        _LOGGER.debug(
-            "Configuring sensor with ID: %s, Name: %s",
-            sensor.msp_config.system_id,
-            sensor.msp_config.name,
-        )
         match sensor.msp_config.type:
             case SensorType.AIR_TEMP:
+                _LOGGER.debug(
+                    "Configuring air temperature sensor with ID: %s, Name: %s",
+                    sensor.msp_config.system_id,
+                    sensor.msp_config.name,
+                )
                 entities.append(OmniLogicAirTemperatureSensorEntity(coordinator=coordinator, context=system_id))
             case SensorType.WATER_TEMP:
+                _LOGGER.debug(
+                    "Configuring water temperature sensor with ID: %s, Name: %s",
+                    sensor.msp_config.system_id,
+                    sensor.msp_config.name,
+                )
                 entities.append(OmniLogicWaterTemperatureSensorEntity(coordinator=coordinator, context=system_id))
             case SensorType.SOLAR_TEMP:
+                _LOGGER.debug(
+                    "Configuring solar temperature sensor with ID: %s, Name: %s",
+                    sensor.msp_config.system_id,
+                    sensor.msp_config.name,
+                )
                 entities.append(OmniLogicSolarTemperatureSensorEntity(coordinator=coordinator, context=system_id))
             case SensorType.FLOW:
-                # It looks like a flow sensor likely populates either a 1 or a 0 on the BoW to indicate if water is flowing or not
-                # If a BoW does not have a Flow Sensor, it appears that the flow attribute is 255
-                # Need to confirm the assumption that the values are only 1 or 0 if there is a flow sensor and 255 if there is no flow
-                # sensor before we implement this
+                # This sensor type is implemented as a binary sensor, not a sensor
                 pass
             case _:
                 _LOGGER.warning(
