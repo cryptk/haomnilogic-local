@@ -27,7 +27,7 @@ This addon is not complete, initially I am implementing all functionality for th
     - Turn on/off
 - Sensors
     - Flow
-    - Filter pump power (not usable in the energy dashboard directly, [see below](#Why-can't-I-add-the-pump-power-sensors-to-the-Energy-dashboard))
+    - Filter pump power (not usable in the energy dashboard directly, [see below](#why-cant-i-add-the-pump-power-sensors-to-the-energy-dashboard)
     - Temperature
     - Service Mode
 - Heaters
