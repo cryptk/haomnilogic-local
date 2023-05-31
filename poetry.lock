@@ -1404,24 +1404,6 @@ dotenv = ["python-dotenv (>=0.10.4)"]
 email = ["email-validator (>=1.0.3)"]
 
 [[package]]
-name = "pydantic-xml"
-version = "0.6.1"
-description = "pydantic xml extension"
-optional = false
-python-versions = ">=3.8,<4.0"
-files = [
-    {file = "pydantic_xml-0.6.1-py3-none-any.whl", hash = "sha256:50346c01b606bfc339882818e2359c77cc0d2ec80a2c3aac357a8a9d857d637a"},
-    {file = "pydantic_xml-0.6.1.tar.gz", hash = "sha256:85673e27a7c2309f970c0412ca4a1dfb9b39a932cb99eee2cc4eaa6c7001434a"},
-]
-
-[package.dependencies]
-pydantic = ">=1.9.0,<2.0.0"
-
-[package.extras]
-docs = ["Sphinx (>=5.3.0,<6.0.0)", "furo (>=2022.12.7,<2023.0.0)", "sphinx-copybutton (>=0.5.1,<0.6.0)", "sphinx_design (>=0.3.0,<0.4.0)", "toml (>=0.10.2,<0.11.0)"]
-lxml = ["lxml (>=4.9.1,<5.0.0)"]
-
-[[package]]
 name = "pyjwt"
 version = "2.6.0"
 description = "JSON Web Token implementation in Python"
@@ -1508,18 +1490,17 @@ testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "no
 
 [[package]]
 name = "python-omnilogic-local"
-version = "0.7.0"
+version = "0.8.0"
 description = "A library for local control of Hayward OmniHub/OmniLogic pool controllers using their local API"
 optional = false
 python-versions = ">=3.10,<4.0"
 files = [
-    {file = "python_omnilogic_local-0.7.0-py3-none-any.whl", hash = "sha256:50266fcdebbf97d55026d7b609c5c21cc8668e27411c02d289a3fdee3bf61718"},
-    {file = "python_omnilogic_local-0.7.0.tar.gz", hash = "sha256:8bde29dc830884be8098cba43dcbc920e6859b86636cffdba6c4f77a980be518"},
+    {file = "python_omnilogic_local-0.8.0-py3-none-any.whl", hash = "sha256:ec37255b05bd00d27dea2a2e883eaa3ea8a79b909e42766b60d6ef460c4e3453"},
+    {file = "python_omnilogic_local-0.8.0.tar.gz", hash = "sha256:08fa99b949613e024380b1da487587586ee8b9d3ac3af45d81d72c4e14f061ed"},
 ]
 
 [package.dependencies]
 pydantic = ">=1.10.7,<2.0.0"
-pydantic-xml = ">=0.6.1,<0.7.0"
 xmltodict = ">=0.13.0,<0.14.0"
 
 [[package]]
@@ -1961,4 +1942,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "c2b350bf84af02ddcc758f3b951b51aafa7543079c4411fe920885a0e74d053a"
+content-hash = "dc7d59f325f02647ceb1b4af1bc732fb8c298cc7850dddb28ab392ac3fb753c4"
