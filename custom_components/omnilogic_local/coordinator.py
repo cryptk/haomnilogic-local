@@ -18,7 +18,7 @@ from .const import DEFAULT_POLL_INTERVAL
 from .types.entity_index import EntityIndexData
 
 # Import diagnostic data to reproduce issues
-SIMULATION = True
+SIMULATION = False
 if SIMULATION:
     import json
 
