@@ -3,12 +3,16 @@ from __future__ import annotations
 from datetime import date, datetime
 from decimal import Decimal
 import logging
-from typing import TYPE_CHECKING, Generic, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 
 from pyomnilogic_local.types import OmniType, SensorType, SensorUnits
 
-from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
-from homeassistant.const import UnitOfTemperature
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorStateClass,
+)
+from homeassistant.const import UnitOfPower, UnitOfTemperature
 from homeassistant.helpers.typing import StateType
 
 from .const import BACKYARD_SYSTEM_ID, DOMAIN, KEY_COORDINATOR
@@ -17,6 +21,7 @@ from .errors import OmniLogicError
 from .types.entity_index import (
     EntityIndexBackyard,
     EntityIndexBodyOfWater,
+    EntityIndexFilter,
     EntityIndexHeaterEquip,
     EntityIndexSensor,
 )
@@ -70,6 +75,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
                 _LOGGER.warning(
                     "Your system has an unsupported sensor, please raise an issue: https://github.com/cryptk/haomnilogic-local/issues"
                 )
+
+    # Create energy sensors for filters/pumps suitable for inclusion in the energy dashboard
+    all_pumps = get_entities_of_omni_types(coordinator.data, [OmniType.FILTER])
+    for system_id, pump in all_pumps.items():
+        match pump.msp_config.omni_type:
+            case OmniType.FILTER:
+                _LOGGER.debug(
+                    "Configuring energy sensor for filter with ID: %s, Name: %s",
+                    pump.msp_config.system_id,
+                    pump.msp_config.name,
+                )
+                entities.append(OmniLogicFilterEnergySensorEntity(coordinator=coordinator, context=system_id))
 
     async_add_entities(entities)
 
@@ -163,3 +180,17 @@ class OmniLogicSolarTemperatureSensorEntity(OmniLogicTemperatureSensorEntity[Ent
                 return found[0]
             case _:
                 raise OmniLogicError("Found multiple heaters for sensor id: %s" % self.system_id)
+
+
+class OmniLogicFilterEnergySensorEntity(OmniLogicEntity[EntityIndexFilter], SensorEntity):
+    _attr_device_class = SensorDeviceClass.POWER
+    _attr_native_unit_of_measurement = UnitOfPower.WATT
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    @property
+    def native_value(self) -> StateType | date | datetime | Decimal:
+        return self.data.telemetry.power
+
+    @property
+    def name(self) -> Any:
+        return f"{self.data.msp_config.name} Power"
