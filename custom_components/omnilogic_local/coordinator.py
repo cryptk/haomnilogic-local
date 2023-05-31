@@ -18,8 +18,11 @@ from .const import DEFAULT_POLL_INTERVAL
 from .types.entity_index import EntityIndexData
 
 # Import diagnostic data to reproduce issues
-# import json
-# from .test_diagnostic_data import TEST_DIAGNOSTIC_DATA
+SIMULATION = False
+if SIMULATION:
+    import json
+
+    from .test_diagnostic_data import TEST_DIAGNOSTIC_DATA
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -66,23 +69,26 @@ class OmniLogicCoordinator(DataUpdateCoordinator):
             # Note: asyncio.TimeoutError and aiohttp.ClientError are already
             # handled by the data update coordinator.
             async with async_timeout.timeout(10):
-                # Initially we only pulled the msp_config at integration startup as it rarely changes
-                # Then we learned that heater set points (which can change often enough) are stored
-                # within the MSP Config, not the telemetry, so now we pull the msp_config on every update
-                _LOGGER.debug("Fetching OmniLogic MSPConfig")
-                # we postprocess the XML to convert hyphens to underscores to simplify typing with TypedDict later
-                # and attempt to convert values to int to make equality comparisons easier without having to constantly int() everything
-                self.msp_config = cast(MSPConfig, await self.omni_api.async_get_config())
 
-                _LOGGER.debug("Fetching OmniLogic Telemetry")
-                # We postprocess the XML to convert hyphens to underscores to simplify typing with TypedDict later
-                # and attempt to convert values to int to make equality comparisons easier without having to constantly int() everything
-                self.telemetry = cast(Telemetry, await self.omni_api.async_get_telemetry())
+                if SIMULATION:
+                    _LOGGER.debug("Simulating Omni MSPConfig and Telemetry")
+                    test_data = json.loads(TEST_DIAGNOSTIC_DATA.replace(r"\"", r"'"))
+                    self.msp_config = MSPConfig.load_xml(test_data["data"]["msp_config"])
+                    self.telemetry = Telemetry.load_xml(test_data["data"]["telemetry"])
 
-                # The below is used if we have a test_diagnostic_data.py populated with a diagnostic data file to reproduce an issue
-                # test_data = json.loads(TEST_DIAGNOSTIC_DATA)
-                # self.msp_config = test_data["data"]["msp_config"]
-                # self.telemetry = test_data["data"]["telemetry"]
+                else:
+                    # Initially we only pulled the msp_config at integration startup as it rarely changes
+                    # Then we learned that heater set points (which can change often enough) are stored
+                    # within the MSP Config, not the telemetry, so now we pull the msp_config on every update
+                    _LOGGER.debug("Fetching OmniLogic MSPConfig")
+                    # we postprocess the XML to convert hyphens to underscores to simplify typing with TypedDict later
+                    # and attempt to convert values to int to make equality comparisons easier without having to constantly int() everything
+                    self.msp_config = cast(MSPConfig, await self.omni_api.async_get_config())
+
+                    _LOGGER.debug("Fetching OmniLogic Telemetry")
+                    # We postprocess the XML to convert hyphens to underscores to simplify typing with TypedDict later
+                    # and attempt to convert values to int to make equality comparisons easier without having to constantly int() everything
+                    self.telemetry = cast(Telemetry, await self.omni_api.async_get_telemetry())
 
                 entity_index: dict[int, EntityIndexData] = {}
                 for device in device_walk(self.msp_config):

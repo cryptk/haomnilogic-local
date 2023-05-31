@@ -86,7 +86,7 @@ class OmniLogicSwitchEntity(OmniLogicEntity[T], SwitchEntity):
 
     """
 
-    telem_value_state: ValveActuatorState | RelayState | PumpState
+    telem_value_state: ValveActuatorState | RelayState | PumpState | FilterState
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the entity on."""
@@ -168,7 +168,7 @@ class OmniLogicPumpSwitchEntity(OmniLogicSwitchEntity[EntityIndexPump]):
 
     """
 
-    telem_key_state = PumpState
+    telem_value_state = PumpState
 
     @property
     def icon(self) -> str | None:
@@ -198,7 +198,7 @@ class OmniLogicFilterSwitchEntity(OmniLogicSwitchEntity[EntityIndexFilter]):
 
     """
 
-    telem_key_state = FilterState
+    telem_value_state = FilterState
 
     @property
     def icon(self) -> str | None:

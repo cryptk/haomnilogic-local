@@ -53,6 +53,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
                 entities.append(OmniLogicWaterTemperatureSensorEntity(coordinator=coordinator, context=system_id))
             case SensorType.SOLAR_TEMP:
                 entities.append(OmniLogicSolarTemperatureSensorEntity(coordinator=coordinator, context=system_id))
+            case SensorType.FLOW:
+                # It looks like a flow sensor likely populates either a 1 or a 0 on the BoW to indicate if water is flowing or not
+                # If a BoW does not have a Flow Sensor, it appears that the flow attribute is 255
+                # Need to confirm the assumption that the values are only 1 or 0 if there is a flow sensor and 255 if there is no flow
+                # sensor before we implement this
+                pass
             case _:
                 _LOGGER.warning(
                     "Your system has an unsupported sensor, please raise an issue: https://github.com/cryptk/haomnilogic-local/issues"
