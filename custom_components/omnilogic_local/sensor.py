@@ -5,7 +5,7 @@ from decimal import Decimal
 import logging
 from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 
-from pyomnilogic_local.types import OmniType, SensorType, SensorUnits
+from pyomnilogic_local.types import FilterState, OmniType, SensorType, SensorUnits
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -189,7 +189,19 @@ class OmniLogicFilterEnergySensorEntity(OmniLogicEntity[EntityIndexFilter], Sens
 
     @property
     def native_value(self) -> StateType | date | datetime | Decimal:
-        return self.data.telemetry.power
+        return (
+            self.data.telemetry.power
+            if self.data.telemetry.state
+            in [
+                FilterState.ON,
+                FilterState.PRIMING,
+                FilterState.HEATER_EXTEND,
+                FilterState.CSAD_EXTEND,
+                FilterState.FILTER_FORCE_PRIMING,
+                FilterState.FILTER_SUPERCHLORINATE,
+            ]
+            else 0
+        )
 
     @property
     def name(self) -> Any:
