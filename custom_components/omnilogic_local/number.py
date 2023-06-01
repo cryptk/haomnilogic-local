@@ -40,7 +40,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 
     entities = []
     for system_id, pump in filters_and_pumps.items():
-
         _LOGGER.debug(
             "Configuring number for pump with ID: %s, Name: %s",
             pump.msp_config.system_id,

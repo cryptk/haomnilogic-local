@@ -71,6 +71,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
             case SensorType.FLOW:
                 # This sensor type is implemented as a binary sensor, not a sensor
                 pass
+            case SensorType.EXT_INPUT:
+                # As far as I can tell, "external input" sensors are not exposed in the telemetry,
+                # they are only used for things like equipment interlocks
+                pass
             case _:
                 _LOGGER.warning(
                     "Your system has an unsupported sensor, please raise an issue: https://github.com/cryptk/haomnilogic-local/issues"

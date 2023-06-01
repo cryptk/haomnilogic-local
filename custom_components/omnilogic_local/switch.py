@@ -138,6 +138,12 @@ class OmniLogicRelayValveActuatorSwitchEntity(OmniLogicSwitchEntity[EntityIndexV
             case _:
                 return "mdi:valve-open" if self.is_on else "mdi:valve-closed"
 
+    @property
+    def extra_state_attributes(self) -> dict[str, int | str]:
+        return super().extra_state_attributes | {
+            "why_on": self.data.telemetry.why_on,
+        }
+
 
 class OmniLogicRelayHighVoltageSwitchEntity(OmniLogicSwitchEntity[EntityIndexRelay]):
     """An entity using CoordinatorEntity.
