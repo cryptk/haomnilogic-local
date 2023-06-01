@@ -41,7 +41,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 
     entities = []
     for system_id, pump in all_pumps.items():
-
         for speed in SPEED_NAMES:
             _LOGGER.debug(
                 "Configuring button for pump with ID: %s, Name: %s, Speed: %s",

@@ -24,6 +24,7 @@ line-length=140
 
 [tool.codespell]
 ignore-words-list="hass"
+exclude-file="poetry.lock"
 
 # All of the settings for isort, pylint, ruff, etc were shamelessly borrowed from homeassistant core
 [tool.isort]
@@ -256,9 +257,6 @@ voluptuous = "vol"
 
 [tool.ruff.flake8-pytest-style]
 fixture-parentheses = false
-
-[tool.ruff.pyupgrade]
-keep-runtime-typing = true
 
 [tool.ruff.per-file-ignores]
 

@@ -77,7 +77,6 @@ class OmniLogicEntity(CoordinatorEntity, Generic[EntityIndexTypeVar]):
         self,
         new_telemetry: dict[str, Any],
     ) -> None:
-
         _LOGGER.debug(
             "Updating telemetry for system ID: %s with data: %s",
             self.system_id,

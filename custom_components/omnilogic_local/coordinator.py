@@ -70,7 +70,6 @@ class OmniLogicCoordinator(DataUpdateCoordinator):
             # Note: asyncio.TimeoutError and aiohttp.ClientError are already
             # handled by the data update coordinator.
             async with async_timeout.timeout(30):
-
                 if SIMULATION:
                     _LOGGER.debug("Simulating Omni MSPConfig and Telemetry")
                     test_data = json.loads(TEST_DIAGNOSTIC_DATA.replace(r"\"", r"'"))
