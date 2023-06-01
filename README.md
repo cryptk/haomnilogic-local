@@ -2,6 +2,8 @@
 
 A Home Assistant integration for Hayward OmniLogic/OmniHub pool controllers using the local UDP/XML api
 
+[![Buy me a coffee!](https://www.buymeacoffee.com/assets/img/custom_images/black_img.png)](https://www.buymeacoffee.com/cryptk)
+
 ## Installation
 This repository is able to be installed via [HACS](https://hacs.xyz/), you will need to add this repo as a [Custom Repository](https://hacs.xyz/docs/faq/custom_repositories/)
 
