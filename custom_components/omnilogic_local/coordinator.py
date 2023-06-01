@@ -4,7 +4,6 @@ from __future__ import annotations
 from collections.abc import Iterable
 from datetime import timedelta
 import logging
-from typing import cast
 
 import async_timeout
 from pyomnilogic_local.api import OmniLogicAPI
@@ -42,7 +41,9 @@ def device_walk(base: OmniBase) -> Iterable[OmniBase]:
 class OmniLogicCoordinator(DataUpdateCoordinator):
     """Hayward OmniLogic API coordinator."""
 
+    msp_config_xml: str
     msp_config: MSPConfig
+    telemetry_xml: str
     telemetry: Telemetry
     data: dict[int, EntityIndexData]
 
@@ -83,12 +84,14 @@ class OmniLogicCoordinator(DataUpdateCoordinator):
                     _LOGGER.debug("Fetching OmniLogic MSPConfig")
                     # we postprocess the XML to convert hyphens to underscores to simplify typing with TypedDict later
                     # and attempt to convert values to int to make equality comparisons easier without having to constantly int() everything
-                    self.msp_config = cast(MSPConfig, await self.omni_api.async_get_config())
+                    self.msp_config_xml = await self.omni_api.async_get_config(raw=True)
+                    self.msp_config = MSPConfig.load_xml(self.msp_config_xml)
 
                     _LOGGER.debug("Fetching OmniLogic Telemetry")
                     # We postprocess the XML to convert hyphens to underscores to simplify typing with TypedDict later
                     # and attempt to convert values to int to make equality comparisons easier without having to constantly int() everything
-                    self.telemetry = cast(Telemetry, await self.omni_api.async_get_telemetry())
+                    self.telemetry_xml = await self.omni_api.async_get_telemetry(raw=True)
+                    self.telemetry = Telemetry.load_xml(self.telemetry_xml)
 
                 entity_index: dict[int, EntityIndexData] = {}
                 for device in device_walk(self.msp_config):
