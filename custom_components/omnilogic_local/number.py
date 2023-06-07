@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import logging
 from math import floor
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from pyomnilogic_local.types import (
+    BodyOfWaterType,
+    ChlorinatorDispenserType,
     FilterState,
     FilterType,
     HeaterType,
@@ -19,6 +21,7 @@ from homeassistant.const import PERCENTAGE, UnitOfTemperature
 from .const import DOMAIN, KEY_COORDINATOR
 from .entity import OmniLogicEntity
 from .types.entity_index import (
+    EntityIndexBodyOfWater,
     EntityIndexChlorinator,
     EntityIndexFilter,
     EntityIndexHeater,
@@ -78,12 +81,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     all_chlorinators = get_entities_of_omni_types(coordinator.data, [OmniType.CHLORINATOR])
 
     for system_id, chlorinator in all_chlorinators.items():
-        _LOGGER.debug(
-            "Configuring number for chlorinator with ID: %s, Name: %s",
-            chlorinator.msp_config.system_id,
-            chlorinator.msp_config.name,
-        )
-        entities.append(OmniLogicChlorinatorSetPointNumberEntity(coordinator=coordinator, context=system_id))
+        match cast(EntityIndexChlorinator, chlorinator).msp_config.dispenser_type:
+            case ChlorinatorDispenserType.SALT:
+                _LOGGER.debug(
+                    "Configuring number for chlorinator with ID: %s, Name: %s",
+                    chlorinator.msp_config.system_id,
+                    chlorinator.msp_config.name,
+                )
+                entities.append(OmniLogicChlorinatorSetPointNumberEntity(coordinator=coordinator, context=system_id))
+            case _:
+                _LOGGER.warning(
+                    "Your system has an unsupported chlorinator, please raise an issue: https://github.com/cryptk/haomnilogic-local/issues"
+                )
 
     async_add_entities(entities)
 
@@ -254,5 +263,16 @@ class OmniLogicChlorinatorSetPointNumberEntity(OmniLogicEntity[EntityIndexChlori
         return self.data.telemetry.timed_percent
 
     async def async_set_native_value(self, value: float) -> None:
-        await self.coordinator.omni_api.async_set_chlorinator_params(self.bow_id, self.system_id, int(value))
+        bow = cast(EntityIndexBodyOfWater, self.coordinator.data[self.bow_id])
+
+        # The bow_type parameter doesn't seem to matter to the omni_api, it works just leaving it always 0
+        # we are going to set it correctly though just in case
+        bow_type: int = 0
+        match bow.msp_config.type:
+            case BodyOfWaterType.POOL:
+                bow_type = 0
+            case BodyOfWaterType.SPA:
+                bow_type = 1
+
+        await self.coordinator.omni_api.async_set_chlorinator_params(self.bow_id, self.system_id, int(value), bow_type=bow_type)
         self.set_telemetry({"timed_percent": int(value)})
