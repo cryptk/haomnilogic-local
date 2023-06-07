@@ -242,6 +242,7 @@ class OmniLogicSolarSetPointNumberEntity(OmniLogicEntity[EntityIndexHeater], Num
 class OmniLogicChlorinatorSetPointNumberEntity(OmniLogicEntity[EntityIndexChlorinator], NumberEntity):
     """An OmniLogicFilterNumberEntity is a special case of an OmniLogicPumpNumberEntity."""
 
+    _attr_name = "Chlorinator Set Point"
     _attr_native_max_value = 100
     _attr_native_min_value = 0
     _attr_native_step = 1
