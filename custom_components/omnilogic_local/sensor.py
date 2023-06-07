@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from decimal import Decimal
 import logging
-from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar, cast
 
 from pyomnilogic_local.types import (
     ChlorinatorDispenserType,
@@ -108,11 +108,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
         match cast(EntityIndexChlorinator, chlorinator).msp_config.dispenser_type:
             case ChlorinatorDispenserType.SALT:
                 _LOGGER.debug(
-                    "Configuring average salt level sensor for chlorinator with ID: %s, Name: %s",
+                    "Configuring salt level sensors for chlorinator with ID: %s, Name: %s",
                     chlorinator.msp_config.system_id,
                     chlorinator.msp_config.name,
                 )
-                entities.append(OmniLogicChlorinatorSaltLevelSensorEntity(coordinator=coordinator, context=system_id))
+                entities.append(
+                    OmniLogicChlorinatorSaltLevelSensorEntity(coordinator=coordinator, context=system_id, sensor_type="average")
+                )
+                entities.append(
+                    OmniLogicChlorinatorSaltLevelSensorEntity(coordinator=coordinator, context=system_id, sensor_type="instant")
+                )
             case _:
                 _LOGGER.warning(
                     "Your system has an unsupported chlorinator, please raise an issue: https://github.com/cryptk/haomnilogic-local/issues"
@@ -241,11 +246,20 @@ class OmniLogicFilterEnergySensorEntity(OmniLogicEntity[EntityIndexFilter], Sens
 class OmniLogicChlorinatorSaltLevelSensorEntity(OmniLogicEntity[EntityIndexChlorinator], SensorEntity):
     _attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_MILLION
     _attr_state_class = SensorStateClass.MEASUREMENT
+    _sensor_type: Literal["average", "instant"]
+
+    def __init__(self, coordinator: OmniLogicCoordinator, context: int, sensor_type: Literal["average", "instant"]) -> None:
+        super().__init__(coordinator, context)
+        self._sensor_type = sensor_type
 
     @property
     def native_value(self) -> StateType | date | datetime | Decimal:
-        return self.data.telemetry.avg_salt_level
+        match self._sensor_type:
+            case "average":
+                return self.data.telemetry.avg_salt_level
+            case "instant":
+                return self.data.telemetry.instant_salt_level
 
     @property
     def name(self) -> Any:
-        return f"{self.data.msp_config.name} Average Salt Level"
+        return f"{self.data.msp_config.name} {self._sensor_type.capitalize()} Salt Level"
