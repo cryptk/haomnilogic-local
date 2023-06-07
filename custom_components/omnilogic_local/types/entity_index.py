@@ -6,6 +6,8 @@ from typing import TypeVar
 from pyomnilogic_local.models.mspconfig import (
     MSPBackyard,
     MSPBoW,
+    MSPChlorinator,
+    MSPChlorinatorEquip,
     MSPColorLogicLight,
     MSPFilter,
     MSPHeaterEquip,
@@ -44,7 +46,7 @@ from pyomnilogic_local.models.telemetry import (
 
 @dataclass
 class EntityIndexData:
-    msp_config: MSPSchedule | MSPBackyard | MSPBoW | MSPVirtualHeater | MSPHeaterEquip | MSPRelay | MSPFilter | MSPSensor | MSPColorLogicLight
+    msp_config: MSPSchedule | MSPBackyard | MSPBoW | MSPVirtualHeater | MSPHeaterEquip | MSPRelay | MSPFilter | MSPSensor | MSPColorLogicLight | MSPChlorinator | MSPChlorinatorEquip
     telemetry: TelemetryBackyard | TelemetryBoW | TelemetryChlorinator | TelemetryColorLogicLight | TelemetryFilter | TelemetryGroup | TelemetryHeater | TelemetryPump | TelemetryRelay | TelemetryValveActuator | TelemetryVirtualHeater
 
 
@@ -90,6 +92,16 @@ class EntityIndexHeaterEquip:
     telemetry: TelemetryHeater
 
 
+class EntityIndexChlorinator:
+    msp_config: MSPChlorinator
+    telemetry: TelemetryChlorinator
+
+
+class EntityIndexChlorinatorEquip:
+    msp_config: MSPChlorinatorEquip
+    telemetry: TelemetryChlorinator
+
+
 class EntityIndexPump:
     msp_config: MSPPump
     telemetry: TelemetryPump
@@ -128,6 +140,8 @@ EntityIndexTypeVar = TypeVar(
     EntityIndexBackyard,
     EntityIndexBodyOfWater,
     EntityIndexColorLogicLight,
+    EntityIndexChlorinator,
+    EntityIndexChlorinatorEquip,
     EntityIndexFilter,
     EntityIndexHeater,
     EntityIndexHeaterEquip,

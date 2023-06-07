@@ -18,6 +18,7 @@ from homeassistant.components.switch import SwitchEntity
 from .const import DOMAIN, KEY_COORDINATOR
 from .entity import OmniLogicEntity
 from .types.entity_index import (
+    EntityIndexChlorinator,
     EntityIndexFilter,
     EntityIndexPump,
     EntityIndexRelay,
@@ -68,6 +69,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
                     switch.msp_config.name,
                 )
                 entities.append(OmniLogicPumpSwitchEntity(coordinator=coordinator, context=system_id))
+            case OmniType.CHLORINATOR:
+                _LOGGER.debug(
+                    "Configuring switch for pump with ID: %s, Name: %s",
+                    switch.msp_config.system_id,
+                    switch.msp_config.name,
+                )
+                entities.append(OmniLogicChlorinatorSwitchEntity(coordinator=coordinator, context=system_id))
 
     async_add_entities(entities)
 
@@ -239,3 +247,37 @@ class OmniLogicFilterSwitchEntity(OmniLogicSwitchEntity[EntityIndexFilter]):
             "filter_state": self.data.telemetry.state.pretty(),
             "why_on": self.data.telemetry.why_on.pretty(),
         }
+
+
+class OmniLogicChlorinatorSwitchEntity(OmniLogicEntity[EntityIndexChlorinator], SwitchEntity):
+    """An entity using CoordinatorEntity.
+
+    The CoordinatorEntity class provides:
+      should_poll
+      async_update
+      async_added_to_hass
+      available
+
+    """
+
+    telem_value_state = RelayState
+
+    @property
+    def icon(self) -> str | None:
+        return "mdi:toggle-switch-variant" if self.is_on else "mdi:toggle-switch-variant-off"
+
+    @property
+    def is_on(self) -> bool | None:
+        return self.data.telemetry.enable is True
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        """Turn the entity on."""
+        _LOGGER.debug("turning on chlorinator ID: %s", self.system_id)
+        await self.coordinator.omni_api.async_set_chlorinator_enable(self.bow_id, True)
+        self.set_telemetry({"enable": True})
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        """Turn the entity off."""
+        _LOGGER.debug("turning off chlorinator ID: %s", self.system_id)
+        await self.coordinator.omni_api.async_set_chlorinator_enable(self.bow_id, False)
+        self.set_telemetry({"enable": False})
