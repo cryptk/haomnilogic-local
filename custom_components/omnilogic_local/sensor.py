@@ -5,14 +5,24 @@ from decimal import Decimal
 import logging
 from typing import TYPE_CHECKING, Any, Generic, TypeVar, cast
 
-from pyomnilogic_local.types import FilterState, OmniType, SensorType, SensorUnits
+from pyomnilogic_local.types import (
+    ChlorinatorDispenserType,
+    FilterState,
+    OmniType,
+    SensorType,
+    SensorUnits,
+)
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
     SensorStateClass,
 )
-from homeassistant.const import UnitOfPower, UnitOfTemperature
+from homeassistant.const import (
+    CONCENTRATION_PARTS_PER_MILLION,
+    UnitOfPower,
+    UnitOfTemperature,
+)
 from homeassistant.helpers.typing import StateType
 
 from .const import BACKYARD_SYSTEM_ID, DOMAIN, KEY_COORDINATOR
@@ -21,6 +31,7 @@ from .errors import OmniLogicError
 from .types.entity_index import (
     EntityIndexBackyard,
     EntityIndexBodyOfWater,
+    EntityIndexChlorinator,
     EntityIndexFilter,
     EntityIndexHeaterEquip,
     EntityIndexSensor,
@@ -91,6 +102,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
                     pump.msp_config.name,
                 )
                 entities.append(OmniLogicFilterEnergySensorEntity(coordinator=coordinator, context=system_id))
+
+    all_chlorinators = get_entities_of_omni_types(coordinator.data, [OmniType.CHLORINATOR])
+    for system_id, chlorinator in all_chlorinators.items():
+        match cast(EntityIndexChlorinator, chlorinator).msp_config.dispenser_type:
+            case ChlorinatorDispenserType.SALT:
+                _LOGGER.debug(
+                    "Configuring average salt level sensor for chlorinator with ID: %s, Name: %s",
+                    chlorinator.msp_config.system_id,
+                    chlorinator.msp_config.name,
+                )
+                entities.append(OmniLogicChlorinatorSaltLevelSensorEntity(coordinator=coordinator, context=system_id))
+            case _:
+                _LOGGER.warning(
+                    "Your system has an unsupported chlorinator, please raise an issue: https://github.com/cryptk/haomnilogic-local/issues"
+                )
 
     async_add_entities(entities)
 
@@ -210,3 +236,16 @@ class OmniLogicFilterEnergySensorEntity(OmniLogicEntity[EntityIndexFilter], Sens
     @property
     def name(self) -> Any:
         return f"{self.data.msp_config.name} Power"
+
+
+class OmniLogicChlorinatorSaltLevelSensorEntity(OmniLogicEntity[EntityIndexChlorinator], SensorEntity):
+    _attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_MILLION
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    @property
+    def native_value(self) -> StateType | date | datetime | Decimal:
+        return self.data.telemetry.avg_salt_level
+
+    @property
+    def name(self) -> Any:
+        return f"{self.data.msp_config.name} Average Salt Level"
