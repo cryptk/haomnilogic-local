@@ -13,12 +13,17 @@ from pyomnilogic_local.types import (
     PumpType,
 )
 
-from homeassistant.components.number import NumberDeviceClass, NumberEntity
-from homeassistant.const import UnitOfTemperature
+from homeassistant.components.number import NumberDeviceClass, NumberEntity, NumberMode
+from homeassistant.const import PERCENTAGE, UnitOfTemperature
 
 from .const import DOMAIN, KEY_COORDINATOR
 from .entity import OmniLogicEntity
-from .types.entity_index import EntityIndexFilter, EntityIndexHeater, EntityIndexPump
+from .types.entity_index import (
+    EntityIndexChlorinator,
+    EntityIndexFilter,
+    EntityIndexHeater,
+    EntityIndexPump,
+)
 from .utils import get_entities_of_hass_type, get_entities_of_omni_types
 
 if TYPE_CHECKING:
@@ -69,6 +74,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
                     vheater.msp_config.name,
                 )
                 entities.append(OmniLogicSolarSetPointNumberEntity(coordinator=coordinator, context=system_id))
+
+    all_chlorinators = get_entities_of_omni_types(coordinator.data, [OmniType.CHLORINATOR])
+
+    for system_id, chlorinator in all_chlorinators.items():
+        _LOGGER.debug(
+            "Configuring number for chlorinator with ID: %s, Name: %s",
+            chlorinator.msp_config.system_id,
+            chlorinator.msp_config.name,
+        )
+        entities.append(OmniLogicChlorinatorSetPointNumberEntity(coordinator=coordinator, context=system_id))
 
     async_add_entities(entities)
 
@@ -222,3 +237,21 @@ class OmniLogicSolarSetPointNumberEntity(OmniLogicEntity[EntityIndexHeater], Num
             unit=self.native_unit_of_measurement,
         )
         self.set_config({"solar_set_point": int(value)})
+
+
+class OmniLogicChlorinatorSetPointNumberEntity(OmniLogicEntity[EntityIndexChlorinator], NumberEntity):
+    """An OmniLogicFilterNumberEntity is a special case of an OmniLogicPumpNumberEntity."""
+
+    _attr_native_max_value = 100
+    _attr_native_min_value = 0
+    _attr_native_step = 1
+    _attr_native_unit_of_measurement = PERCENTAGE
+    _attr_mode = NumberMode.BOX
+
+    @property
+    def native_value(self) -> float | None:
+        return self.data.telemetry.timed_percent
+
+    async def async_set_native_value(self, value: float) -> None:
+        await self.coordinator.omni_api.async_set_chlorinator_params(self.bow_id, self.system_id, int(value))
+        self.set_telemetry({"timed_percent": int(value)})
