@@ -71,7 +71,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
                 entities.append(OmniLogicPumpSwitchEntity(coordinator=coordinator, context=system_id))
             case OmniType.CHLORINATOR:
                 _LOGGER.debug(
-                    "Configuring switch for pump with ID: %s, Name: %s",
+                    "Configuring switch for chlorinator with ID: %s, Name: %s",
                     switch.msp_config.system_id,
                     switch.msp_config.name,
                 )
