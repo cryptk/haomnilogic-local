@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, TypeVar, cast
 from pyomnilogic_local.types import (
     BodyOfWaterType,
     ChlorinatorDispenserType,
+    ChlorinatorOperatingMode,
     FilterState,
     FilterType,
     HeaterType,
@@ -80,15 +81,23 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 
     all_chlorinators = get_entities_of_omni_types(coordinator.data, [OmniType.CHLORINATOR])
 
-    for system_id, chlorinator in all_chlorinators.items():
-        match cast(EntityIndexChlorinator, chlorinator).msp_config.dispenser_type:
+    for system_id, chlor in all_chlorinators.items():
+        chlorinator = cast(EntityIndexChlorinator, chlor)
+        match chlorinator.msp_config.dispenser_type:
             case ChlorinatorDispenserType.SALT:
-                _LOGGER.debug(
-                    "Configuring number for chlorinator with ID: %s, Name: %s",
-                    chlorinator.msp_config.system_id,
-                    chlorinator.msp_config.name,
-                )
-                entities.append(OmniLogicChlorinatorSetPointNumberEntity(coordinator=coordinator, context=system_id))
+                match chlorinator.telemetry.operating_mode:
+                    case ChlorinatorOperatingMode.TIMED:
+                        _LOGGER.debug(
+                            "Configuring number for chlorinator with ID: %s, Name: %s",
+                            chlorinator.msp_config.system_id,
+                            chlorinator.msp_config.name,
+                        )
+                        entities.append(OmniLogicChlorinatorTimedPercentNumberEntity(coordinator=coordinator, context=system_id))
+                    case ChlorinatorOperatingMode.ORP:
+                        _LOGGER.warning(
+                            "Chlorinator ORP control is not supported yet, "
+                            "please raise an issue: https://github.com/cryptk/haomnilogic-local/issues"
+                        )
             case _:
                 _LOGGER.warning(
                     "Your system has an unsupported chlorinator, please raise an issue: https://github.com/cryptk/haomnilogic-local/issues"
@@ -248,10 +257,10 @@ class OmniLogicSolarSetPointNumberEntity(OmniLogicEntity[EntityIndexHeater], Num
         self.set_config({"solar_set_point": int(value)})
 
 
-class OmniLogicChlorinatorSetPointNumberEntity(OmniLogicEntity[EntityIndexChlorinator], NumberEntity):
+class OmniLogicChlorinatorTimedPercentNumberEntity(OmniLogicEntity[EntityIndexChlorinator], NumberEntity):
     """An OmniLogicFilterNumberEntity is a special case of an OmniLogicPumpNumberEntity."""
 
-    _attr_name = "Chlorinator Set Point"
+    _attr_name = "Chlorinator Timed Percent"
     _attr_native_max_value = 100
     _attr_native_min_value = 0
     _attr_native_step = 1
