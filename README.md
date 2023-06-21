@@ -8,7 +8,7 @@ A Home Assistant integration for Hayward OmniLogic/OmniHub pool controllers usin
 This repository is able to be installed via [HACS](https://hacs.xyz/), you will need to add this repo as a [Custom Repository](https://hacs.xyz/docs/faq/custom_repositories/)
 
 ## Configuration
-Your OmniLogic/OmmniHub needs to have a static IP address configured, please consult the documentation for your network router for how to accomplish this.
+Your OmniLogic/OmniHub needs to have a static IP address configured, please consult the documentation for your network router for how to accomplish this.
 
 The only parameter you should need to configure is the IP address.
 
@@ -36,11 +36,19 @@ This addon is not complete, initially I am implementing all functionality for th
     - Turn on/off
     - View current temperature
     - Adjust set temperature
+- Chlorinators
+    - Timed Percent control (no ORP control yet)
+    - Enable/Disable
+    - Adjust timed percent target
 
 ## Known Limitations
 Aside from not yet supporting all hardware that exists within the OmniLogic, there is currently a limitation of one installation of the integration.  This means one omnilogic per Home Assistant install.  I may be able to lift this limitation later, but it's low on the priority list.
 
 While I will eventually support turning schedules on/off and triggering themes, I have no current plans to add support for creating/deleting schedules/themes within the integration. If this functionality was added, it would need a custom service to do so, and I don't think the use case is there.  If you would like to see this functionality, please [open an issue](https://github.com/cryptk/haomnilogic-local/issues)
+
+Dual speed pumps/filters are not currently supported, only single speed and variable speed.  If you have a dual speed pump/filter that we can test with, please [open an issue](https://github.com/cryptk/haomnilogic-local/issues).
+
+Chlorinators with ORP control are not supported yet, If you have a dual speed pump/filter that we can test with, please [open an issue](https://github.com/cryptk/haomnilogic-local/issues).
 
 ## Common questions/issues
 ### Why can't I add the pump power sensors to the Energy dashboard
