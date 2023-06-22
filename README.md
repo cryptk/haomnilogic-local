@@ -42,6 +42,8 @@ This addon is not complete, initially I am implementing all functionality for th
     - Timed Percent control (no ORP control yet)
     - Enable/Disable
     - Adjust timed percent target
+- Schedules
+    - Restore Idle button to revert pool to configured schedule
 
 ## Known Limitations
 Aside from not yet supporting all hardware that exists within the OmniLogic, there is currently a limitation of one installation of the integration.  This means one omnilogic per Home Assistant install.  I may be able to lift this limitation later, but it's low on the priority list.

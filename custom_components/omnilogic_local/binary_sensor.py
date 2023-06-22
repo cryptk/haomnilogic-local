@@ -36,14 +36,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     entities = []
 
     # Create a binary sensor entity indicating if we are in Service Mode
-    _LOGGER.debug("Configuring service mode sensor with ID: %s", BACKYARD_SYSTEM_ID)
+    _LOGGER.debug("Configuring binary sensor for service mode with ID: %s", BACKYARD_SYSTEM_ID)
     entities.append(OmniLogicServiceModeBinarySensorEntity(coordinator=coordinator, context=BACKYARD_SYSTEM_ID))
 
     # Create binary sensor entities for each piece of Heater-Equipment
     heater_equipments = get_entities_of_omni_types(coordinator.data, [OmniType.HEATER_EQUIP])
     for system_id, equipment in heater_equipments.items():
         _LOGGER.debug(
-            "Configuring heater equipment sensor with ID: %s, Name: %s",
+            "Configuring sensor for heater equipment with ID: %s, Name: %s",
             system_id,
             equipment.msp_config.name,
         )
@@ -67,7 +67,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
                 # Need to confirm the assumption that the values are only 1 or 0 if there is a flow sensor and 255 if there is no flow
                 # sensor before we implement this
                 _LOGGER.debug(
-                    "Configuring flow sensor with ID: %s, Name: %s",
+                    "Configuring sensor for flow with ID: %s, Name: %s",
                     system_id,
                     sensor.msp_config.name,
                 )

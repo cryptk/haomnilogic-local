@@ -14,9 +14,9 @@ from pyomnilogic_local.types import (
 
 from homeassistant.components.button import ButtonEntity
 
-from .const import DOMAIN, KEY_COORDINATOR
+from .const import BACKYARD_SYSTEM_ID, DOMAIN, KEY_COORDINATOR
 from .entity import OmniLogicEntity
-from .types.entity_index import EntityIndexFilter, EntityIndexPump
+from .types.entity_index import EntityIndexBackyard, EntityIndexFilter, EntityIndexPump
 from .utils import get_entities_of_omni_types
 
 if TYPE_CHECKING:
@@ -56,11 +56,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 
     async_add_entities(entities)
 
+    _LOGGER.debug("Configuring button for restore idle with ID: %s", BACKYARD_SYSTEM_ID)
+    entities.append(OmniLogicIdleButtonEntity(coordinator=coordinator, context=BACKYARD_SYSTEM_ID))
+
 
 T = TypeVar("T", EntityIndexFilter, EntityIndexPump)
 
 
-class OmniLogicButtonEntity(OmniLogicEntity[T], ButtonEntity):
+class OmniLogicSpeedPresetButtonEntity(OmniLogicEntity[T], ButtonEntity):
     """An entity using CoordinatorEntity.
 
     The CoordinatorEntity class provides:
@@ -72,6 +75,14 @@ class OmniLogicButtonEntity(OmniLogicEntity[T], ButtonEntity):
     """
 
     speed: SpeedT
+
+    on_state: PumpState | FilterState
+
+    def __init__(self, coordinator: OmniLogicCoordinator, context: int, speed: SpeedT) -> None:
+        # It is important that the speed and data members are assigned BEFORE we run the __init__ as they are used to
+        # determine the name of the button
+        self.speed: SpeedT = speed
+        super().__init__(coordinator, context)
 
     @property
     def icon(self) -> str:
@@ -100,34 +111,38 @@ class OmniLogicButtonEntity(OmniLogicEntity[T], ButtonEntity):
     async def async_press(self) -> None:
         await self.coordinator.omni_api.async_set_equipment(self.bow_id, self.system_id, self.omni_speed)
 
-        self.set_telemetry({"speed": self.omni_speed, "state": 1})
+        self.set_telemetry({"speed": self.omni_speed, "state": self.on_state})
 
     @property
     def extra_state_attributes(self) -> dict[str, str | int]:
         return super().extra_state_attributes | {"speed": self.omni_speed}
 
 
-class OmniLogicPumpButtonEntity(OmniLogicButtonEntity[EntityIndexPump]):
-    def __init__(self, coordinator: OmniLogicCoordinator, context: int, speed: SpeedT) -> None:
-        # It is important that the speed and data members are assigned BEFORE we run the __init__ as they are used to
-        # determine the name of the button inside the base class
-        self.speed: SpeedT = speed
+class OmniLogicPumpButtonEntity(OmniLogicSpeedPresetButtonEntity[EntityIndexPump]):
+    on_state = PumpState.ON
+
+
+class OmniLogicFilterButtonEntity(OmniLogicSpeedPresetButtonEntity[EntityIndexFilter]):
+    on_state = FilterState.ON
+
+
+class OmniLogicIdleButtonEntity(OmniLogicEntity[EntityIndexBackyard], ButtonEntity):
+    """An entity using CoordinatorEntity.
+
+    The CoordinatorEntity class provides:
+      should_poll
+      async_update
+      async_added_to_hass
+      available
+
+    """
+
+    def __init__(self, coordinator: OmniLogicCoordinator, context: int) -> None:
         super().__init__(coordinator, context)
 
-    async def async_press(self) -> None:
-        await self.coordinator.omni_api.async_set_equipment(self.bow_id, self.system_id, self.omni_speed)
-
-        self.set_telemetry({"speed": self.omni_speed, "state": PumpState.ON})
-
-
-class OmniLogicFilterButtonEntity(OmniLogicButtonEntity[EntityIndexFilter]):
-    def __init__(self, coordinator: OmniLogicCoordinator, context: int, speed: SpeedT) -> None:
-        # It is important that the speed and data members are assigned BEFORE we run the __init__ as they are used to
-        # determine the name of the button inside the base class
-        self.speed: SpeedT = speed
-        super().__init__(coordinator, context)
+    @property
+    def name(self) -> str:
+        return "Restore Idle"
 
     async def async_press(self) -> None:
-        await self.coordinator.omni_api.async_set_equipment(self.bow_id, self.system_id, self.omni_speed)
-
-        self.set_telemetry({"speed": self.omni_speed, "state": FilterState.ON})
+        await self.coordinator.omni_api.async_restore_idle_state()
