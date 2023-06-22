@@ -20,7 +20,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
 
-from .const import BACKYARD_SYSTEM_ID, DOMAIN, KEY_COORDINATOR
+from .const import BACKYARD_SYSTEM_ID, DEFAULT_SCAN_INTERVAL, DOMAIN, KEY_COORDINATOR
 from .coordinator import OmniLogicCoordinator
 from .utils import get_entities_of_omni_types
 
@@ -95,3 +95,20 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # I think it is a bug that the await for async_unload_platforms above has a signature that indicates it returns a bool, yet unload_ok
     # is detected as "Any" by mypy
     return cast(bool, unload_ok)
+
+
+async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
+    """Migrate old entry."""
+
+    if config_entry.version == 1:
+        _LOGGER.debug("Migrating from version %s", config_entry.version)
+
+        new = {**config_entry.data}
+        new[CONF_SCAN_INTERVAL] = DEFAULT_SCAN_INTERVAL
+
+        config_entry.version = 2
+        hass.config_entries.async_update_entry(config_entry, data=new)
+
+    _LOGGER.info("Migration to version %s successful", config_entry.version)
+
+    return True
