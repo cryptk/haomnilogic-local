@@ -12,6 +12,8 @@ Your OmniLogic/OmniHub needs to have a static IP address configured, please cons
 
 The only parameter you should need to configure is the IP address.
 
+The Scan Interval setting controls how often the controller is polled.  Per home-assistant recommendations/requirements, the minimum value is 5.
+
 ## Functionality
 This addon is not complete, initially I am implementing all functionality for the equipment that I have.  If you have equipmment or functionality that is not supported in the addon, please don't hesitate to [Open an Issue](https://github.com/cryptk/haomnilogic-local/issues)
 

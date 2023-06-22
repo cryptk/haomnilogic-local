@@ -12,6 +12,7 @@ from homeassistant.const import (
     CONF_IP_ADDRESS,
     CONF_NAME,
     CONF_PORT,
+    CONF_SCAN_INTERVAL,
     CONF_TIMEOUT,
     Platform,
 )
@@ -49,7 +50,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         raise ConfigEntryNotReady from error
 
     # Create our data coordinator
-    coordinator = OmniLogicCoordinator(hass=hass, omni_api=omni_api)
+    coordinator = OmniLogicCoordinator(hass=hass, omni_api=omni_api, scan_interval=entry.data[CONF_SCAN_INTERVAL])
     await coordinator.async_config_entry_first_refresh()
 
     device_registry = dr.async_get(hass)
