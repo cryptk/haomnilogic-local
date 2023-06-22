@@ -60,21 +60,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
         match sensor.msp_config.type:
             case SensorType.AIR_TEMP:
                 _LOGGER.debug(
-                    "Configuring air temperature sensor with ID: %s, Name: %s",
+                    "Configuring sensor for air temperature with ID: %s, Name: %s",
                     sensor.msp_config.system_id,
                     sensor.msp_config.name,
                 )
                 entities.append(OmniLogicAirTemperatureSensorEntity(coordinator=coordinator, context=system_id))
             case SensorType.WATER_TEMP:
                 _LOGGER.debug(
-                    "Configuring water temperature sensor with ID: %s, Name: %s",
+                    "Configuring sensor for water temperature with ID: %s, Name: %s",
                     sensor.msp_config.system_id,
                     sensor.msp_config.name,
                 )
                 entities.append(OmniLogicWaterTemperatureSensorEntity(coordinator=coordinator, context=system_id))
             case SensorType.SOLAR_TEMP:
                 _LOGGER.debug(
-                    "Configuring solar temperature sensor with ID: %s, Name: %s",
+                    "Configuring sensor for solar temperature with ID: %s, Name: %s",
                     sensor.msp_config.system_id,
                     sensor.msp_config.name,
                 )
@@ -97,7 +97,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
         match pump.msp_config.omni_type:
             case OmniType.FILTER:
                 _LOGGER.debug(
-                    "Configuring energy sensor for filter with ID: %s, Name: %s",
+                    "Configuring sensor for filter energy with ID: %s, Name: %s",
                     pump.msp_config.system_id,
                     pump.msp_config.name,
                 )
@@ -108,7 +108,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
         match cast(EntityIndexChlorinator, chlorinator).msp_config.dispenser_type:
             case ChlorinatorDispenserType.SALT:
                 _LOGGER.debug(
-                    "Configuring salt level sensors for chlorinator with ID: %s, Name: %s",
+                    "Configuring sensor for chlorinator salt level with ID: %s, Name: %s",
                     chlorinator.msp_config.system_id,
                     chlorinator.msp_config.name,
                 )
