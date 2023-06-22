@@ -100,9 +100,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) -> bool:
     """Migrate old entry."""
 
-    if config_entry.version == 1:
-        _LOGGER.debug("Migrating from version %s", config_entry.version)
+    _LOGGER.debug("Migrating from version %s", config_entry.version)
 
+    if config_entry.version == 1:
         new = {**config_entry.data}
         new[CONF_SCAN_INTERVAL] = DEFAULT_SCAN_INTERVAL
 

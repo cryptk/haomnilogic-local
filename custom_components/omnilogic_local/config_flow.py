@@ -95,7 +95,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 class OmnilogicConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ignore[call-arg]
     """Handle a config flow for OmniLogic Local."""
 
-    VERSION = 1
+    VERSION = 2
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Handle the initial step."""
