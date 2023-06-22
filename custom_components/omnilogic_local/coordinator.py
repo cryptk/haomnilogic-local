@@ -13,7 +13,6 @@ from pyomnilogic_local.models.telemetry import Telemetry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import DEFAULT_POLL_INTERVAL
 from .types.entity_index import EntityIndexData
 
 # Import diagnostic data to reproduce issues
@@ -47,7 +46,7 @@ class OmniLogicCoordinator(DataUpdateCoordinator):
     telemetry: Telemetry
     data: dict[int, EntityIndexData]
 
-    def __init__(self, hass: HomeAssistant, omni_api: OmniLogicAPI) -> None:
+    def __init__(self, hass: HomeAssistant, omni_api: OmniLogicAPI, scan_interval: int) -> None:
         """Initialize my coordinator."""
         super().__init__(
             hass,
@@ -55,7 +54,7 @@ class OmniLogicCoordinator(DataUpdateCoordinator):
             # Name of the data. For logging purposes.
             name="OmniLogic",
             # Polling interval. Will only be polled if there are subscribers.
-            update_interval=timedelta(seconds=DEFAULT_POLL_INTERVAL),
+            update_interval=timedelta(seconds=scan_interval),
         )
         self.omni_api = omni_api
 

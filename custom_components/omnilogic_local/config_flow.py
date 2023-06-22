@@ -8,13 +8,19 @@ from pyomnilogic_local.api import OmniLogicAPI
 import voluptuous as vol
 
 from homeassistant import config_entries
-from homeassistant.const import CONF_IP_ADDRESS, CONF_NAME, CONF_PORT, CONF_TIMEOUT
+from homeassistant.const import (
+    CONF_IP_ADDRESS,
+    CONF_NAME,
+    CONF_PORT,
+    CONF_SCAN_INTERVAL,
+    CONF_TIMEOUT,
+)
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.exceptions import HomeAssistantError
 import homeassistant.helpers.config_validation as cv
 
-from .const import DOMAIN, UNIQUE_ID
+from .const import DEFAULT_SCAN_INTERVAL, DOMAIN, MIN_SCAN_INTERVAL
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -23,6 +29,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
         vol.Required(CONF_IP_ADDRESS): cv.string,
         vol.Required(CONF_NAME, default="Omnilogic"): cv.string,
         vol.Optional(CONF_PORT, default=10444): cv.port,
+        vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): vol.All(cv.positive_int, vol.Clamp(min=MIN_SCAN_INTERVAL)),
         vol.Optional(CONF_TIMEOUT, default=5.0): vol.All(vol.Coerce(float), vol.Range(min=0.5, max=10.0)),
     }
 )
@@ -51,17 +58,19 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialize options flow."""
         self.config_entry = config_entry
+        self.data = dict(config_entry.data)
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         """Manage the options."""
         if user_input is not None:
+            self.data.update(user_input)
             # write updated config entries
-            self.hass.config_entries.async_update_entry(self.config_entry, data=user_input, options=self.config_entry.options)
-            # reload updated config entries
+            self.hass.config_entries.async_update_entry(self.config_entry, data=self.data)
+            # # reload updated config entries
             await self.hass.config_entries.async_reload(self.config_entry.entry_id)
             self.async_abort(reason="configuration updated")
 
-            return self.async_create_entry(data=user_input)
+            return self.async_create_entry(data=self.data)
 
         return self.async_show_form(
             step_id="init",
@@ -69,6 +78,12 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 {
                     vol.Required(CONF_IP_ADDRESS, default=self.config_entry.data[CONF_IP_ADDRESS]): cv.string,
                     vol.Required(CONF_PORT, default=self.config_entry.data[CONF_PORT]): cv.port,
+                    vol.Optional(
+                        CONF_SCAN_INTERVAL,
+                        description="bar",
+                        msg="foo",
+                        default=self.config_entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL),
+                    ): vol.All(cv.positive_int, vol.Clamp(min=MIN_SCAN_INTERVAL)),
                     vol.Required(CONF_TIMEOUT, default=self.config_entry.data[CONF_TIMEOUT]): vol.All(
                         vol.Coerce(float), vol.Range(min=0.5, max=10.0)
                     ),
@@ -109,7 +124,7 @@ class OmnilogicConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):  # type: ig
                 # a use could rename the integration config entry, but that would not change this unique ID, although they
                 # came from the same source... yeah... it's janky... I'll make it better later... somehow
                 # we may need to use https://developers.home-assistant.io/docs/entity_registry_index/#unique-id-of-last-resort
-                await self.async_set_unique_id(UNIQUE_ID)
+                await self.async_set_unique_id(user_input[CONF_NAME])
                 self._abort_if_unique_id_configured()
                 return self.async_create_entry(title=user_input[CONF_NAME], data=user_input)
 

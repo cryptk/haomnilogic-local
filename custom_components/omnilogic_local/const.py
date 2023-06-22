@@ -7,14 +7,13 @@ from pyomnilogic_local.types import OmniType
 
 DOMAIN: Final[str] = "omnilogic_local"
 KEY_COORDINATOR: Final[str] = "coordinator"
-DEFAULT_POLL_INTERVAL: Final[int] = 20
+DEFAULT_SCAN_INTERVAL: Final[int] = 10
+MIN_SCAN_INTERVAL: Final[int] = 5
 
 # According to Hayward docs, the backyard always has a system id of 0
 BACKYARD_SYSTEM_ID: Final[int] = 0
 
-UNIQUE_ID: Final[str] = "omnilogic"
 MANUFACTURER: Final[str] = "Hayward"
-
 
 OMNI_TO_HASS_TYPES: dict[str, str] = {
     OmniType.BACKYARD: "device",
