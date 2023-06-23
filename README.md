@@ -52,7 +52,7 @@ While I will eventually support turning schedules on/off and triggering themes, 
 
 Dual speed pumps/filters are not currently supported, only single speed and variable speed.  If you have a dual speed pump/filter that we can test with, please [open an issue](https://github.com/cryptk/haomnilogic-local/issues).
 
-Chlorinators with ORP control are not supported yet, If you have a dual speed pump/filter that we can test with, please [open an issue](https://github.com/cryptk/haomnilogic-local/issues).
+Chlorinators with ORP control are not supported yet.  If you have a chlorinator using ORP control that we can test with, please [open an issue](https://github.com/cryptk/haomnilogic-local/issues).
 
 ## Common questions/issues
 ### Why can't I add the pump power sensors to the Energy dashboard
