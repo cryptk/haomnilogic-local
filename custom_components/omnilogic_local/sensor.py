@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar, cast
 from pyomnilogic_local.types import (
     ChlorinatorDispenserType,
     FilterState,
+    HeaterType,
     OmniType,
     SensorType,
     SensorUnits,
@@ -27,7 +28,6 @@ from homeassistant.helpers.typing import StateType
 
 from .const import BACKYARD_SYSTEM_ID, DOMAIN, KEY_COORDINATOR
 from .entity import OmniLogicEntity
-from .errors import OmniLogicError
 from .types.entity_index import (
     EntityIndexBackyard,
     EntityIndexBodyOfWater,
@@ -73,12 +73,28 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
                 )
                 entities.append(OmniLogicWaterTemperatureSensorEntity(coordinator=coordinator, context=system_id))
             case SensorType.SOLAR_TEMP:
-                _LOGGER.debug(
-                    "Configuring sensor for solar temperature with ID: %s, Name: %s",
-                    sensor.msp_config.system_id,
-                    sensor.msp_config.name,
-                )
-                entities.append(OmniLogicSolarTemperatureSensorEntity(coordinator=coordinator, context=system_id))
+                # Reference https://github.com/cryptk/haomnilogic-local/issues/60 for why we do this
+                # If a BoW has more than one solar temperature sensor, we need to only configure the sensors that are associated with actual
+                # solar heaters.
+                # We start by finding the solar heater that this sensor is associated with
+                omni_entities = get_entities_of_omni_types(coordinator.data, [OmniType.HEATER_EQUIP])
+                sensed_system_id = [
+                    k
+                    for k, v in omni_entities.items()
+                    if v.msp_config.heater_type is HeaterType.SOLAR and v.msp_config.sensor_id == sensor.msp_config.system_id
+                ]
+                # Then we decide what to do based on how many solar heaters we find
+                match len(sensed_system_id):
+                    case 0:
+                        _LOGGER.warning("Unable to locate a solar heater for sensor id: %s", sensor.msp_config.system_id)
+                    case 1:
+                        entities.append(
+                            OmniLogicSolarTemperatureSensorEntity(
+                                coordinator=coordinator, context=system_id, sensed_system_id=sensed_system_id[0]
+                            )
+                        )
+                    case _:
+                        _LOGGER.warning("Found multiple heaters for sensor id: %s", sensor.msp_config.system_id)
             case SensorType.FLOW:
                 # This sensor type is implemented as a binary sensor, not a sensor
                 pass
@@ -196,25 +212,14 @@ class OmniLogicWaterTemperatureSensorEntity(OmniLogicTemperatureSensorEntity[Ent
 
 
 class OmniLogicSolarTemperatureSensorEntity(OmniLogicTemperatureSensorEntity[EntityIndexHeaterEquip]):
-    def __init__(self, coordinator: OmniLogicCoordinator, context: int) -> None:
+    def __init__(self, coordinator: OmniLogicCoordinator, context: int, sensed_system_id: int) -> None:
         super().__init__(coordinator, context, OmniType.HEATER_EQUIP)
+        self._sensed_system_id = sensed_system_id
 
     @property
     def native_value(self) -> StateType | date | datetime | Decimal:
         temp = self.sensed_data.telemetry.temp
         return temp if temp not in [-1, 255, 65535] else None
-
-    @property
-    def sensed_system_id(self) -> int:
-        omni_entities = get_entities_of_omni_types(self.coordinator.data, [self.sensed_type])
-        found = [k for k, v in omni_entities.items() if v.msp_config.sensor_id == self.system_id]
-        match len(found):
-            case 0:
-                raise OmniLogicError("Unable to locate a heater for sensor id: %s" % self.system_id)
-            case 1:
-                return found[0]
-            case _:
-                raise OmniLogicError("Found multiple heaters for sensor id: %s" % self.system_id)
 
 
 class OmniLogicFilterEnergySensorEntity(OmniLogicEntity[EntityIndexFilter], SensorEntity):
