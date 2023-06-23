@@ -7,6 +7,7 @@ import logging
 
 import async_timeout
 from pyomnilogic_local.api import OmniLogicAPI
+from pyomnilogic_local.exceptions import OmniTimeoutException
 from pyomnilogic_local.models.mspconfig import MSPConfig, OmniBase
 from pyomnilogic_local.models.telemetry import Telemetry
 
@@ -96,5 +97,5 @@ class OmniLogicCoordinator(DataUpdateCoordinator):
                     entity_index[device.system_id] = EntityIndexData(device, self.telemetry.get_telem_by_systemid(device.system_id))
 
                 return entity_index
-        except TimeoutError as exc:
-            raise UpdateFailed("Error communicating with API") from exc
+        except (OmniTimeoutException, TimeoutError) as exc:
+            raise UpdateFailed("Error communicating with Omni controller") from exc
