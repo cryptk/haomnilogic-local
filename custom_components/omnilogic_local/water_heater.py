@@ -123,7 +123,7 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity[EntityIndexHeater], WaterHeater
 
     @property
     def extra_state_attributes(self) -> dict[str, str | int]:
-        extra_state_attributes = super().extra_state_attributes | {"solar_set_poinr": self.data.msp_config.solar_set_point}
+        extra_state_attributes = super().extra_state_attributes | {"solar_set_point": self.data.msp_config.solar_set_point}
         for system_id in self.heater_equipment_ids:
             heater_equipment = cast(EntityIndexHeaterEquip, self.coordinator.data[system_id])
             prefix = f"omni_heater_{heater_equipment.msp_config.name.lower()}"
