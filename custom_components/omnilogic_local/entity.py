@@ -24,7 +24,6 @@ _LOGGER = logging.getLogger(__name__)
 
 class OmniLogicEntity(CoordinatorEntity, Generic[EntityIndexTypeVar]):
     _attr_has_entity_name = True
-    _attr_name: str | None = None
 
     data: EntityIndexTypeVar
     coordinator: OmniLogicCoordinator
@@ -115,7 +114,7 @@ class OmniLogicEntity(CoordinatorEntity, Generic[EntityIndexTypeVar]):
 
     @property
     def name(self) -> Any:
-        return self._attr_name if self._attr_name is not None else self.data.msp_config.name
+        return self._attr_name if hasattr(self, "_attr_name") else self.data.msp_config.name
 
     @property
     def unique_id(self) -> str | None:
