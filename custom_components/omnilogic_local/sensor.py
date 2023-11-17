@@ -157,6 +157,7 @@ class OmniLogicTemperatureSensorEntity(OmniLogicEntity[EntityIndexSensor], Senso
     """
 
     _attr_device_class = SensorDeviceClass.TEMPERATURE
+    _attr_state_class = SensorStateClass.MEASUREMENT
     _sensed_system_id: int | None = None
 
     def __init__(self, coordinator: OmniLogicCoordinator, context: int, sensed_type: OmniType) -> None:
