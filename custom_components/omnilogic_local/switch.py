@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar, cast
 
+from pyomnilogic_local.models.telemetry import TelemetryFilter
 from pyomnilogic_local.types import (
+    BodyOfWaterType,
     FilterState,
+    FilterValvePosition,
     OmniType,
     PumpState,
     RelayFunction,
@@ -18,18 +21,21 @@ from homeassistant.components.switch import SwitchEntity
 from .const import DOMAIN, KEY_COORDINATOR
 from .entity import OmniLogicEntity
 from .types.entity_index import (
+    EntityIndexBodyOfWater,
     EntityIndexChlorinator,
     EntityIndexFilter,
     EntityIndexPump,
     EntityIndexRelay,
     EntityIndexValveActuator,
 )
-from .utils import get_entities_of_hass_type
+from .utils import get_entities_of_hass_type, get_entities_of_omni_types
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
+
+    from .coordinator import OmniLogicCoordinator
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -76,6 +82,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
                     switch.msp_config.name,
                 )
                 entities.append(OmniLogicChlorinatorSwitchEntity(coordinator=coordinator, context=system_id))
+
+    # Add switches for spillover into pools if supported
+    all_bows = get_entities_of_omni_types(coordinator.data, [OmniType.BOW])
+    for system_id, bow in all_bows.items():
+        match bow.msp_config.type:
+            case BodyOfWaterType.POOL:
+                if bow.msp_config.supports_spillover == "yes":
+                    _LOGGER.debug(
+                        "Configuring switch for spillover with ID: %s, Name: %s",
+                        bow.msp_config.system_id,
+                        bow.msp_config.name,
+                    )
+                    entities.append(OmniLogicSpilloverSwitchEntity(coordinator=coordinator, context=system_id))
 
     async_add_entities(entities)
 
@@ -281,3 +300,45 @@ class OmniLogicChlorinatorSwitchEntity(OmniLogicEntity[EntityIndexChlorinator], 
         _LOGGER.debug("turning off chlorinator ID: %s", self.system_id)
         await self.coordinator.omni_api.async_set_chlorinator_enable(self.bow_id, False)
         self.set_telemetry({"enable": False})
+
+
+class OmniLogicSpilloverSwitchEntity(OmniLogicEntity[EntityIndexBodyOfWater], SwitchEntity):
+    """An entity using CoordinatorEntity.
+
+    The CoordinatorEntity class provides:
+      should_poll
+      async_update
+      async_added_to_hass
+      available
+
+    """
+
+    _attr_name = "Spillover"
+
+    def __init__(self, coordinator: OmniLogicCoordinator, context: int) -> None:
+        super().__init__(coordinator, context)
+        # This is all a little gross, and it means that we can only support one filter system per BoW, but I believe that is a limitation of
+        # the Omni system anyway.  They can have multiple pumps, but only one "filter"
+        all_filters = get_entities_of_omni_types(coordinator.data, [OmniType.FILTER])
+        bow_filter = {
+            system_id: bow_filter for (system_id, bow_filter) in all_filters.items() if bow_filter.msp_config.bow_id == self.bow_id
+        }
+        self.filter_system_id = list(bow_filter.keys())[0]
+
+    @property
+    def icon(self) -> str | None:
+        return "mdi:toggle-switch-variant" if self.is_on else "mdi:toggle-switch-variant-off"
+
+    @property
+    def is_on(self) -> bool | None:
+        return cast(TelemetryFilter, self.get_telemetry_by_systemid(self.filter_system_id)).valve_position == FilterValvePosition.SPILLOVER
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        """Turn the entity on."""
+        _LOGGER.debug("turning on spillover ID: %s", self.system_id)
+        await self.coordinator.omni_api.async_set_spillover(self.bow_id, 75)
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        """Turn the entity off."""
+        _LOGGER.debug("turning off spillover ID: %s", self.system_id)
+        await self.coordinator.omni_api.async_set_spillover(self.bow_id, 0)

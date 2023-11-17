@@ -1,9 +1,8 @@
 {
   "editor.rulers": [140],
-  // Please keep this file in sync with settings in home-assistant/.devcontainer/devcontainer.json
-  "python.formatting.provider": "black",
-  // https://code.visualstudio.com/docs/python/testing#_pytest-configuration-settings
   "python.testing.pytestEnabled": false,
-  "python.linting.mypyEnabled": true,
-  // "python.analysis.typeCheckingMode": "basic"
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnSave": true
+  }
 }
