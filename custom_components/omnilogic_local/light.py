@@ -82,7 +82,7 @@ class OmniLogicLightEntity(OmniLogicEntity[EntityIndexColorLogicLight], LightEnt
 
     _attr_effect_list = list(ColorLogicShow.__members__)
     _attr_supported_features = LightEntityFeature.EFFECT
-    _attr_supported_color_modes = [ColorMode.BRIGHTNESS]
+    _attr_supported_color_modes = {ColorMode.BRIGHTNESS}
 
     @property
     def is_on(self) -> bool | None:
