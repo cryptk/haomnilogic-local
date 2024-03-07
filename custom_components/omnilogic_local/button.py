@@ -54,10 +54,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
                 case FilterType.VARIABLE_SPEED:
                     entities.append(OmniLogicFilterButtonEntity(coordinator=coordinator, context=system_id, speed=speed))
 
-    async_add_entities(entities)
-
     _LOGGER.debug("Configuring button for restore idle with ID: %s", BACKYARD_SYSTEM_ID)
     entities.append(OmniLogicIdleButtonEntity(coordinator=coordinator, context=BACKYARD_SYSTEM_ID))
+
+    async_add_entities(entities)
 
 
 T = TypeVar("T", EntityIndexFilter, EntityIndexPump)
