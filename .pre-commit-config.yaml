@@ -42,7 +42,7 @@ repos:
                 args:
                     - --fix
     -   repo: https://github.com/pylint-dev/pylint
-        rev: v2.17.4
+        rev: v3.0.1
         hooks:
             -   id: pylint
                 additional_dependencies: [ "homeassistant", "python-omnilogic-local" ]

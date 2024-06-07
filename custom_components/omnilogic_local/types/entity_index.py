@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import TypeVar
 
 from pyomnilogic_local.models.mspconfig import (
+    MSPCSAD,
     MSPBackyard,
     MSPBoW,
     MSPChlorinator,
@@ -22,6 +23,7 @@ from pyomnilogic_local.models.telemetry import (
     TelemetryBoW,
     TelemetryChlorinator,
     TelemetryColorLogicLight,
+    TelemetryCSAD,
     TelemetryFilter,
     TelemetryGroup,
     TelemetryHeater,
@@ -46,8 +48,8 @@ from pyomnilogic_local.models.telemetry import (
 
 @dataclass
 class EntityIndexData:
-    msp_config: MSPSchedule | MSPBackyard | MSPBoW | MSPVirtualHeater | MSPHeaterEquip | MSPRelay | MSPFilter | MSPSensor | MSPColorLogicLight | MSPChlorinator | MSPChlorinatorEquip
-    telemetry: TelemetryBackyard | TelemetryBoW | TelemetryChlorinator | TelemetryColorLogicLight | TelemetryFilter | TelemetryGroup | TelemetryHeater | TelemetryPump | TelemetryRelay | TelemetryValveActuator | TelemetryVirtualHeater
+    msp_config: MSPSchedule | MSPBackyard | MSPBoW | MSPVirtualHeater | MSPHeaterEquip | MSPRelay | MSPFilter | MSPSensor | MSPColorLogicLight | MSPChlorinator | MSPChlorinatorEquip | MSPCSAD
+    telemetry: TelemetryBackyard | TelemetryBoW | TelemetryChlorinator | TelemetryColorLogicLight | TelemetryFilter | TelemetryGroup | TelemetryHeater | TelemetryPump | TelemetryRelay | TelemetryValveActuator | TelemetryVirtualHeater | TelemetryCSAD
 
 
 EntityIndexT = dict[int, EntityIndexData]
@@ -97,6 +99,11 @@ class EntityIndexChlorinator:
     telemetry: TelemetryChlorinator
 
 
+class EntityIndexCSAD:
+    msp_config: MSPCSAD
+    telemetry: TelemetryCSAD
+
+
 class EntityIndexChlorinatorEquip:
     msp_config: MSPChlorinatorEquip
     telemetry: TelemetryChlorinator
@@ -142,6 +149,7 @@ EntityIndexTypeVar = TypeVar(
     EntityIndexColorLogicLight,
     EntityIndexChlorinator,
     EntityIndexChlorinatorEquip,
+    EntityIndexCSAD,
     EntityIndexFilter,
     EntityIndexHeater,
     EntityIndexHeaterEquip,
