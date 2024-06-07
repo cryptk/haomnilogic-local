@@ -16,6 +16,6 @@
     "python_omnilogic_local==0.13.1"
   ],
   "ssdp": [],
-  "version": "0.7.2",
+  "version": "0.7.3",
   "zeroconf": []
 }
