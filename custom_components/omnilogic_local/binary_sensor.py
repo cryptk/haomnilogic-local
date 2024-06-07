@@ -4,7 +4,13 @@ import logging
 from typing import TYPE_CHECKING, cast
 
 from pyomnilogic_local.models.telemetry import TelemetryBoW
-from pyomnilogic_local.types import BackyardState, HeaterState, OmniType, SensorType
+from pyomnilogic_local.types import (
+    BackyardState,
+    CSADType,
+    HeaterState,
+    OmniType,
+    SensorType,
+)
 
 from homeassistant.components.binary_sensor import (
     BinarySensorDeviceClass,
@@ -58,7 +64,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     all_sensors = get_entities_of_hass_type(coordinator.data, "sensor")
     for system_id, sensor in all_sensors.items():
         match sensor.msp_config.type:
-            case SensorType.AIR_TEMP | SensorType.WATER_TEMP | SensorType.SOLAR_TEMP:
+            case CSADType.ACID | CSADType.CO2 | SensorType.AIR_TEMP | SensorType.WATER_TEMP | SensorType.SOLAR_TEMP:
                 # These sensor types are implemented as sensors, not binary sensors
                 pass
             case SensorType.FLOW:

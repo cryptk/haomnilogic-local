@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar, cast
 
 from pyomnilogic_local.types import (
     ChlorinatorDispenserType,
+    CSADType,
     FilterState,
     HeaterType,
     OmniType,
@@ -32,6 +33,7 @@ from .types.entity_index import (
     EntityIndexBackyard,
     EntityIndexBodyOfWater,
     EntityIndexChlorinator,
+    EntityIndexCSAD,
     EntityIndexFilter,
     EntityIndexHeaterEquip,
     EntityIndexSensor,
@@ -137,6 +139,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
             case _:
                 _LOGGER.warning(
                     "Your system has an unsupported chlorinator, please raise an issue: https://github.com/cryptk/haomnilogic-local/issues"
+                )
+
+    all_csads = get_entities_of_omni_types(coordinator.data, [OmniType.CSAD])
+    for system_id, csad in all_csads.items():
+        match cast(EntityIndexCSAD, csad).msp_config.type:
+            case CSADType.ACID:
+                _LOGGER.debug(
+                    "Configuring sensor for CSAD ACID with ID: %s, Name: %s",
+                    csad.msp_config.system_id,
+                    csad.msp_config.name,
+                )
+                entities.append(OmniLogicCSADAcidEntity(coordinator=coordinator, context=system_id))
+            case _:
+                _LOGGER.warning(
+                    "Your system has an unsupported CSAD unit, please raise an issue: https://github.com/cryptk/haomnilogic-local/issues"
                 )
 
     async_add_entities(entities)
@@ -269,3 +286,15 @@ class OmniLogicChlorinatorSaltLevelSensorEntity(OmniLogicEntity[EntityIndexChlor
     @property
     def name(self) -> Any:
         return f"{self.data.msp_config.name} {self._sensor_type.capitalize()} Salt Level"
+
+
+class OmniLogicCSADAcidEntity(OmniLogicEntity[EntityIndexCSAD], SensorEntity):
+    _attr_device_class = SensorDeviceClass.PH
+    _attr_state_class = SensorStateClass.MEASUREMENT
+
+    def __init__(self, coordinator: OmniLogicCoordinator, context: int) -> None:
+        super().__init__(coordinator, context)
+
+    @property
+    def native_value(self) -> StateType | date | datetime | Decimal:
+        return self.data.telemetry.ph
