@@ -297,4 +297,16 @@ class OmniLogicCSADAcidEntity(OmniLogicEntity[EntityIndexCSAD], SensorEntity):
 
     @property
     def native_value(self) -> StateType | date | datetime | Decimal:
-        return self.data.telemetry.ph
+        return self.data.telemetry.ph + self.data.msp_config.calibration_value
+
+    @property
+    def extra_state_attributes(self) -> dict[str, int | str]:
+        return super().extra_state_attributes | {
+            "orp": self.data.telemetry.orp,
+            "mode": self.data.telemetry.mode,
+            "target_value": self.data.msp_config.target_value,
+            "ph_value_raw": self.data.telemetry.ph,
+            "calibration_value": self.data.msp_config.calibration_value,
+            "ph_low_alarm_value": self.data.msp_config.ph_low_alarm_value,
+            "ph_high_alarm_value": self.data.msp_config.ph_high_alarm_value,
+        }
