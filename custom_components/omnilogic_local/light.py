@@ -59,7 +59,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
             light.msp_config.name,
         )
         match light.msp_config.type:
-            case ColorLogicLightType.UCL:
+            case ColorLogicLightType.UCL | ColorLogicLightType.TWO_FIVE:
                 entities.append(OmniLogicLightEntity(coordinator=coordinator, context=system_id))
             case _:
                 _LOGGER.warning(
