@@ -5,7 +5,9 @@ A Home Assistant integration for Hayward OmniLogic/OmniHub pool controllers usin
 [![Buy me a coffee!](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/cryptk)
 
 ## Installation
-This repository is able to be installed via [HACS](https://hacs.xyz/), you will need to add this repo as a [Custom Repository](https://hacs.xyz/docs/faq/custom_repositories/)
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=cryptk&repository=haomnilogic-local&category=Integration)
+
+This repository is able to be installed via [HACS](https://hacs.xyz/), you will need to add this repo as a [Custom Repository](https://hacs.xyz/docs/faq/custom_repositories/) which can be done by clicking the button above.
 
 ## Configuration
 Your OmniLogic/OmniHub needs to have a static IP address configured, please consult the documentation for your network router for how to accomplish this.

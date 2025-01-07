@@ -1,14 +1,21 @@
-[tool.poetry]
+[project]
 name = "haomnilogic-local"
 version = "0.7.7"
 description = "A Home Assistant integration for Hayward OmniLogic/OmniHub pool controllers using the local UDP api"
-authors = ["cryptk <cryptk@users.noreply.github.com>", "djtimca", "garionphx"]
-license = "Apache-2.0"
 readme = "README.md"
+authors = [
+    { name = "cryptk", email="cryptk@users.noreply.github.com"},
+    { name = "djtimca"},
+    { name = "garionphx"}
+]
+license = "Apache-2.0"
+requires-python = ">=3.12,<3.14"
+
+[project.urls]
 repository = "https://github.com/cryptk/haomnilogic-local"
 
-[tool.poetry.dependencies]
-python = ">=3.12,<3.13"
+[tool.poetry]
+package-mode = false
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.0.0"
