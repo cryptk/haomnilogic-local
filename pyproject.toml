@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "haomnilogic-local"
-version = "0.7.6"
+version = "0.7.7"
 description = "A Home Assistant integration for Hayward OmniLogic/OmniHub pool controllers using the local UDP api"
 authors = ["cryptk <cryptk@users.noreply.github.com>", "djtimca", "garionphx"]
 license = "Apache-2.0"
