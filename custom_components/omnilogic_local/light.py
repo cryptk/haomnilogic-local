@@ -63,7 +63,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
                 entities.append(OmniLogicLightEntity(coordinator=coordinator, context=system_id))
             case _:
                 _LOGGER.warning(
-                    "Your system has an unsupported light, this light may not function properly, please raise an issue: https://github.com/cryptk/haomnilogic-local/issues"
+                    "Your system has an unsupported light. ID: %s, Name: %s, Type: %s. Please raise an issue: https://github.com/cryptk/haomnilogic-local/issues",
+                    light.msp_config.system_id,
+                    light.msp_config.name,
+                    light.msp_config.type,
                 )
 
     async_add_entities(entities)
