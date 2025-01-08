@@ -89,7 +89,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
                 pass
             case _:
                 _LOGGER.warning(
-                    "Your system has an unsupported sensor, please raise an issue: https://github.com/cryptk/haomnilogic-local/issues"
+                    "Your system has an unsupported sensor. ID: %s, Name: %s, Type: %s. Please raise an issue: https://github.com/cryptk/haomnilogic-local/issues",
+                    sensor.msp_config.system_id,
+                    sensor.msp_config.name,
+                    sensor.msp_config.type,
                 )
 
     async_add_entities(entities)
