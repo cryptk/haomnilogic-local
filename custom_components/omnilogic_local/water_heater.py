@@ -80,7 +80,9 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity[EntityIndexHeater], WaterHeater
 
     @property
     def temperature_unit(self) -> str:
-        return str(UnitOfTemperature.CELSIUS) if self.get_system_config().units == "Metric" else str(UnitOfTemperature.FAHRENHEIT)
+        # Heaters always return their values in Fahrenheit, no matter what units the system is set to
+        # https://github.com/cryptk/haomnilogic-local/issues/96
+        return UnitOfTemperature.FAHRENHEIT
 
     @property
     def min_temp(self) -> float:
