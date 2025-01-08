@@ -1,4 +1,5 @@
 """Example integration using DataUpdateCoordinator."""
+
 from __future__ import annotations
 
 from collections.abc import Iterable
@@ -73,8 +74,10 @@ class OmniLogicCoordinator(DataUpdateCoordinator):
                 if SIMULATION:
                     _LOGGER.debug("Simulating Omni MSPConfig and Telemetry")
                     test_data = json.loads(TEST_DIAGNOSTIC_DATA.replace(r"\"", r"'"))
-                    self.msp_config = MSPConfig.load_xml(test_data["data"]["msp_config"])
-                    self.telemetry = Telemetry.load_xml(test_data["data"]["telemetry"])
+                    self.msp_config_xml = test_data["data"]["msp_config"]
+                    self.msp_config = MSPConfig.load_xml(self.msp_config_xml)
+                    self.telemetry_xml = test_data["data"]["telemetry"]
+                    self.telemetry = Telemetry.load_xml(self.telemetry_xml)
 
                 else:
                     # Initially we only pulled the msp_config at integration startup as it rarely changes

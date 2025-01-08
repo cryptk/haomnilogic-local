@@ -283,5 +283,14 @@ class OmniLogicChlorinatorTimedPercentNumberEntity(OmniLogicEntity[EntityIndexCh
             case BodyOfWaterType.SPA:
                 bow_type = 1
 
-        await self.coordinator.omni_api.async_set_chlorinator_params(self.bow_id, self.system_id, int(value), bow_type=bow_type)
+        await self.coordinator.omni_api.async_set_chlorinator_params(
+            pool_id=self.bow_id,
+            equipment_id=self.system_id,
+            timed_percent=int(value),
+            cell_type=int(self.data.msp_config.cell_type),
+            op_mode=self.data.telemetry.operating_mode,
+            sc_timeout=self.data.msp_config.superchlor_timeout,
+            orp_timeout=self.data.msp_config.orp_timeout,
+            bow_type=bow_type,
+        )
         self.set_telemetry({"timed_percent": int(value)})

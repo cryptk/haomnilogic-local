@@ -1,6 +1,6 @@
 [project]
 name = "haomnilogic-local"
-version = "0.7.7"
+version = "0.7.8"
 description = "A Home Assistant integration for Hayward OmniLogic/OmniHub pool controllers using the local UDP api"
 readme = "README.md"
 authors = [
@@ -21,7 +21,7 @@ package-mode = false
 pre-commit = "^3.0.0"
 mypy = "^1.2.0"
 homeassistant = "^2024.6.0"
-python_omnilogic_local = "0.14.3"
+python_omnilogic_local = "0.14.6"
 pylint = "^2.17.0"
 pydantic = "^1.10.7"
 pytest = "^7.3.1"

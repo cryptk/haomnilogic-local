@@ -13,9 +13,9 @@
   "issue_tracker": "https://github.com/cryptk/haomnilogic-local/issues",
   "loggers": ["pyomnilogic_local"],
   "requirements": [
-    "python_omnilogic_local==0.14.4"
+    "python_omnilogic_local==0.14.6"
   ],
   "ssdp": [],
-  "version": "0.7.7",
+  "version": "0.7.8",
   "zeroconf": []
 }
