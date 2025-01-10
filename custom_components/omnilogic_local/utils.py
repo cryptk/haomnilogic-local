@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 
-from pyomnilogic_local.types import OmniType
+from pyomnilogic_local.omnitypes import OmniType
 
 from .const import OMNI_TO_HASS_TYPES
 from .types.entity_index import EntityIndexT

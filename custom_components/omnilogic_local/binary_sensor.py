@@ -4,26 +4,13 @@ import logging
 from typing import TYPE_CHECKING, cast
 
 from pyomnilogic_local.models.telemetry import TelemetryBoW
-from pyomnilogic_local.types import (
-    BackyardState,
-    CSADType,
-    HeaterState,
-    OmniType,
-    SensorType,
-)
+from pyomnilogic_local.omnitypes import BackyardState, CSADType, HeaterState, OmniType, SensorType
 
-from homeassistant.components.binary_sensor import (
-    BinarySensorDeviceClass,
-    BinarySensorEntity,
-)
+from homeassistant.components.binary_sensor import BinarySensorDeviceClass, BinarySensorEntity
 
 from .const import BACKYARD_SYSTEM_ID, DOMAIN, KEY_COORDINATOR
 from .entity import OmniLogicEntity
-from .types.entity_index import (
-    EntityIndexBackyard,
-    EntityIndexHeaterEquip,
-    EntityIndexSensor,
-)
+from .types.entity_index import EntityIndexBackyard, EntityIndexHeaterEquip, EntityIndexSensor
 from .utils import get_entities_of_hass_type, get_entities_of_omni_types
 
 if TYPE_CHECKING:

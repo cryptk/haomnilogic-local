@@ -1,13 +1,11 @@
 """Test the OmniLogic Local config flow."""
+
 from unittest.mock import AsyncMock, patch
 
 import pytest
 
 from homeassistant import config_entries
-from homeassistant.components.omnilogic_local.config_flow import (
-    CannotConnect,
-    InvalidAuth,
-)
+from homeassistant.components.omnilogic_local.config_flow import CannotConnect, InvalidAuth
 from homeassistant.components.omnilogic_local.const import DOMAIN
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType

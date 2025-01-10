@@ -4,12 +4,9 @@ import logging
 from typing import TYPE_CHECKING, Any, Literal, cast
 
 from pyomnilogic_local.models.telemetry import TelemetryBoW
-from pyomnilogic_local.types import OmniType
+from pyomnilogic_local.omnitypes import OmniType
 
-from homeassistant.components.water_heater import (
-    WaterHeaterEntity,
-    WaterHeaterEntityFeature,
-)
+from homeassistant.components.water_heater import WaterHeaterEntity, WaterHeaterEntityFeature
 from homeassistant.const import ATTR_TEMPERATURE, STATE_OFF, STATE_ON, UnitOfTemperature
 
 from .const import DOMAIN, KEY_COORDINATOR

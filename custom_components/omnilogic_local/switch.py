@@ -4,7 +4,7 @@ import logging
 from typing import TYPE_CHECKING, Any, TypeVar, cast
 
 from pyomnilogic_local.models.telemetry import TelemetryFilter
-from pyomnilogic_local.types import (
+from pyomnilogic_local.omnitypes import (
     BodyOfWaterType,
     FilterState,
     FilterValvePosition,

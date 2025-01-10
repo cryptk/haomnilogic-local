@@ -3,20 +3,9 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any
 
-from pyomnilogic_local.types import (
-    ColorLogicBrightness,
-    ColorLogicLightType,
-    ColorLogicPowerState,
-    ColorLogicShow,
-)
+from pyomnilogic_local.omnitypes import ColorLogicBrightness, ColorLogicLightType, ColorLogicPowerState, ColorLogicShow
 
-from homeassistant.components.light import (
-    ATTR_BRIGHTNESS,
-    ATTR_EFFECT,
-    ColorMode,
-    LightEntity,
-    LightEntityFeature,
-)
+from homeassistant.components.light import ATTR_BRIGHTNESS, ATTR_EFFECT, ColorMode, LightEntity, LightEntityFeature
 from homeassistant.exceptions import HomeAssistantError
 
 from .types.entity_index import EntityIndexColorLogicLight

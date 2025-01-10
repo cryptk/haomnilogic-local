@@ -1,4 +1,5 @@
 """Custom error types for the omnilogic integration."""
+
 from __future__ import annotations
 
 from homeassistant.exceptions import HomeAssistantError

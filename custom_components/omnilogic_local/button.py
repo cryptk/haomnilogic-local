@@ -4,13 +4,7 @@ from collections.abc import Sequence
 import logging
 from typing import TYPE_CHECKING, Final, Literal, TypeVar
 
-from pyomnilogic_local.types import (
-    FilterState,
-    FilterType,
-    OmniType,
-    PumpState,
-    PumpType,
-)
+from pyomnilogic_local.omnitypes import FilterState, FilterType, OmniType, PumpState, PumpType
 
 from homeassistant.components.button import ButtonEntity
 

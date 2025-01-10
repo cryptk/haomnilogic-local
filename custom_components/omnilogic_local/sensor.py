@@ -5,26 +5,10 @@ from decimal import Decimal
 import logging
 from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar, cast
 
-from pyomnilogic_local.types import (
-    ChlorinatorDispenserType,
-    CSADType,
-    FilterState,
-    HeaterType,
-    OmniType,
-    SensorType,
-    SensorUnits,
-)
+from pyomnilogic_local.omnitypes import ChlorinatorDispenserType, CSADType, FilterState, HeaterType, OmniType, SensorType, SensorUnits
 
-from homeassistant.components.sensor import (
-    SensorDeviceClass,
-    SensorEntity,
-    SensorStateClass,
-)
-from homeassistant.const import (
-    CONCENTRATION_PARTS_PER_MILLION,
-    UnitOfPower,
-    UnitOfTemperature,
-)
+from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorStateClass
+from homeassistant.const import CONCENTRATION_PARTS_PER_MILLION, UnitOfPower, UnitOfTemperature
 from homeassistant.helpers.typing import StateType
 
 from .const import BACKYARD_SYSTEM_ID, DOMAIN, KEY_COORDINATOR

@@ -22,7 +22,9 @@ SIMULATION = False
 if SIMULATION:
     import json
 
-    from .test_diagnostic_data import TEST_DIAGNOSTIC_DATA
+    # This line is only used during development when simulating a pool with diagnostic data
+    # Disable the pylint and mypy alerts that don't like it when this variable isn't defined
+    from .test_diagnostic_data import TEST_DIAGNOSTIC_DATA  # type: ignore # pylint: disable=no-name-in-module
 
 _LOGGER = logging.getLogger(__name__)
 
