@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any, Generic, cast
 
 from pyomnilogic_local.models.mspconfig import MSPSystem
 from pyomnilogic_local.models.telemetry import TelemetryBackyard, TelemetryType
-from pyomnilogic_local.types import BackyardState, OmniType
+from pyomnilogic_local.omnitypes import BackyardState, OmniType
 
 from homeassistant.core import callback
 from homeassistant.helpers.entity import DeviceInfo

@@ -1,21 +1,15 @@
 """The OmniLogic Local integration."""
+
 from __future__ import annotations
 
 import logging
 from typing import cast
 
 from pyomnilogic_local.api import OmniLogicAPI
-from pyomnilogic_local.types import OmniType
+from pyomnilogic_local.omnitypes import OmniType
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import (
-    CONF_IP_ADDRESS,
-    CONF_NAME,
-    CONF_PORT,
-    CONF_SCAN_INTERVAL,
-    CONF_TIMEOUT,
-    Platform,
-)
+from homeassistant.const import CONF_IP_ADDRESS, CONF_NAME, CONF_PORT, CONF_SCAN_INTERVAL, CONF_TIMEOUT, Platform
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr

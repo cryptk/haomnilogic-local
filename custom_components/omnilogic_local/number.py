@@ -4,7 +4,7 @@ import logging
 from math import floor
 from typing import TYPE_CHECKING, Any, TypeVar, cast
 
-from pyomnilogic_local.types import (
+from pyomnilogic_local.omnitypes import (
     BodyOfWaterType,
     ChlorinatorDispenserType,
     ChlorinatorOperatingMode,
@@ -21,13 +21,7 @@ from homeassistant.const import PERCENTAGE, UnitOfTemperature
 
 from .const import DOMAIN, KEY_COORDINATOR
 from .entity import OmniLogicEntity
-from .types.entity_index import (
-    EntityIndexBodyOfWater,
-    EntityIndexChlorinator,
-    EntityIndexFilter,
-    EntityIndexHeater,
-    EntityIndexPump,
-)
+from .types.entity_index import EntityIndexBodyOfWater, EntityIndexChlorinator, EntityIndexFilter, EntityIndexHeater, EntityIndexPump
 from .utils import get_entities_of_hass_type, get_entities_of_omni_types
 
 if TYPE_CHECKING:
