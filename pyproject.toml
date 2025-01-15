@@ -1,6 +1,6 @@
 [project]
 name = "haomnilogic-local"
-version = "0.7.10"
+version = "0.7.11"
 description = "A Home Assistant integration for Hayward OmniLogic/OmniHub pool controllers using the local UDP api"
 readme = "README.md"
 authors = [
