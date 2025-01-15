@@ -31,10 +31,9 @@ _LOGGER = logging.getLogger(__name__)
 
 def device_walk(base: OmniBase) -> Iterable[OmniBase]:
     for _key, value in base:
-        if isinstance(value, OmniBase):
-            if hasattr(value, "system_id"):
-                yield value.without_subdevices()
-                yield from device_walk(value)
+        if isinstance(value, OmniBase) and hasattr(value, "system_id"):
+            yield value.without_subdevices()
+            yield from device_walk(value)
         if isinstance(value, list):
             for device in [d for d in value if hasattr(d, "system_id")]:
                 yield device.without_subdevices()
