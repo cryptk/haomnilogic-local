@@ -88,7 +88,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
                 # As far as I can tell, "external input" sensors are not exposed in the telemetry,
                 # they are only used for things like equipment interlocks
                 pass
-            case CSADType.ACID:
+            case CSADType.ACID | CSADType.CO2:
                 _LOGGER.debug(
                     "Configuring sensor for CSAD ACID with ID: %s, Name: %s",
                     sensor.msp_config.system_id,
@@ -131,6 +131,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
                 entities.append(
                     OmniLogicChlorinatorSaltLevelSensorEntity(coordinator=coordinator, context=system_id, sensor_type="instant")
                 )
+            case ChlorinatorDispenserType.LIQUID:
+                # It looks like there are no liquid sensors exposed in the telemetry
+                pass
             case _:
                 _LOGGER.warning(
                     "Your system has an unsupported chlorinator, please raise an issue: https://github.com/cryptk/haomnilogic-local/issues"
