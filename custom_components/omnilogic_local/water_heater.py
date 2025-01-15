@@ -63,7 +63,9 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity[EntityIndexHeater], WaterHeater
 
     """
 
-    _attr_supported_features = WaterHeaterEntityFeature.TARGET_TEMPERATURE | WaterHeaterEntityFeature.OPERATION_MODE
+    _attr_supported_features = (
+        WaterHeaterEntityFeature.TARGET_TEMPERATURE | WaterHeaterEntityFeature.OPERATION_MODE | WaterHeaterEntityFeature.ON_OFF
+    )
     _attr_operation_list = [STATE_ON, STATE_OFF]
     _attr_name = "Heater"
 
@@ -119,6 +121,12 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity[EntityIndexHeater], WaterHeater
             case "off":
                 await self.coordinator.omni_api.async_set_heater_enable(self.bow_id, self.system_id, False)
                 self.set_telemetry({"enabled": "no"})
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        await self.async_set_operation_mode("on")
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        await self.async_set_operation_mode("off")
 
     @property
     def extra_state_attributes(self) -> dict[str, str | int]:
