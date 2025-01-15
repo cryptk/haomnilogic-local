@@ -92,6 +92,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
                             "Chlorinator ORP control is not supported yet, "
                             "please raise an issue: https://github.com/cryptk/haomnilogic-local/issues"
                         )
+            case ChlorinatorDispenserType.LIQUID:
+                # Working in issue #116 on this support
+                pass
             case _:
                 _LOGGER.warning(
                     "Your system has an unsupported chlorinator, please raise an issue: https://github.com/cryptk/haomnilogic-local/issues"

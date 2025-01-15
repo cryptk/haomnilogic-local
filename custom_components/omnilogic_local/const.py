@@ -4,8 +4,6 @@ from typing import Final
 
 from pyomnilogic_local.omnitypes import OmniType
 
-# from homeassistant.backports.enum import StrEnum
-
 DOMAIN: Final[str] = "omnilogic_local"
 KEY_COORDINATOR: Final[str] = "coordinator"
 DEFAULT_SCAN_INTERVAL: Final[int] = 10
