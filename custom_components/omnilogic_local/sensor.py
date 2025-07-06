@@ -4,6 +4,7 @@ from datetime import date, datetime
 from decimal import Decimal
 import logging
 from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar, cast
+from .types.entity_index import EntityIndexAcid
 
 from pyomnilogic_local.omnitypes import ChlorinatorDispenserType, CSADType, FilterState, HeaterType, OmniType, SensorType, SensorUnits
 
@@ -35,111 +36,79 @@ _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
-    """Set up the switch platform."""
-
     coordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
-
-    # Create a sensor entity for all temperature sensors
-    all_sensors = get_entities_of_hass_type(coordinator.data, "sensor")
     entities = []
+
+    # PH dosers
+    all_dosers = get_entities_of_omni_types(coordinator.data, [OmniType.ACID])
+    for system_id, doser in all_dosers.items():
+        _LOGGER.debug("Configuring sensor for PH Doser output with ID: %s, Name: %s", doser.msp_config.system_id, doser.msp_config.name)
+        entities.append(OmniLogicPhDoserOutputSensorEntity(coordinator=coordinator, context=system_id))
+
+    # Sensors
+    all_sensors = get_entities_of_hass_type(coordinator.data, "sensor")
     for system_id, sensor in all_sensors.items():
         match sensor.msp_config.type:
             case SensorType.AIR_TEMP:
-                _LOGGER.debug(
-                    "Configuring sensor for air temperature with ID: %s, Name: %s",
-                    sensor.msp_config.system_id,
-                    sensor.msp_config.name,
-                )
+                _LOGGER.debug("Configuring sensor for air temperature with ID: %s, Name: %s", sensor.msp_config.system_id, sensor.msp_config.name)
                 entities.append(OmniLogicAirTemperatureSensorEntity(coordinator=coordinator, context=system_id))
             case SensorType.WATER_TEMP:
-                _LOGGER.debug(
-                    "Configuring sensor for water temperature with ID: %s, Name: %s",
-                    sensor.msp_config.system_id,
-                    sensor.msp_config.name,
-                )
+                _LOGGER.debug("Configuring sensor for water temperature with ID: %s, Name: %s", sensor.msp_config.system_id, sensor.msp_config.name)
                 entities.append(OmniLogicWaterTemperatureSensorEntity(coordinator=coordinator, context=system_id))
             case SensorType.SOLAR_TEMP:
-                # Reference https://github.com/cryptk/haomnilogic-local/issues/60 for why we do this
-                # If a BoW has more than one solar temperature sensor, we need to only configure the sensors that are associated with actual
-                # solar heaters.
-                # We start by finding the solar heater that this sensor is associated with
                 omni_entities = get_entities_of_omni_types(coordinator.data, [OmniType.HEATER_EQUIP])
-                sensed_system_id = [
-                    k
-                    for k, v in omni_entities.items()
-                    if v.msp_config.heater_type is HeaterType.SOLAR and v.msp_config.sensor_id == sensor.msp_config.system_id
+                sensed_system_ids = [
+                    k for k, v in omni_entities.items()
+                    if v.msp_config.heater_type == HeaterType.SOLAR and v.msp_config.sensor_id == sensor.msp_config.system_id
                 ]
-                # Then we decide what to do based on how many solar heaters we find
-                match len(sensed_system_id):
+                match len(sensed_system_ids):
                     case 0:
                         _LOGGER.warning("Unable to locate a solar heater for sensor id: %s", sensor.msp_config.system_id)
                     case 1:
                         entities.append(
                             OmniLogicSolarTemperatureSensorEntity(
-                                coordinator=coordinator, context=system_id, sensed_system_id=sensed_system_id[0]
+                                coordinator=coordinator,
+                                context=system_id,
+                                sensed_system_id=sensed_system_ids[0]
                             )
                         )
                     case _:
                         _LOGGER.warning("Found multiple heaters for sensor id: %s", sensor.msp_config.system_id)
             case SensorType.FLOW:
-                # This sensor type is implemented as a binary sensor, not a sensor
-                pass
+                _LOGGER.debug("Skipping FLOW sensor with ID: %s", sensor.msp_config.system_id)
             case SensorType.EXT_INPUT:
-                # As far as I can tell, "external input" sensors are not exposed in the telemetry,
-                # they are only used for things like equipment interlocks
-                pass
+                _LOGGER.debug("Skipping EXT_INPUT sensor with ID: %s", sensor.msp_config.system_id)
             case CSADType.ACID | CSADType.CO2:
-                _LOGGER.debug(
-                    "Configuring sensor for CSAD ACID with ID: %s, Name: %s",
-                    sensor.msp_config.system_id,
-                    sensor.msp_config.name,
-                )
+                _LOGGER.debug("Configuring sensor for CSAD ACID with ID: %s, Name: %s", sensor.msp_config.system_id, sensor.msp_config.name)
                 entities.append(OmniLogicCSADAcidPhEntity(coordinator=coordinator, context=system_id))
                 entities.append(OmniLogicCSADAcidORPEntity(coordinator=coordinator, context=system_id))
             case _:
-                _LOGGER.warning(
-                    "Your system has an unsupported sensor. ID: %s, Name: %s, Type: %s. Please raise an issue: https://github.com/cryptk/haomnilogic-local/issues",
-                    sensor.msp_config.system_id,
-                    sensor.msp_config.name,
-                    sensor.msp_config.type,
-                )
+                _LOGGER.warning("Unsupported sensor. ID: %s, Name: %s, Type: %s", sensor.msp_config.system_id, sensor.msp_config.name, sensor.msp_config.type)
 
-    # Create energy sensors for filters/pumps suitable for inclusion in the energy dashboard
+    # Filter energy sensors
     all_pumps = get_entities_of_omni_types(coordinator.data, [OmniType.FILTER])
     for system_id, pump in all_pumps.items():
-        match pump.msp_config.omni_type:
-            case OmniType.FILTER:
-                _LOGGER.debug(
-                    "Configuring sensor for filter energy with ID: %s, Name: %s",
-                    pump.msp_config.system_id,
-                    pump.msp_config.name,
-                )
-                entities.append(OmniLogicFilterEnergySensorEntity(coordinator=coordinator, context=system_id))
+        _LOGGER.debug("Configuring sensor for filter energy with ID: %s, Name: %s", pump.msp_config.system_id, pump.msp_config.name)
+        entities.append(OmniLogicFilterEnergySensorEntity(coordinator=coordinator, context=system_id))
 
+    # Chlorinator salt level sensors
     all_chlorinators = get_entities_of_omni_types(coordinator.data, [OmniType.CHLORINATOR])
     for system_id, chlorinator in all_chlorinators.items():
-        match cast(EntityIndexChlorinator, chlorinator).msp_config.dispenser_type:
-            case ChlorinatorDispenserType.SALT:
-                _LOGGER.debug(
-                    "Configuring sensor for chlorinator salt level with ID: %s, Name: %s",
-                    chlorinator.msp_config.system_id,
-                    chlorinator.msp_config.name,
-                )
-                entities.append(
-                    OmniLogicChlorinatorSaltLevelSensorEntity(coordinator=coordinator, context=system_id, sensor_type="average")
-                )
-                entities.append(
-                    OmniLogicChlorinatorSaltLevelSensorEntity(coordinator=coordinator, context=system_id, sensor_type="instant")
-                )
-            case ChlorinatorDispenserType.LIQUID:
-                # It looks like there are no liquid sensors exposed in the telemetry
-                pass
-            case _:
-                _LOGGER.warning(
-                    "Your system has an unsupported chlorinator, please raise an issue: https://github.com/cryptk/haomnilogic-local/issues"
-                )
+        dispenser_type = cast(EntityIndexChlorinator, chlorinator).msp_config.dispenser_type
+        if dispenser_type == ChlorinatorDispenserType.SALT:
+            _LOGGER.debug("Configuring sensor for chlorinator salt level with ID: %s, Name: %s", chlorinator.msp_config.system_id, chlorinator.msp_config.name)
+            entities.append(OmniLogicChlorinatorSaltLevelSensorEntity(coordinator=coordinator, context=system_id, sensor_type="average"))
+            entities.append(OmniLogicChlorinatorSaltLevelSensorEntity(coordinator=coordinator, context=system_id, sensor_type="instant"))
+        elif dispenser_type == ChlorinatorDispenserType.LIQUID:
+            pass
+        else:
+            _LOGGER.warning("Unsupported chlorinator type for ID: %s. Please raise an issue.", chlorinator.msp_config.system_id)
 
     async_add_entities(entities)
+
+
+
+
 
 
 T = TypeVar("T", EntityIndexBackyard, EntityIndexBodyOfWater, EntityIndexHeaterEquip)
@@ -190,6 +159,21 @@ class OmniLogicTemperatureSensorEntity(OmniLogicEntity[EntityIndexSensor], Senso
         raise NotImplementedError
 
 
+class OmniLogicPhDoserOutputSensorEntity(OmniLogicEntity[EntityIndexAcid], SensorEntity):
+    """Sensor entity for PH Doser output level."""
+
+    _attr_icon = "mdi:chemical-weapon"
+    _attr_native_unit_of_measurement = "%"
+    _attr_state_class = SensorStateClass.MEASUREMENT
+    _attr_name = "PH Doser Output"
+
+    def __init__(self, coordinator: OmniLogicCoordinator, context: int) -> None:
+        super().__init__(coordinator, context)
+
+    @property
+    def native_value(self) -> StateType | date | datetime | Decimal:
+        return self.data.telemetry.output if self.data.telemetry.output is not None else 0
+    
 class OmniLogicAirTemperatureSensorEntity(OmniLogicTemperatureSensorEntity[EntityIndexBackyard]):
     def __init__(self, coordinator: OmniLogicCoordinator, context: int) -> None:
         super().__init__(coordinator, context, OmniType.BACKYARD)
