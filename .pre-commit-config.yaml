@@ -45,3 +45,11 @@ repos:
                   - "pytest>=8.0.0"
                   - "homeassistant>=2025.1.2"
                 args: [ "--config-file=./pyproject.toml"]
+    -   repo: local
+        hooks:
+            -   id: sync-dependencies
+                name: Sync dependencies to manifest
+                entry: python3 script/sync_dependencies.py
+                language: python
+                files: ^(pyproject\.toml|custom_components/omnilogic_local/manifest\.json)$
+                pass_filenames: false
