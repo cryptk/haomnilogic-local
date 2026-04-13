@@ -40,9 +40,8 @@ repos:
         rev: v1.18.2
         hooks:
             -   id: mypy
-                exclude: cli.py
                 additional_dependencies:
-                  - "python_omnilogic_local==0.20.8"
+                  - "python_omnilogic_local==0.20.13"
                   - "pytest>=8.0.0"
                   - "homeassistant>=2025.1.2"
                 args: [ "--config-file=./pyproject.toml"]

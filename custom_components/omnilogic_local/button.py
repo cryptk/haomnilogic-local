@@ -26,17 +26,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     coordinator: OmniLogicCoordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
     entities: list[ButtonEntity] = []
 
-    all_variable_pumps = [pump for pump in coordinator.omni.all_pumps if pump.mspconfig.equip_type == PumpType.VARIABLE_SPEED]
-    for pump in all_variable_pumps:
-        for pumpSpeed in PumpSpeedPresets:
-            entities.append(OmniLogicPumpButtonEntity(coordinator=coordinator, equipment=pump, speed=pumpSpeed))
+    for _, _, pump in coordinator.omni.all_pumps.items():
+        if pump.equip_type == PumpType.VARIABLE_SPEED:
+            for pumpSpeed in PumpSpeedPresets:
+                entities.append(OmniLogicPumpButtonEntity(coordinator=coordinator, equipment=pump, speed=pumpSpeed))
 
-    all_variable_filters = [
-        filter_ for filter_ in coordinator.omni.all_filters if filter_.mspconfig.equip_type == FilterType.VARIABLE_SPEED
-    ]
-    for filter_ in all_variable_filters:
-        for filterSpeed in FilterSpeedPresets:
-            entities.append(OmniLogicFilterButtonEntity(coordinator=coordinator, equipment=filter_, speed=filterSpeed))
+    for _, _, filt in coordinator.omni.all_filters.items():
+        if filt.equip_type == FilterType.VARIABLE_SPEED:
+            for filterSpeed in FilterSpeedPresets:
+                entities.append(OmniLogicFilterButtonEntity(coordinator=coordinator, equipment=filt, speed=filterSpeed))
 
     entities.append(OmniLogicIdleButtonEntity(coordinator=coordinator, equipment=coordinator.omni.backyard))
 

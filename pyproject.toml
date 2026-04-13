@@ -3,7 +3,7 @@ name = "haomnilogic-local"
 version = "0.7.12"
 description = "A Home Assistant integration for Hayward OmniLogic/OmniHub pool controllers using the local UDP api"
 readme = "README.md"
-requires-python = ">=3.13,<4.0.0"
+requires-python = ">=3.14.2"
 authors = [
     { name = "cryptk", email="cryptk@users.noreply.github.com"},
     { name = "djtimca"},
@@ -11,7 +11,7 @@ authors = [
 ]
 license-files = ["LICENSE"]
 dependencies = [
-    "python-omnilogic-local>=0.20.8",
+    "python-omnilogic-local>=0.20.13",
 ]
 
 [project.urls]
@@ -34,13 +34,14 @@ ignore-words-list = [
 ]
 
 [tool.mypy]
-python_version = "3.13"
+python_version = "3.14"
 # plugins = [
 #     "pydantic.mypy"
 # ]
-follow_imports = "normal"
+follow_imports = "silent"
 strict = true
 # warn_return_any = false
+
 
 [tool.ruff]
 line-length = 140

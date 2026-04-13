@@ -60,7 +60,7 @@ class OmniLogicLightEntity(OmniLogicEntity[ColorLogicLight], LightEntity):
 
     @property
     def supported_color_modes(self) -> set[ColorMode]:
-        match self.equipment.model:
+        match self.equipment.equip_type:
             case ColorLogicLightType.SAM | ColorLogicLightType.TWO_FIVE | ColorLogicLightType.FOUR_ZERO | ColorLogicLightType.UCL:
                 return {ColorMode.BRIGHTNESS}
             case _:
@@ -68,7 +68,7 @@ class OmniLogicLightEntity(OmniLogicEntity[ColorLogicLight], LightEntity):
 
     @property
     def color_mode(self) -> ColorMode | None:
-        match self.equipment.model:
+        match self.equipment.equip_type:
             case ColorLogicLightType.SAM | ColorLogicLightType.TWO_FIVE | ColorLogicLightType.FOUR_ZERO | ColorLogicLightType.UCL:
                 return ColorMode.BRIGHTNESS
             case _:
