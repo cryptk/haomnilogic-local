@@ -99,15 +99,7 @@ PumpTypeT = TypeVar("PumpTypeT", bound=Pump | Filter)
 
 
 class OmniLogicVSPNumberEntity(OmniLogicEntity[PumpTypeT], NumberEntity):
-    """An entity for controlling variable speed pump/filter speed.
-
-    The CoordinatorEntity class provides:
-      should_poll
-      async_update
-      async_added_to_hass
-      available
-
-    """
+    """Number entity for variable speed pump or filter speed control."""
 
     _attr_icon: str = "mdi:gauge"
 
@@ -172,7 +164,7 @@ class OmniLogicVSPNumberEntity(OmniLogicEntity[PumpTypeT], NumberEntity):
 
 
 class OmniLogicPumpNumberEntity(OmniLogicVSPNumberEntity[Pump]):
-    """An entity representing a number platform for an OmniLogic Pump."""
+    """Number entity for variable speed pump speed control."""
 
     async def async_set_native_value(self, value: float) -> None:
         """Update the current value."""
@@ -185,7 +177,7 @@ class OmniLogicPumpNumberEntity(OmniLogicVSPNumberEntity[Pump]):
 
 
 class OmniLogicFilterNumberEntity(OmniLogicVSPNumberEntity[Filter]):
-    """An OmniLogicFilterNumberEntity is a special case of an OmniLogicPumpNumberEntity."""
+    """Number entity for variable speed filter speed control."""
 
     async def async_set_native_value(self, value: float) -> None:
         """Update the current value."""
@@ -198,7 +190,7 @@ class OmniLogicFilterNumberEntity(OmniLogicVSPNumberEntity[Filter]):
 
 
 class OmniLogicSolarSetPointNumberEntity(OmniLogicEntity[Heater], NumberEntity):
-    """An entity for controlling the solar heater set point."""
+    """Number entity for solar heater set point control."""
 
     _attr_device_class = NumberDeviceClass.TEMPERATURE
     _attr_name = "Solar Set Point"
@@ -227,7 +219,7 @@ class OmniLogicSolarSetPointNumberEntity(OmniLogicEntity[Heater], NumberEntity):
 
 
 class OmniLogicChlorinatorTimedPercentNumberEntity(OmniLogicEntity[Chlorinator], NumberEntity):
-    """An entity for controlling chlorinator timed percent."""
+    """Number entity for chlorinator timed percent control."""
 
     _attr_name = "Chlorinator Timed Percent"
     _attr_native_max_value = 100

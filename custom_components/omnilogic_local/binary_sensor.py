@@ -60,6 +60,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 
 
 class OmniLogicServiceModeBinarySensorEntity(OmniLogicEntity[Backyard], BinarySensorEntity):
+    """Binary sensor entity for system service mode status."""
+
     _attr_name = "Service Mode"
 
     @property
@@ -73,7 +75,7 @@ class OmniLogicServiceModeBinarySensorEntity(OmniLogicEntity[Backyard], BinarySe
 
 
 class OmniLogicHeaterEquipBinarySensorEntity(OmniLogicEntity[HeaterEquipment], BinarySensorEntity):
-    """Expose a binary state via a sensor based on telemetry data."""
+    """Binary sensor entity for heater equipment running status."""
 
     device_class = BinarySensorDeviceClass.HEAT
 
@@ -91,7 +93,7 @@ class OmniLogicHeaterEquipBinarySensorEntity(OmniLogicEntity[HeaterEquipment], B
 
 
 class OmniLogicFlowBinarySensorEntity(OmniLogicEntity[Bow], BinarySensorEntity):
-    """Expose a binary state via a sensor based on telemetry data."""
+    """Binary sensor entity for body of water flow status."""
 
     @property
     def icon(self) -> str | None:
