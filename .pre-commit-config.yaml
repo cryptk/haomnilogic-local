@@ -56,4 +56,4 @@ repos:
         name: manifest.json dependency version
         entry: scripts/check-manifest-version.sh
         language: script
-        files: ^manifest\.json|uv\.lock$
+        files: manifest\.json|uv\.lock$
