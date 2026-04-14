@@ -141,26 +141,18 @@ class OmniLogicVSPNumberEntity(OmniLogicEntity[PumpTypeT], NumberEntity):
 
     @property
     def native_unit_of_measurement(self) -> str | None:
-        return self.coordinator.omni.system.vsp_speed_format
+        return PERCENTAGE
 
     @property
     def native_max_value(self) -> float:
-        if self.native_unit_of_measurement == "RPM":
-            return self.max_rpm
         return self.max_pct
 
     @property
     def native_min_value(self) -> float:
-        if self.native_unit_of_measurement == "RPM":
-            return self.min_rpm
         return self.min_pct
 
     @property
     def native_value(self) -> int:
-        # Even though the omnilogic stores whether you want RPM or Percent, it always returns
-        # the filter speed as a percent value.  We convert it here to what your preference is.
-        if self.native_unit_of_measurement == "RPM":
-            return self.current_rpm
         return self.current_pct
 
     @property

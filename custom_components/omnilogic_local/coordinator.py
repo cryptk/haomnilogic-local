@@ -26,23 +26,12 @@ if SIMULATION:
 _LOGGER = logging.getLogger(__name__)
 
 
-def device_walk(base: OmniBase | MSPConfig) -> Iterable[OmniBase]:
-    for _key, value in base:
-        if isinstance(value, OmniBase) and hasattr(value, "system_id"):
-            yield value.without_subdevices()
-            yield from device_walk(value)
-        if isinstance(value, list):
-            for device in [d for d in value if hasattr(d, "system_id")]:
-                yield device.without_subdevices()
-                yield from device_walk(device)
-
-
 class OmniLogicCoordinator(DataUpdateCoordinator[None]):
     """Hayward OmniLogic API coordinator."""
 
     omni: OmniLogic
     # The underlying library stores all of the data and abstracts it via an access layer
-    # We don't need to store the data inside of the
+    # We don't need to store the data inside of the coordinator
     data: None
 
     def __init__(self, hass: HomeAssistant, omni: OmniLogic, scan_interval: int) -> None:
