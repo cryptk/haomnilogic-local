@@ -42,8 +42,8 @@ let
     # --inexact leaves any dependencies installed by Home Assistant alone
     uv sync --all-extras --inexact
 
-    if [ ! -f ../python-omnilogic-local ]; then
-      echo "--- Installing Development Backend Library ---"
+    if [ -d ../python-omnilogic-local ]; then
+      echo "--- Installing Backend Library In Editable Mode---"
       uv pip install -e ../python-omnilogic-local
     fi
 
@@ -70,6 +70,7 @@ in
       autoconf
       libjpeg_turbo
       libpcap
+      jq
     ];
 
   runScript = "bash --rcfile ${shellInit}";
