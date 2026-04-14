@@ -1,4 +1,6 @@
-{ pkgs ? import <nixpkgs> {} }:
+{
+  pkgs ? import <nixpkgs> { },
+}:
 
 let
   shellInit = pkgs.writeText "haomnilogic-shell-init" ''
@@ -25,14 +27,15 @@ let
     echo "--- Activating Virtual Environment ---"
     source .venv/bin/activate
 
-    if [ ! -f dev_files/home-assistant-core/config/configuration.yaml ]; then
+    if ! command -v hass &> /dev/null; then
       echo "--- Setting Up Home Assistant Core ---"
       ./dev_files/home-assistant-core/script/setup
+    fi
+
+    if [ ! -L "dev_files/home-assistant-core/config/custom_components/omnilogic_local" ]; then
       echo "--- Adding OmniLogic Local Custom Component ---"
       mkdir -p dev_files/home-assistant-core/config/custom_components
-      if [ ! -L "dev_files/home-assistant-core/config/custom_components/omnilogic_local" ]; then
-        ln -s ../../../../custom_components/omnilogic_local dev_files/home-assistant-core/config/custom_components/omnilogic_local
-      fi
+      ln -s ../../../../custom_components/omnilogic_local dev_files/home-assistant-core/config/custom_components/omnilogic_local
     fi
 
     echo "--- Syncing Project Dependencies ---"
@@ -44,29 +47,30 @@ let
       uv pip install -e ../python-omnilogic-local
     fi
 
-    alias run-core="hass -c dev_files/home-assistant-core/config --skip-pip-packages python_omnilogic_local"
+    alias run-core="hass -c dev_files/home-assistant-core/config"
   '';
 in
 (pkgs.buildFHSEnv {
   name = "haomnilogic-fhs";
-  targetPkgs = pkgs: with pkgs; [
-    python314
-    uv
-    stdenv.cc.cc.lib
-    zlib
-    zlib.dev
-    bashInteractive
-    pkg-config
-    libffi
-    libffi.dev
-    openssl
-    openssl.dev
-    ffmpeg
-    gcc
-    autoconf
-    libjpeg_turbo
-    libpcap
-  ];
+  targetPkgs =
+    pkgs: with pkgs; [
+      python314
+      uv
+      stdenv.cc.cc.lib
+      zlib
+      zlib.dev
+      bashInteractive
+      pkg-config
+      libffi
+      libffi.dev
+      openssl
+      openssl.dev
+      ffmpeg
+      gcc
+      autoconf
+      libjpeg_turbo
+      libpcap
+    ];
 
   runScript = "bash --rcfile ${shellInit}";
 }).env
