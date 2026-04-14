@@ -10,7 +10,7 @@ authors = [
     { name = "garionphx" },
 ]
 license-files = ["LICENSE"]
-dependencies = ["python-omnilogic-local>=0.22.0"]
+dependencies = ["python-omnilogic-local"]
 
 [project.urls]
 repository = "https://github.com/cryptk/haomnilogic-local"

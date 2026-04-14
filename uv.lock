@@ -117,7 +117,7 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "python-omnilogic-local", specifier = ">=0.22.0" }]
+requires-dist = [{ name = "python-omnilogic-local" }]
 
 [package.metadata.requires-dev]
 dev = [
