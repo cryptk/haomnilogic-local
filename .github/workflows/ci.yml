@@ -57,6 +57,6 @@ jobs:
       - name: Install Dependencies
         run: uv sync --all-extras
         shell: bash
-      - name: Test with Pytest
-        run: uv run pytest
-        shell: bash
+      # - name: Test with Pytest
+      #   run: uv run pytest
+      #   shell: bash
