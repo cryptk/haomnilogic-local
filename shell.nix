@@ -21,17 +21,9 @@ let
       uv venv --python python3.14
     fi
 
-    echo "--- Syncing Project Dependencies ---"
-    # --inexact leaves any dependencies installed by Home Assistant alone
-    uv sync --all-extras --inexact
 
     echo "--- Activating Virtual Environment ---"
     source .venv/bin/activate
-
-    if [ ! -f ../python-omnilogic-local ]; then
-      echo "--- Installing Development Backend Library ---"
-      uv pip install -e ../python-omnilogic-local
-    fi
 
     if [ ! -f dev_files/home-assistant-core/config/configuration.yaml ]; then
       echo "--- Setting Up Home Assistant Core ---"
@@ -41,6 +33,15 @@ let
       if [ ! -L "dev_files/home-assistant-core/config/custom_components/omnilogic_local" ]; then
         ln -s ../../../../custom_components/omnilogic_local dev_files/home-assistant-core/config/custom_components/omnilogic_local
       fi
+    fi
+
+    echo "--- Syncing Project Dependencies ---"
+    # --inexact leaves any dependencies installed by Home Assistant alone
+    uv sync --all-extras --inexact
+
+    if [ ! -f ../python-omnilogic-local ]; then
+      echo "--- Installing Development Backend Library ---"
+      uv pip install -e ../python-omnilogic-local
     fi
 
     alias run-core="hass -c dev_files/home-assistant-core/config --skip-pip-packages python_omnilogic_local"
