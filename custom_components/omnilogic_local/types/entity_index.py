@@ -33,18 +33,6 @@ from pyomnilogic_local.models.telemetry import (
     TelemetryVirtualHeater,
 )
 
-# from .mspconfig import (
-#     MSPBackyardT,
-#     MSPBodyOfWaterT,
-#     MSPColorLogicLightT,
-#     MSPFilterT,
-#     MSPHeaterEquipT,
-#     MSPHeaterT,
-#     MSPPumpT,
-#     MSPRelayT,
-#     MSPSensorT,
-# )
-
 
 @dataclass
 class EntityIndexData:
@@ -79,15 +67,6 @@ class EntityIndexData:
 
 
 EntityIndexT = dict[int, EntityIndexData]
-
-
-# OLD TYPES BELOW
-# class EntityMetadataT(TypedDict):
-#     name: str
-#     hass_type: str
-#     omni_type: OmniType
-#     bow_id: NotRequired[int]
-#     system_id: int
 
 
 class EntityIndexBackyard:
@@ -155,19 +134,6 @@ class EntityIndexValveActuator:
     telemetry: TelemetryValveActuator
 
 
-# EntityIndexType: TypeAlias = (
-#     EntityDataBackyardT
-#     | EntityDataBodyOfWaterT
-#     | EntityDataColorLogicLightT
-#     | EntityDataFilterT
-#     | EntityDataHeaterT
-#     | EntityDataHeaterEquipT
-#     | EntityDataPumpT
-#     | EntityDataRelayT
-#     | EntityDataSensorT
-#     | EntityDataValveActuatorT
-# )
-
 EntityIndexTypeVar = TypeVar(
     "EntityIndexTypeVar",
     EntityIndexBackyard,
@@ -184,12 +150,3 @@ EntityIndexTypeVar = TypeVar(
     EntityIndexSensor,
     EntityIndexValveActuator,
 )
-
-# EntityIndexT = dict[int, EntityIndexType]
-
-
-# OMNI_TYPE_TO_ENTITY_TYPE: dict[OmniType, type[EntityIndexTypeT]] = {
-#     OmniType.BACKYARD: EntityDataBackyardT,
-#     OmniType.BOW: EntityDataBodyOfWaterT,
-#     OmniType.BOW_MSP: EntityDataBodyOfWaterT,
-# }

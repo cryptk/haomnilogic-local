@@ -1,17 +1,15 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
 import logging
-from typing import TYPE_CHECKING, Final, Literal, TypeVar
-
-from pyomnilogic_local.omnitypes import FilterState, FilterType, OmniType, PumpState, PumpType
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from homeassistant.components.button import ButtonEntity
+from homeassistant.helpers.event import async_call_later
+from pyomnilogic_local import Backyard, Filter, Pump
+from pyomnilogic_local.omnitypes import FilterSpeedPresets, FilterType, PumpSpeedPresets, PumpType
 
-from .const import BACKYARD_SYSTEM_ID, DOMAIN, KEY_COORDINATOR
+from .const import DOMAIN, KEY_COORDINATOR, UPDATE_DELAY_SECONDS
 from .entity import OmniLogicEntity
-from .types.entity_index import EntityIndexBackyard, EntityIndexFilter, EntityIndexPump
-from .utils import get_entities_of_omni_types
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
@@ -22,42 +20,42 @@ if TYPE_CHECKING:
 
 _LOGGER = logging.getLogger(__name__)
 
-SpeedT = Literal["low", "medium", "high"]
-SPEED_NAMES: Final[Sequence[SpeedT]] = ["low", "medium", "high"]
-
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
     """Set up the switch platform."""
+    coordinator: OmniLogicCoordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
+    entities: list[ButtonEntity] = []
 
-    coordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
-
-    all_pumps = get_entities_of_omni_types(coordinator.data, [OmniType.FILTER, OmniType.PUMP])
-
-    entities = []
-    for system_id, pump in all_pumps.items():
-        for speed in SPEED_NAMES:
+    for _, system_id, pump in coordinator.omni.all_pumps.items():
+        if pump.equip_type == PumpType.VARIABLE_SPEED:
             _LOGGER.debug(
-                "Configuring button for pump with ID: %s, Name: %s, Speed: %s",
-                pump.msp_config.system_id,
-                pump.msp_config.name,
-                speed,
+                "Configuring button for pump with ID: %s, Name: %s",
+                system_id,
+                pump.name,
             )
-            match pump.msp_config.type:
-                case PumpType.VARIABLE_SPEED:
-                    entities.append(OmniLogicPumpButtonEntity(coordinator=coordinator, context=system_id, speed=speed))
-                case FilterType.VARIABLE_SPEED:
-                    entities.append(OmniLogicFilterButtonEntity(coordinator=coordinator, context=system_id, speed=speed))
+            for pumpSpeed in PumpSpeedPresets:
+                entities.append(OmniLogicPumpButtonEntity(coordinator=coordinator, equipment=pump, speed=pumpSpeed))
 
-    _LOGGER.debug("Configuring button for restore idle with ID: %s", BACKYARD_SYSTEM_ID)
-    entities.append(OmniLogicIdleButtonEntity(coordinator=coordinator, context=BACKYARD_SYSTEM_ID))
+    for _, system_id, filt in coordinator.omni.all_filters.items():
+        if filt.equip_type == FilterType.VARIABLE_SPEED:
+            _LOGGER.debug(
+                "Configuring button for filter with ID: %s, Name: %s",
+                system_id,
+                filt.name,
+            )
+            for filterSpeed in FilterSpeedPresets:
+                entities.append(OmniLogicFilterButtonEntity(coordinator=coordinator, equipment=filt, speed=filterSpeed))
+
+    entities.append(OmniLogicIdleButtonEntity(coordinator=coordinator, equipment=coordinator.omni.backyard))
 
     async_add_entities(entities)
 
 
-T = TypeVar("T", EntityIndexFilter, EntityIndexPump)
+PumpTypeT = TypeVar("PumpTypeT", bound=Pump | Filter)
+SpeedPresetT = TypeVar("SpeedPresetT", bound=PumpSpeedPresets | FilterSpeedPresets)
 
 
-class OmniLogicSpeedPresetButtonEntity(OmniLogicEntity[T], ButtonEntity):
+class OmniLogicSpeedPresetButtonEntity(OmniLogicEntity[PumpTypeT], ButtonEntity):
     """An entity using CoordinatorEntity.
 
     The CoordinatorEntity class provides:
@@ -68,75 +66,63 @@ class OmniLogicSpeedPresetButtonEntity(OmniLogicEntity[T], ButtonEntity):
 
     """
 
-    speed: SpeedT
-
-    on_state: PumpState | FilterState
-
-    def __init__(self, coordinator: OmniLogicCoordinator, context: int, speed: SpeedT) -> None:
-        # It is important that the speed and data members are assigned BEFORE we run the __init__ as they are used to
-        # determine the name of the button
-        self.speed: SpeedT = speed
-        super().__init__(coordinator, context)
+    def __init__(self, coordinator: OmniLogicCoordinator, equipment: PumpTypeT, speed: FilterSpeedPresets | PumpSpeedPresets) -> None:
+        super().__init__(coordinator, equipment)
+        self.speed = speed
 
     @property
     def icon(self) -> str:
         match self.speed:
-            case "low":
+            case PumpSpeedPresets.LOW | FilterSpeedPresets.LOW:
                 return "mdi:speedometer-slow"
-            case "medium":
+            case PumpSpeedPresets.MEDIUM | FilterSpeedPresets.MEDIUM:
                 return "mdi:speedometer-medium"
-            case "high":
+            case PumpSpeedPresets.HIGH | FilterSpeedPresets.HIGH:
+                return "mdi:speedometer"
+            case _:
                 return "mdi:speedometer"
 
     @property
     def name(self) -> str:
-        return f"{self.data.msp_config.name} {self.speed.capitalize()} Speed"
+        return f"{self.equipment.name} {self.speed.name.capitalize()} Speed"
 
     @property
-    def omni_speed(self) -> int:
+    def _extra_state_attributes(self) -> dict[str, Any]:
         match self.speed:
-            case "low":
-                return self.data.msp_config.low_speed
-            case "medium":
-                return self.data.msp_config.medium_speed
-            case "high":
-                return self.data.msp_config.high_speed
+            case PumpSpeedPresets.LOW | FilterSpeedPresets.LOW:
+                return {"speed": self.equipment.low_speed}
+            case PumpSpeedPresets.MEDIUM | FilterSpeedPresets.MEDIUM:
+                return {"speed": self.equipment.medium_speed}
+            case PumpSpeedPresets.HIGH | FilterSpeedPresets.HIGH:
+                return {"speed": self.equipment.high_speed}
+            case _:
+                return {"speed": None}
+
+
+class OmniLogicPumpButtonEntity(OmniLogicSpeedPresetButtonEntity[Pump]):
+    speed: PumpSpeedPresets
 
     async def async_press(self) -> None:
-        await self.coordinator.omni_api.async_set_equipment(self.bow_id, self.system_id, self.omni_speed)
-
-        self.set_telemetry({"speed": self.omni_speed, "state": self.on_state})
-
-    @property
-    def extra_state_attributes(self) -> dict[str, str | int]:
-        return super().extra_state_attributes | {"speed": self.omni_speed}
+        await self.equipment.run_preset_speed(self.speed)
+        async_call_later(self.hass, UPDATE_DELAY_SECONDS, self._schedule_refresh_callback)
 
 
-class OmniLogicPumpButtonEntity(OmniLogicSpeedPresetButtonEntity[EntityIndexPump]):
-    on_state = PumpState.ON
+class OmniLogicFilterButtonEntity(OmniLogicSpeedPresetButtonEntity[Filter]):
+    speed: FilterSpeedPresets
+
+    async def async_press(self) -> None:
+        await self.equipment.run_preset_speed(self.speed)
+        async_call_later(self.hass, UPDATE_DELAY_SECONDS, self._schedule_refresh_callback)
 
 
-class OmniLogicFilterButtonEntity(OmniLogicSpeedPresetButtonEntity[EntityIndexFilter]):
-    on_state = FilterState.ON
-
-
-class OmniLogicIdleButtonEntity(OmniLogicEntity[EntityIndexBackyard], ButtonEntity):
-    """An entity using CoordinatorEntity.
-
-    The CoordinatorEntity class provides:
-      should_poll
-      async_update
-      async_added_to_hass
-      available
-
-    """
-
-    def __init__(self, coordinator: OmniLogicCoordinator, context: int) -> None:
-        super().__init__(coordinator, context)
+class OmniLogicIdleButtonEntity(OmniLogicEntity[Backyard], ButtonEntity):
+    def __init__(self, coordinator: OmniLogicCoordinator, equipment: Backyard) -> None:
+        super().__init__(coordinator, equipment)
 
     @property
     def name(self) -> str:
         return "Restore Idle"
 
     async def async_press(self) -> None:
-        await self.coordinator.omni_api.async_restore_idle_state()
+        await self.coordinator.omni._api.async_restore_idle_state()
+        async_call_later(self.hass, UPDATE_DELAY_SECONDS, self._schedule_refresh_callback)

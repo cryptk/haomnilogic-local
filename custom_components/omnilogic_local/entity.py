@@ -1,121 +1,122 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, Generic, cast
-
-from pyomnilogic_local.models.mspconfig import MSPSystem
-from pyomnilogic_local.models.telemetry import TelemetryBackyard, TelemetryType
-from pyomnilogic_local.omnitypes import BackyardState, OmniType
+from datetime import datetime
+from typing import Any, Generic, TypeVar, cast
 
 from homeassistant.core import callback
-from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from pyomnilogic_local import (
+    CSAD,
+    Backyard,
+    Bow,
+    Chlorinator,
+    ChlorinatorEquipment,
+    ColorLogicLight,
+    CSADEquipment,
+    Filter,
+    Group,
+    Heater,
+    HeaterEquipment,
+    Pump,
+    Relay,
+    Schedule,
+    Sensor,
+)
 
-from .const import BACKYARD_SYSTEM_ID, MANUFACTURER
-from .types.entity_index import EntityIndexTypeVar
-
-if TYPE_CHECKING:
-    from pyomnilogic_local.models.mspconfig import MSPConfigType
-
-    from .coordinator import OmniLogicCoordinator
+from .const import BACKYARD_SYSTEM_ID, DOMAIN, MANUFACTURER
+from .coordinator import OmniLogicCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
+EquipmentTypes = TypeVar(
+    "EquipmentTypes",
+    bound=CSAD
+    | Backyard
+    | Bow
+    | Chlorinator
+    | ChlorinatorEquipment
+    | ColorLogicLight
+    | CSADEquipment
+    | Filter
+    | Group
+    | Heater
+    | HeaterEquipment
+    | Pump
+    | Relay
+    | Schedule
+    | Sensor,
+)
 
-class OmniLogicEntity(CoordinatorEntity, Generic[EntityIndexTypeVar]):
+
+class OmniLogicEntity(CoordinatorEntity[OmniLogicCoordinator], Generic[EquipmentTypes]):
     _attr_has_entity_name = True
 
-    data: EntityIndexTypeVar
+    equipment: EquipmentTypes
     coordinator: OmniLogicCoordinator
 
     def __init__(
         self,
         coordinator: OmniLogicCoordinator,
-        context: int,
-        extra_attributes: dict[str, str] | None = None,  # Extra attributes dictionary
+        equipment: EquipmentTypes,
     ) -> None:
-        super().__init__(coordinator=coordinator, context=context)
-        self.data = cast(EntityIndexTypeVar, coordinator.data[context])
-        self.bow_id = coordinator.data[context].msp_config.bow_id
-        self.system_id = context
-        self._extra_attributes = extra_attributes
+        super().__init__(coordinator=coordinator)
+        self.equipment = equipment
+        self.bow_id = equipment.bow_id
+        self.system_id = equipment.system_id
+        subclass_name = self.__class__.__name__
+        _LOGGER.debug("Configuring %s for %s - SystemID: %s, Name: %s", subclass_name, equipment.omni_type, self.system_id, equipment.name)
 
-    @callback  # type: ignore[misc]
+    @callback
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
-        self.data = cast(EntityIndexTypeVar, self.coordinator.data[self.system_id])
+        if self.system_id is not None:
+            _LOGGER.debug("updating %s - %s: %s", self.system_id, self.equipment.name, self.equipment)
+            self.equipment = cast("EquipmentTypes", self.coordinator.omni.get_equipment_by_id(self.system_id))
         self.async_write_ha_state()
-
-    def get_config_by_systemid(self, system_id: int) -> MSPConfigType:
-        return self.coordinator.data[system_id].msp_config
-
-    def set_config(
-        self,
-        new_config: dict[str, int | str],
-        system_id: int | None = None,
-        coordinator_update: bool = True,
-    ) -> None:
-        system_id = system_id if system_id is not None else self.system_id
-
-        _LOGGER.debug("Updating config for system ID: %s with data: %s", system_id, new_config)
-
-        for key, value in new_config.items():
-            setattr(self.coordinator.data[system_id].msp_config, key, value)
-        if coordinator_update:
-            self.coordinator.async_set_updated_data(self.coordinator.data)
-
-    def get_telemetry_by_systemid(self, system_id: int) -> TelemetryType | None:
-        if self.available:
-            return self.coordinator.data[system_id].telemetry
-        return None
-
-    def get_system_config(self) -> MSPSystem:
-        return self.coordinator.msp_config.system
-
-    def set_telemetry(
-        self,
-        new_telemetry: dict[str, Any],
-    ) -> None:
-        _LOGGER.debug(
-            "Updating telemetry for system ID: %s with data: %s",
-            self.system_id,
-            new_telemetry,
-        )
-        try:
-            for key, value in new_telemetry.items():
-                setattr(self.coordinator.data[self.system_id].telemetry, key, value)
-        except KeyError:
-            return None
-        self.coordinator.async_set_updated_data(self.coordinator.data)
 
     @property
     def available(self) -> bool:
-        return cast(TelemetryBackyard, self.coordinator.data[BACKYARD_SYSTEM_ID].telemetry).state is BackyardState.ON
+        return self.equipment.is_ready
 
     @property
     def device_info(self) -> DeviceInfo:
         """Return the device info."""
         # If we have a BOW ID, then we associate with that BOWs device, if not, we associate with the Backyard
-        if self.bow_id is not None:
-            identifiers = {(OmniType.BOW, self.bow_id)}
+        if self.equipment.bow_id is not None and self.equipment.bow_id != -1:
+            identifiers = {(DOMAIN, f"bow_{self.bow_id}")}
         else:
-            identifiers = {(OmniType.BACKYARD, BACKYARD_SYSTEM_ID)}
+            identifiers = {(DOMAIN, f"backyard_{BACKYARD_SYSTEM_ID}")}
         return DeviceInfo(
             identifiers=identifiers,
             manufacturer=MANUFACTURER,
         )
 
     @property
-    def extra_state_attributes(self) -> dict[str, str | int]:
-        return {
+    def _extra_state_attributes(self) -> dict[str, Any]:
+        return {}
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        base_attributes: dict[str, Any] = {
             "omni_system_id": self.system_id,
             "omni_bow_id": self.bow_id,
         }
+        return self._extra_state_attributes | base_attributes
 
     @property
     def name(self) -> Any:
-        return self._attr_name if hasattr(self, "_attr_name") else self.data.msp_config.name
+        return self._attr_name if hasattr(self, "_attr_name") else self.equipment.name
 
     @property
     def unique_id(self) -> str | None:
         return f"{self.bow_id} {self.system_id} {self.name}"
+
+    # @callback
+    async def _schedule_refresh_callback(self, now: datetime) -> None:
+        """Callback function executed by async_call_later."""
+        # `now` is the timestamp argument required by async_call_later callbacks
+
+        # Use the non-blocking version of the refresh request
+        await self.coordinator.async_request_refresh()

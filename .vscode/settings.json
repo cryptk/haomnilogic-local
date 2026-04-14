@@ -1,8 +1,9 @@
 {
-  "editor.rulers": [140],
-  "python.testing.pytestEnabled": false,
+  "files.trimTrailingWhitespace": true,
+  "editor.rulers": [80, 100, 140],
+  "mypy-type-checker.importStrategy": "fromEnvironment",
   "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter",
-    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.formatOnSave": true
   }
 }

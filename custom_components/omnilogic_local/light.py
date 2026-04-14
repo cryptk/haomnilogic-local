@@ -1,67 +1,45 @@
 from __future__ import annotations
 
 import logging
+import math
 from typing import TYPE_CHECKING, Any
 
-from pyomnilogic_local.omnitypes import ColorLogicBrightness, ColorLogicLightType, ColorLogicPowerState, ColorLogicShow
-
-from homeassistant.components.light import ATTR_BRIGHTNESS, ATTR_EFFECT, ColorMode, LightEntity, LightEntityFeature
+from homeassistant.components.light import ATTR_BRIGHTNESS, ATTR_EFFECT, LightEntity
+from homeassistant.components.light.const import ColorMode, LightEntityFeature
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers.event import async_call_later
+from homeassistant.util.color import brightness_to_value, value_to_brightness
+from pyomnilogic_local import ColorLogicLight, OmniEquipmentNotInitializedError
+from pyomnilogic_local.omnitypes import ColorLogicBrightness, ColorLogicLightType, ColorLogicPowerState
 
-from .types.entity_index import EntityIndexColorLogicLight
+from .coordinator import OmniLogicCoordinator
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import DOMAIN, KEY_COORDINATOR
+from .const import DOMAIN, KEY_COORDINATOR, UPDATE_DELAY_SECONDS
 from .entity import OmniLogicEntity
-from .utils import get_entities_of_hass_type
 
 _LOGGER = logging.getLogger(__name__)
 
-
-# These were shamelessly borrowed from the lutron_caseta integration
-def to_omni_level(level: int) -> int:
-    """Convert the given Home Assistant light level (0-255) to OmniLogic (0-4)."""
-    return int(round((level * 4) / 255))
-
-
-def to_hass_level(level: ColorLogicBrightness) -> int:
-    """Convert the given OmniLogic (0-4) light level to Home Assistant (0-255)."""
-    return int(int(level.value * 255) // 4)
+BRIGHTNESS_SCALE = (0, 4)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
     """Set up the light platform."""
+    coordinator: OmniLogicCoordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
+    entities: list[LightEntity] = []
 
-    coordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
-
-    all_lights = get_entities_of_hass_type(coordinator.data, "light")
-
-    entities = []
-    for system_id, light in all_lights.items():
-        _LOGGER.debug(
-            "Configuring light with ID: %s, Name: %s",
-            light.msp_config.system_id,
-            light.msp_config.name,
-        )
-        match light.msp_config.type:
-            case ColorLogicLightType.UCL | ColorLogicLightType.TWO_FIVE:
-                entities.append(OmniLogicLightEntity(coordinator=coordinator, context=system_id))
-            case _:
-                _LOGGER.warning(
-                    "Your system has an unsupported light. ID: %s, Name: %s, Type: %s. Please raise an issue: https://github.com/cryptk/haomnilogic-local/issues",
-                    light.msp_config.system_id,
-                    light.msp_config.name,
-                    light.msp_config.type,
-                )
+    all_lights = coordinator.omni.all_lights
+    for _, _, light in all_lights.items():
+        entities.append(OmniLogicLightEntity(coordinator=coordinator, equipment=light))
 
     async_add_entities(entities)
 
 
-class OmniLogicLightEntity(OmniLogicEntity[EntityIndexColorLogicLight], LightEntity):
+class OmniLogicLightEntity(OmniLogicEntity[ColorLogicLight], LightEntity):
     """An entity using CoordinatorEntity.
 
     The CoordinatorEntity class provides:
@@ -72,35 +50,61 @@ class OmniLogicLightEntity(OmniLogicEntity[EntityIndexColorLogicLight], LightEnt
 
     """
 
-    _attr_effect_list = list(ColorLogicShow.__members__)
     _attr_supported_features = LightEntityFeature.EFFECT
-    _attr_supported_color_modes = {ColorMode.BRIGHTNESS}
-    _attr_color_mode = ColorMode.BRIGHTNESS
+
+    @property
+    def available(self) -> bool:
+        # The library shows lights as non-ready when they are in certain states (like powering off)
+        # but we can still query them for their state, so we report them as available
+        return self.equipment._omni.backyard.is_ready
+
+    @property
+    def supported_color_modes(self) -> set[ColorMode]:
+        match self.equipment.equip_type:
+            case ColorLogicLightType.SAM | ColorLogicLightType.TWO_FIVE | ColorLogicLightType.FOUR_ZERO | ColorLogicLightType.UCL:
+                return {ColorMode.BRIGHTNESS}
+            case _:
+                return {ColorMode.ONOFF}
+
+    @property
+    def color_mode(self) -> ColorMode | None:
+        match self.equipment.equip_type:
+            case ColorLogicLightType.SAM | ColorLogicLightType.TWO_FIVE | ColorLogicLightType.FOUR_ZERO | ColorLogicLightType.UCL:
+                return ColorMode.BRIGHTNESS
+            case _:
+                return ColorMode.ONOFF
 
     @property
     def is_on(self) -> bool | None:
-        return self.data.telemetry.state not in [
+        return self.equipment.state not in [
             ColorLogicPowerState.OFF,
             ColorLogicPowerState.POWERING_OFF,
             ColorLogicPowerState.COOLDOWN,
         ]
 
     @property
-    def brightness(self) -> int | None:
-        return to_hass_level(self.data.telemetry.brightness)
+    def brightness(self) -> int:
+        return value_to_brightness(BRIGHTNESS_SCALE, self.equipment.brightness.value)
 
     @property
     def effect(self) -> str | None:
         try:
-            return self.data.telemetry.show.name
+            return self.equipment.show.pretty()
         except ValueError:
             return None
 
     @property
-    def extra_state_attributes(self) -> dict[str, int | str]:
-        return super().extra_state_attributes | {
-            "omnilogic_state": self.data.telemetry.state.pretty(),
-            "speed": self.data.telemetry.speed.pretty(),
+    def effect_list(self) -> list[str] | None:
+        if self.equipment.effects is None:
+            return None
+        return sorted([effect.pretty() for effect in self.equipment.effects])
+
+    @property
+    def _extra_state_attributes(self) -> dict[str, int | str]:
+        return {
+            "omni_state": self.equipment.state.pretty(),
+            "omni_speed": self.equipment.speed.pretty(),
+            "omni_brightness": self.equipment.brightness,
         }
 
     # The "Any" below here isn't great, we should create a type for this later
@@ -109,39 +113,46 @@ class OmniLogicLightEntity(OmniLogicEntity[EntityIndexColorLogicLight], LightEnt
 
         Example method how to request data updates.
         """
+        _LOGGER.debug("turning on light ID: %s, %s", self.system_id, kwargs)
+        if not self.equipment.is_ready:
+            raise HomeAssistantError("Light is in state %s and cannot be turned on yet, try again later." % self.equipment.state.pretty())
 
-        # If the light is in either of these states, it will refuse to turn on, so we raise an error to the UI to let the user know
-        if self.data.telemetry.state in [ColorLogicPowerState.POWERING_OFF, ColorLogicPowerState.COOLDOWN]:
-            raise HomeAssistantError("Light must finish powering off before it can power back on.")
-        _LOGGER.debug("turning on light ID: %s", self.system_id)
-        was_off = self.is_on is False
-
-        # If a light go's from off to on, HASS sends kwargs of {'effect':''}, we don't want that
-        if kwargs.get(ATTR_EFFECT) == "":
-            kwargs.pop(ATTR_EFFECT)
-
-        if kwargs:
-            params = {
-                "show": ColorLogicShow[kwargs.get(ATTR_EFFECT, self.effect)],
-                "speed": self.data.telemetry.speed,
-                "brightness": ColorLogicBrightness(to_omni_level(kwargs.get(ATTR_BRIGHTNESS, self.brightness))),
-            }
-            await self.coordinator.omni_api.async_set_light_show(self.bow_id, self.system_id, **params)
+        # Map requested effect to omni show
+        requested_effect = kwargs.get(ATTR_EFFECT, None)
+        if requested_effect is not None and self.equipment.effects is not None:
+            # We need to reformat the show name to match the enum keys
+            request_show = self.equipment.effects[requested_effect.upper().replace(" ", "_")]
         else:
-            await self.coordinator.omni_api.async_set_equipment(self.bow_id, self.system_id, True)
+            request_show = self.equipment.show
+        _LOGGER.debug("Requested effect: %s, resolved to show: %s", requested_effect, request_show)
 
-        # Set a few parameters so that we can assume the upcoming state
-        updated_data = {}
-        if was_off:
-            updated_data.update({"state": ColorLogicPowerState.FIFTEEN_SECONDS_WHITE})
-        if kwargs:
-            updated_data.update(
-                {
-                    "brightness": params["brightness"],
-                    "show": params["show"],
-                }
+        # Map requested brightness to omni brightness
+        requested_brightness = kwargs.get(ATTR_BRIGHTNESS, None)
+        if requested_brightness is not None:
+            request_brightness = math.ceil(brightness_to_value(BRIGHTNESS_SCALE, requested_brightness))
+        else:
+            request_brightness = self.equipment.brightness
+        _LOGGER.debug(
+            "Requested brightness: %s, resolved to omni brightness: %s - %s",
+            requested_brightness,
+            request_brightness,
+            ColorLogicBrightness(request_brightness),
+        )
+
+        _LOGGER.debug("Setting light show to %s, speed %s, brightness %s", request_show.pretty(), self.equipment.speed, request_brightness)
+
+        try:
+            await self.equipment.set_show(
+                show=request_show,
+                # The Home Assistant API has no concept of speed for a light, so we just use the current speed setting
+                # There is a number entity to control it though
+                speed=self.equipment.speed,
+                brightness=ColorLogicBrightness(request_brightness),
             )
-        self.set_telemetry(updated_data)
+        except OmniEquipmentNotInitializedError as exc:
+            raise HomeAssistantError("Light is not yet initialized, try again later.") from exc
+
+        async_call_later(self.hass, UPDATE_DELAY_SECONDS, self._schedule_refresh_callback)
 
     # The "Any" below here isn't great, we should create a type for this later
     async def async_turn_off(self, **kwargs: Any) -> None:
@@ -149,10 +160,8 @@ class OmniLogicLightEntity(OmniLogicEntity[EntityIndexColorLogicLight], LightEnt
 
         Example method how to request data updates.
         """
+        if not self.equipment.is_ready:
+            raise HomeAssistantError("Light is in state %s and cannot be turned off yet, try again later." % self.equipment.state.pretty())
+        await self.equipment.turn_off()
 
-        _LOGGER.debug("turning off light ID: %s", self.system_id)
-        was_on = self.is_on is True
-        await self.coordinator.omni_api.async_set_equipment(self.bow_id, self.system_id, False)
-
-        if was_on:
-            self.set_telemetry({"state": ColorLogicPowerState.POWERING_OFF})
+        async_call_later(self.hass, UPDATE_DELAY_SECONDS, self._schedule_refresh_callback)

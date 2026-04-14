@@ -1,11 +1,11 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 exclude: "CHANGELOG.md"
-default_stages: [ commit ]
+default_stages: [ pre-commit ]
 
 repos:
     -   repo: https://github.com/pre-commit/pre-commit-hooks
-        rev: v5.0.0
+        rev: v6.0.0
         hooks:
             -   id: debug-statements
             -   id: check-builtin-literals
@@ -17,41 +17,31 @@ repos:
             -   id: detect-private-key
             -   id: end-of-file-fixer
             -   id: trailing-whitespace
-    -   repo: https://github.com/python-poetry/poetry
-        rev: 2.0.0
+    -   repo: https://github.com/astral-sh/uv-pre-commit
+        # uv version.
+        rev: 0.11.6
         hooks:
-            -   id: poetry-check
-    -   repo: https://github.com/PyCQA/isort
-        rev: 5.13.2
-        hooks:
-            -   id: isort
-    -   repo: https://github.com/psf/black
-        rev: 24.10.0
-        hooks:
-            -   id: black
+        - id: uv-lock
     -   repo: https://github.com/codespell-project/codespell
-        rev: v2.3.0
+        rev: v2.4.2
         hooks:
             -   id: codespell
-                additional_dependencies:
-                    - tomli
-    -   repo: https://github.com/charliermarsh/ruff-pre-commit
-        rev: v0.8.6
+                exclude: uv.lock
+    -   repo: https://github.com/astral-sh/ruff-pre-commit
+        # Ruff version
+        rev: v0.15.10
         hooks:
-            -   id: ruff
-                args:
-                    - --fix
-    -   repo: https://github.com/pylint-dev/pylint
-        rev: v3.3.3
-        hooks:
-            -   id: pylint
-                additional_dependencies: [ "homeassistant", "python-omnilogic-local" ]
-                exclude: "custom_components/omnilogic_local/tests/.*"
+            # Run the linter
+            - id: ruff-check
+              args: [ --fix ]
+            #  Run the formatter
+            - id: ruff-format
     -   repo: https://github.com/pre-commit/mirrors-mypy
-        rev: v1.14.1
+        rev: v1.20.1
         hooks:
             -   id: mypy
-                args:
-                    - --pretty
                 additional_dependencies:
-                    - "pydantic"
+                  - "python_omnilogic_local==0.22.0"
+                  - "pytest>=8.0.0"
+                  - "homeassistant>=2025.1.2"
+                args: [ "--config-file=./pyproject.toml"]

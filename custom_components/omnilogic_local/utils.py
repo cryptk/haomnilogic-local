@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import logging
-
-from pyomnilogic_local.omnitypes import OmniType
+from typing import TYPE_CHECKING
 
 from .const import OMNI_TO_HASS_TYPES
-from .types.entity_index import EntityIndexT
+
+if TYPE_CHECKING:
+    from pyomnilogic_local.omnitypes import OmniType
+
+    from .types.entity_index import EntityIndexT
 
 _LOGGER = logging.getLogger(__name__)
 
