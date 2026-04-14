@@ -1,5 +1,13 @@
+---
 name: "Release"
 
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.release.tag_name }}
+  cancel-in-progress: false
+
+# yamllint disable-line rule:truthy
 on:
   release:
     types:
@@ -10,26 +18,32 @@ jobs:
     name: "Release"
     runs-on: "ubuntu-latest"
     permissions:
-      contents: write
+      contents: write # Required to upload the ZIP file to the release
+    env:
+      TAG_NAME: ${{ github.event.release.tag_name }}
+      ARCHIVE_PATH: ${GITHUB_WORKSPACE}/custom_components/omnilogic_local/omnilogic_local.zip
     steps:
       - name: Check out code from GitHub
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
         with:
           persist-credentials: false
 
       - name: "Adjust version number"
         shell: "bash"
         run: |
-          yq -i -o json '.version="${{ github.event.release.tag_name }}"' \
-            "${{ github.workspace }}/custom_components/omnilogic_local/manifest.json"
+          yq -i -o json '.version="${TAG_NAME}"' \
+            "${GITHUB_WORKSPACE}/custom_components/omnilogic_local/manifest.json"
 
       - name: "ZIP the integration directory"
         shell: "bash"
         run: |
-          cd "${{ github.workspace }}/custom_components/omnilogic_local"
+          cd "${GITHUB_WORKSPACE}/custom_components/omnilogic_local"
           zip omnilogic_local.zip -r ./
 
       - name: "Upload the ZIP file to the release"
-        uses: softprops/action-gh-release@v0.1.15
-        with:
-          files: ${{ github.workspace }}/custom_components/omnilogic_local/omnilogic_local.zip
+        shell: "bash"
+        run: |
+          gh release upload ${TAG_NAME} ${ARCHIVE_PATH} --clobber
+        env:
+          ARCHIVE_PATH: ${GITHUB_WORKSPACE}/custom_components/omnilogic_local/omnilogic_local.zip
+          GH_TOKEN: ${{ github.token }}

@@ -7,11 +7,8 @@ from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
-from pyomnilogic_local.models.mspconfig import MSPConfig, OmniBase
 
 if TYPE_CHECKING:
-    from collections.abc import Iterable
-
     from homeassistant.core import HomeAssistant
     from pyomnilogic_local import OmniLogic
 

@@ -1,47 +1,52 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
-exclude: "CHANGELOG.md"
-default_stages: [ pre-commit ]
-
 repos:
-    -   repo: https://github.com/pre-commit/pre-commit-hooks
-        rev: v6.0.0
-        hooks:
-            -   id: debug-statements
-            -   id: check-builtin-literals
-            -   id: check-case-conflict
-            -   id: check-docstring-first
-            -   id: check-json
-                exclude: ^.vscode/
-            -   id: check-toml
-            -   id: detect-private-key
-            -   id: end-of-file-fixer
-            -   id: trailing-whitespace
-    -   repo: https://github.com/astral-sh/uv-pre-commit
-        # uv version.
-        rev: 0.11.6
-        hooks:
-        - id: uv-lock
-    -   repo: https://github.com/codespell-project/codespell
-        rev: v2.4.2
-        hooks:
-            -   id: codespell
-                exclude: uv.lock
-    -   repo: https://github.com/astral-sh/ruff-pre-commit
-        # Ruff version
-        rev: v0.15.10
-        hooks:
-            # Run the linter
-            - id: ruff-check
-              args: [ --fix ]
-            #  Run the formatter
-            - id: ruff-format
-    -   repo: https://github.com/pre-commit/mirrors-mypy
-        rev: v1.20.1
-        hooks:
-            -   id: mypy
-                additional_dependencies:
-                  - "python_omnilogic_local==0.22.0"
-                  - "pytest>=8.0.0"
-                  - "homeassistant>=2025.1.2"
-                args: [ "--config-file=./pyproject.toml"]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version
+    rev: v0.15.10
+    hooks:
+      # Run the linter
+      - id: ruff-check
+        args: [ --fix ]
+      #  Run the formatter
+      - id: ruff-format
+        files: ^custom_components/.+\.(py|pyi)$
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.4.2
+    hooks:
+      - id: codespell
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: v1.24.1
+    hooks:
+    - id: zizmor
+      args:
+        - --pedantic
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-json
+        exclude: ^.vscode/
+      - id: check-toml
+      - id: no-commit-to-branch
+        args:
+          - --branch=main
+          - --branch=dev
+  - repo: https://github.com/adrienverge/yamllint.git
+    rev: v1.38.0
+    hooks:
+      - id: yamllint
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    # uv version.
+    rev: 0.11.6
+    hooks:
+    - id: uv-lock
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.20.1
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - "python_omnilogic_local==0.22.0"
+          - "pytest>=8.0.0"
+          - "homeassistant>=2025.1.2"
+        args: [ "--config-file=./pyproject.toml"]
+        files: ^custom_components/.+\.(py|pyi)$

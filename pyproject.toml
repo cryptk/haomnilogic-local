@@ -35,10 +35,10 @@ ignore-words-list = [
 
 [tool.mypy]
 python_version = "3.14"
-# plugins = [
-#     "pydantic.mypy"
-# ]
-follow_imports = "silent"
+plugins = [
+    "pydantic.mypy"
+]
+follow_imports = "normal"
 strict = true
 # warn_return_any = false
 

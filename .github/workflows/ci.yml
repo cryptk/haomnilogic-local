@@ -1,14 +1,18 @@
+---
 name: Lint
 
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+# yamllint disable-line rule:truthy
 on:
   push:
     branches:
       - main
   pull_request:
-
-concurrency:
-  group: ${{ github.head_ref || github.run_id }}
-  cancel-in-progress: true
 
 jobs:
   # Make sure commit messages follow the conventional commits convention:
@@ -20,10 +24,10 @@ jobs:
       contents: read
     steps:
       - name: Check out code from GitHub
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
         with:
           persist-credentials: false
-      - uses: wagoid/commitlint-github-action@v6.2.1
+      - uses: wagoid/commitlint-github-action@b948419dd99f3fd78a6548d48f94e3df7f6bf3ed #v6.2.1
 
   prek:
     name: Run prek checks
@@ -32,36 +36,10 @@ jobs:
       contents: read
     steps:
       - name: Check out code from GitHub
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
         with:
           persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 #6.2.0
       - name: Run prek
-        uses: j178/prek-action@v2
-
-  # test:
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       python-version:
-  #         - "3.14"
-  #       os:
-  #         - ubuntu-latest
-  #         # - windows-latest
-  #         # - macOS-latest
-  #   runs-on: ${{ matrix.os }}
-  #   steps:
-  #     - uses: actions/checkout@v6
-  #     - name: Install uv
-  #       uses: astral-sh/setup-uv@v5
-  #       with:
-  #         enable-cache: true
-  #     - name: Set up Python
-  #       uses: actions/setup-python@v4
-  #       with:
-  #         python-version: ${{ matrix.python-version }}
-  #     - name: Install Dependencies
-  #       run: uv sync --all-extras
-  #       shell: bash
-  #     - name: Test with Pytest
-  #       run: uv run pytest
-  #       shell: bash
+        uses: j178/prek-action@cbc2f23eb5539cf20d82d1aabd0d0ecbcc56f4e3 #v2.0.2
