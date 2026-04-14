@@ -1,9 +1,14 @@
 {
   "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
   "editor.rulers": [80, 100, 140],
+  "editor.formatOnSave": true,
   "mypy-type-checker.importStrategy": "fromEnvironment",
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.formatOnSave": true
+  },
+  "[json][jsonc][yaml]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   }
 }

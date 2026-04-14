@@ -1,9 +1,17 @@
+---
 name: "Validate"
 
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+# yamllint disable-line rule:truthy
 on:
   workflow_dispatch:
   schedule:
-    - cron:  "0 0 * * *"
+    - cron: "0 0 * * *"
   push:
     branches:
       - "main"
@@ -19,12 +27,12 @@ jobs:
       contents: read
     steps:
       - name: Check out code from GitHub
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
         with:
           persist-credentials: false
 
       - name: "Run hassfest validation"
-        uses: "home-assistant/actions/hassfest@master"
+        uses: "home-assistant/actions/hassfest@26d56ed1a1cbfeabf59feb7b26e368e13f47ef52"
 
   hacs: # https://github.com/hacs/action
     name: "HACS Validation"
@@ -33,6 +41,6 @@ jobs:
       contents: read
     steps:
       - name: "Run HACS validation"
-        uses: "hacs/action@main"
+        uses: "hacs/action@d556e736723344f83838d08488c983a15381059a" #v22.5.0
         with:
           category: "integration"

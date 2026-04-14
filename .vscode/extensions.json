@@ -3,6 +3,6 @@
     "ms-python.python",
     "ms-python.black-formatter",
     "ms-python.mypy-type-checker",
-    "esbenp.prettier-vscode",
+    "esbenp.prettier-vscode"
   ]
 }
