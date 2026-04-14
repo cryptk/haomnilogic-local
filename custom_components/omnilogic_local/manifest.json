@@ -1,9 +1,7 @@
 {
   "domain": "omnilogic_local",
   "name": "OmniLogic Local",
-  "codeowners": [
-    "@cryptk"
-  ],
+  "codeowners": ["@cryptk"],
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/cryptk/haomnilogic-local",
@@ -12,9 +10,7 @@
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/cryptk/haomnilogic-local/issues",
   "loggers": ["pyomnilogic_local"],
-  "requirements": [
-    "python_omnilogic_local==0.22.0"
-  ],
+  "requirements": ["python-omnilogic-local==0.22.0"],
   "ssdp": [],
   "version": "0.0.0",
   "zeroconf": []

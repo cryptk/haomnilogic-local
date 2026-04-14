@@ -5,14 +5,12 @@ description = "A Home Assistant integration for Hayward OmniLogic/OmniHub pool c
 readme = "README.md"
 requires-python = ">=3.14.2"
 authors = [
-    { name = "cryptk", email="cryptk@users.noreply.github.com"},
-    { name = "djtimca"},
-    { name = "garionphx"}
+    { name = "cryptk", email = "cryptk@users.noreply.github.com" },
+    { name = "djtimca" },
+    { name = "garionphx" },
 ]
 license-files = ["LICENSE"]
-dependencies = [
-    "python-omnilogic-local>=0.22.0",
-]
+dependencies = ["python-omnilogic-local>=0.22.0"]
 
 [project.urls]
 repository = "https://github.com/cryptk/haomnilogic-local"
@@ -29,15 +27,11 @@ dev = [
 ]
 
 [tool.codespell]
-ignore-words-list = [
-    "hass"
-]
+ignore-words-list = ["hass"]
 
 [tool.mypy]
 python_version = "3.14"
-plugins = [
-    "pydantic.mypy"
-]
+plugins = ["pydantic.mypy"]
 follow_imports = "normal"
 strict = true
 # warn_return_any = false
@@ -48,36 +42,36 @@ line-length = 140
 
 [tool.ruff.lint]
 select = [
-    "ERA",    # eradicate commented code
-    "ASYNC",  # flake8-async
-    "B",      # flake8-bugbear
-    "A",      # flake8-builtins
+    "ERA",   # eradicate commented code
+    "ASYNC", # flake8-async
+    "B",     # flake8-bugbear
+    "A",     # flake8-builtins
     # "EM",     # flake8-errmsg
     # "FIX",    # flake8-fixme
-    "ISC",    # flake8-implicit-str-concat
-    "ICN",    # flake8-import-conventions
-    "LOG",    # flake8-logging
-    "G",      # flake8-logging-format
-    "INP",    # flake8-no-pep420
-    "PIE",    # flake8-pie
-    "T20",    # flake8-print
-    "Q",      # flake8-quotes
-    "RSE",    # flake8-raise
-    "RET",    # flake8-return
+    "ISC", # flake8-implicit-str-concat
+    "ICN", # flake8-import-conventions
+    "LOG", # flake8-logging
+    "G",   # flake8-logging-format
+    "INP", # flake8-no-pep420
+    "PIE", # flake8-pie
+    "T20", # flake8-print
+    "Q",   # flake8-quotes
+    "RSE", # flake8-raise
+    "RET", # flake8-return
     # "SIM",    # flake8-simplify
     "PTH",    # flake8-use-pathlib
     "TID252", # flake8-tidy-imports
     # "TD",     # flake8-todos
     # "TC",     # flake8-type-checking
     # "ARG",    # flake8-unused-arguments
-    "I",      # isort
+    "I", # isort
     # "N",      # pep8-naming
     # "PERF",   # perflint
-    "E",      # pycodestyle errors
-    "W",      # pycodestyle warnings
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
     # "DOC",   # pydoclint, only available with ruff preview mode enabled
     # "D",      # pydocstyle
-    "F",      # pyflakes
+    "F", # pyflakes
     # "UP",     # pyupgrade
     # "RUF",    # ruff-specific rules
     # "TRY",    # tryceratops
