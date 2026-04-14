@@ -138,11 +138,12 @@ SensedEquipmentT = TypeVar("SensedEquipmentT", bound=Backyard | Bow | HeaterEqui
 
 
 class OmniLogicTemperatureSensorEntity(OmniLogicEntity[Sensor], SensorEntity, Generic[SensedEquipmentT]):
-    """An entity for temperature sensors.
+    """Sensor entity for temperature readings from pool equipment.
 
-    Temperature sensors don't have their own telemetry - the readings come from
-    the parent equipment (Backyard for air temp, Bow for water temp, HeaterEquipment for solar temp).
+    Temperature sensors don't have their own telemetry - the readings come from the parent
+    equipment (Backyard for air temp, Bow for water temp, HeaterEquipment for solar temp).
 
+    The sensed_equipment value is passed in via the subclasses.
     """
 
     _attr_device_class = SensorDeviceClass.TEMPERATURE
@@ -165,6 +166,8 @@ class OmniLogicTemperatureSensorEntity(OmniLogicEntity[Sensor], SensorEntity, Ge
 
 
 class OmniLogicAirTemperatureSensorEntity(OmniLogicTemperatureSensorEntity[Backyard]):
+    """Sensor entity for air temperature readings."""
+
     def __init__(self, coordinator: OmniLogicCoordinator, sensor: Sensor) -> None:
         super().__init__(coordinator, sensor)
         self.sensed_equipment = coordinator.omni.backyard
@@ -176,6 +179,8 @@ class OmniLogicAirTemperatureSensorEntity(OmniLogicTemperatureSensorEntity[Backy
 
 
 class OmniLogicWaterTemperatureSensorEntity(OmniLogicTemperatureSensorEntity[Bow]):
+    """Sensor entity for body of water temperature readings."""
+
     def __init__(self, coordinator: OmniLogicCoordinator, sensor: Sensor) -> None:
         super().__init__(coordinator, sensor)
         # Get the bow that this sensor belongs to
@@ -191,6 +196,8 @@ class OmniLogicWaterTemperatureSensorEntity(OmniLogicTemperatureSensorEntity[Bow
 
 
 class OmniLogicSolarTemperatureSensorEntity(OmniLogicTemperatureSensorEntity[HeaterEquipment]):
+    """Sensor entity for solar heater temperature readings."""
+
     def __init__(self, coordinator: OmniLogicCoordinator, sensor: Sensor, heater_equipment: HeaterEquipment) -> None:
         super().__init__(coordinator, sensor)
         self.sensed_equipment = heater_equipment
@@ -203,6 +210,8 @@ class OmniLogicSolarTemperatureSensorEntity(OmniLogicTemperatureSensorEntity[Hea
 
 
 class OmniLogicFilterEnergySensorEntity(OmniLogicEntity[Filter], SensorEntity):
+    """Sensor entity for filter power consumption."""
+
     _attr_device_class = SensorDeviceClass.POWER
     _attr_native_unit_of_measurement = UnitOfPower.WATT
     _attr_state_class = SensorStateClass.MEASUREMENT
@@ -229,6 +238,8 @@ class OmniLogicFilterEnergySensorEntity(OmniLogicEntity[Filter], SensorEntity):
 
 
 class OmniLogicChlorinatorSaltLevelSensorEntity(OmniLogicEntity[Chlorinator], SensorEntity):
+    """Sensor entity for chlorinator salt level readings."""
+
     _attr_native_unit_of_measurement = CONCENTRATION_PARTS_PER_MILLION
     _attr_state_class = SensorStateClass.MEASUREMENT
     _sensor_type: Literal["average", "instant"]
@@ -251,6 +262,8 @@ class OmniLogicChlorinatorSaltLevelSensorEntity(OmniLogicEntity[Chlorinator], Se
 
 
 class OmniLogicCSADAcidPhEntity(OmniLogicEntity[CSAD], SensorEntity):
+    """Sensor entity for CSAD acid pH level readings."""
+
     _attr_device_class = SensorDeviceClass.PH
     _attr_state_class = SensorStateClass.MEASUREMENT
 
@@ -272,6 +285,8 @@ class OmniLogicCSADAcidPhEntity(OmniLogicEntity[CSAD], SensorEntity):
 
 
 class OmniLogicCSADAcidORPEntity(OmniLogicEntity[CSAD], SensorEntity):
+    """Sensor entity for CSAD ORP level readings."""
+
     _attr_state_class = SensorStateClass.MEASUREMENT
     _attr_name = "ORP"
 

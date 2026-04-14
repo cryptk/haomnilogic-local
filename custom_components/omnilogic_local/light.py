@@ -40,15 +40,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 
 
 class OmniLogicLightEntity(OmniLogicEntity[ColorLogicLight], LightEntity):
-    """An entity using CoordinatorEntity.
-
-    The CoordinatorEntity class provides:
-      should_poll
-      async_update
-      async_added_to_hass
-      available
-
-    """
+    """Light entity for ColorLogic lights."""
 
     _attr_supported_features = LightEntityFeature.EFFECT
 

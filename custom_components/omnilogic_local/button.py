@@ -56,15 +56,7 @@ SpeedPresetT = TypeVar("SpeedPresetT", bound=PumpSpeedPresets | FilterSpeedPrese
 
 
 class OmniLogicSpeedPresetButtonEntity(OmniLogicEntity[PumpTypeT], ButtonEntity):
-    """An entity using CoordinatorEntity.
-
-    The CoordinatorEntity class provides:
-      should_poll
-      async_update
-      async_added_to_hass
-      available
-
-    """
+    """Button entity for triggering a pump or filter speed preset."""
 
     def __init__(self, coordinator: OmniLogicCoordinator, equipment: PumpTypeT, speed: FilterSpeedPresets | PumpSpeedPresets) -> None:
         super().__init__(coordinator, equipment)
@@ -100,6 +92,8 @@ class OmniLogicSpeedPresetButtonEntity(OmniLogicEntity[PumpTypeT], ButtonEntity)
 
 
 class OmniLogicPumpButtonEntity(OmniLogicSpeedPresetButtonEntity[Pump]):
+    """Button entity for triggering a pump speed preset."""
+
     speed: PumpSpeedPresets
 
     async def async_press(self) -> None:
@@ -108,6 +102,8 @@ class OmniLogicPumpButtonEntity(OmniLogicSpeedPresetButtonEntity[Pump]):
 
 
 class OmniLogicFilterButtonEntity(OmniLogicSpeedPresetButtonEntity[Filter]):
+    """Button entity for triggering a filter speed preset."""
+
     speed: FilterSpeedPresets
 
     async def async_press(self) -> None:
@@ -116,6 +112,8 @@ class OmniLogicFilterButtonEntity(OmniLogicSpeedPresetButtonEntity[Filter]):
 
 
 class OmniLogicIdleButtonEntity(OmniLogicEntity[Backyard], ButtonEntity):
+    """Button entity for restoring the system to idle state."""
+
     def __init__(self, coordinator: OmniLogicCoordinator, equipment: Backyard) -> None:
         super().__init__(coordinator, equipment)
 
