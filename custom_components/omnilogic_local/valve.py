@@ -4,8 +4,8 @@ import logging
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.valve import ValveEntity
+from pyomnilogic_local import Relay
 from pyomnilogic_local.omnitypes import RelayFunction, RelayType
-from pyomnilogic_local.relay import Relay
 
 from .const import DOMAIN, KEY_COORDINATOR
 from .entity import OmniLogicEntity

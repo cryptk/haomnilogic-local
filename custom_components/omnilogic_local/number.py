@@ -34,28 +34,48 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     entities: list[NumberEntity] = []
 
     # Add variable speed pump entities
-    for _, _, pump in coordinator.omni.all_pumps.items():
+    for _, system_id, pump in coordinator.omni.all_pumps.items():
         if pump.equip_type == PumpType.VARIABLE_SPEED:
+            _LOGGER.debug(
+                "Configuring number for pump with ID: %s, Name: %s",
+                system_id,
+                pump.name,
+            )
             entities.append(OmniLogicPumpNumberEntity(coordinator=coordinator, equipment=pump))
 
     # Add variable speed filter entities
-    for _, _, filt in coordinator.omni.all_filters.items():
+    for _, system_id, filt in coordinator.omni.all_filters.items():
         if filt.equip_type == FilterType.VARIABLE_SPEED:
+            _LOGGER.debug(
+                "Configuring number for filter with ID: %s, Name: %s",
+                system_id,
+                filt.name,
+            )
             entities.append(OmniLogicFilterNumberEntity(coordinator=coordinator, equipment=filt))
 
     # Add solar set point entity for heaters with solar
-    for _, _, heater in coordinator.omni.all_heaters.items():
+    for _, system_id, heater in coordinator.omni.all_heaters.items():
         # Check if this heater has any solar equipment
         has_solar = any(equip.heater_type == HeaterType.SOLAR for equip in heater.heater_equipment.values())
         if has_solar and heater.solar_set_point is not None and heater.solar_set_point > 0:
+            _LOGGER.debug(
+                "Configuring number for solar set point with ID: %s, Name: %s",
+                system_id,
+                heater.name,
+            )
             entities.append(OmniLogicSolarSetPointNumberEntity(coordinator=coordinator, equipment=heater))
 
     # Add chlorinator timed percent entities
-    for _, _, chlorinator in coordinator.omni.all_chlorinators.items():
+    for _, system_id, chlorinator in coordinator.omni.all_chlorinators.items():
         match chlorinator.dispenser_type:
             case ChlorinatorDispenserType.SALT:
                 match chlorinator.operating_mode:
                     case ChlorinatorOperatingMode.TIMED:
+                        _LOGGER.debug(
+                            "Configuring number for chlorinator timed percent with ID: %s, Name: %s",
+                            system_id,
+                            chlorinator.name,
+                        )
                         entities.append(OmniLogicChlorinatorTimedPercentNumberEntity(coordinator=coordinator, equipment=chlorinator))
                     case ChlorinatorOperatingMode.ORP_AUTO | ChlorinatorOperatingMode.ORP_TIMED_RW:
                         _LOGGER.warning(

@@ -29,7 +29,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 
     # Create binary sensor entities for each piece of Heater-Equipment
 
-    for _, _, heater_equipment in coordinator.omni.all_heater_equipment.items():
+    for _, system_id, heater_equipment in coordinator.omni.all_heater_equipment.items():
+        _LOGGER.debug(
+            "Configuring binary sensor for heater equipment with ID: %s, Name: %s",
+            system_id,
+            heater_equipment.name,
+        )
         entities.append(
             OmniLogicHeaterEquipBinarySensorEntity(
                 coordinator=coordinator,
@@ -38,7 +43,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
         )
 
     # Create flow binary sensors for each BoW
-    for _, _, bow in coordinator.omni.backyard.bow.items():
+    for _, system_id, bow in coordinator.omni.backyard.bow.items():
+        _LOGGER.debug(
+            "Configuring binary sensor for flow with ID: %s, Name: %s",
+            system_id,
+            bow.name,
+        )
         entities.append(
             OmniLogicFlowBinarySensorEntity(
                 coordinator=coordinator,
@@ -73,7 +83,7 @@ class OmniLogicHeaterEquipBinarySensorEntity(OmniLogicEntity[HeaterEquipment], B
 
     @property
     def name(self) -> str:
-        return f"{self.equipment.name} Status"
+        return f"{self.equipment.name} Heater Equipment Status"
 
     @property
     def is_on(self) -> bool:
@@ -89,7 +99,7 @@ class OmniLogicFlowBinarySensorEntity(OmniLogicEntity[Bow], BinarySensorEntity):
 
     @property
     def name(self) -> str:
-        return f"{self.equipment.name} Status"
+        return f"{self.equipment.name} Flow"
 
     @property
     def is_on(self) -> bool | None:
