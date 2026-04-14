@@ -1,5 +1,7 @@
 {
     "name": "Hayward OmniLogic Local",
+    "homeassistant": "2025.1.2",
     "render_readme": true,
-    "homeassistant": "2025.1.2"
+    "zip_release": true,
+    "filename": "omnilogic_local.zip"
 }

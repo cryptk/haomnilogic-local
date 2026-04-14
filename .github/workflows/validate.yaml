@@ -15,21 +15,24 @@ jobs:
   hassfest: # https://developers.home-assistant.io/blog/2020/04/16/hassfest
     name: "Hassfest Validation"
     runs-on: "ubuntu-latest"
+    permissions:
+      contents: read
     steps:
-        - name: "Checkout the repository"
-          uses: "actions/checkout@v3.5.2"
+      - name: Check out code from GitHub
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
 
-        - name: "Run hassfest validation"
-          uses: "home-assistant/actions/hassfest@master"
+      - name: "Run hassfest validation"
+        uses: "home-assistant/actions/hassfest@master"
 
   hacs: # https://github.com/hacs/action
     name: "HACS Validation"
     runs-on: "ubuntu-latest"
+    permissions:
+      contents: read
     steps:
-        - name: "Checkout the repository"
-          uses: "actions/checkout@v3.5.2"
-
-        - name: "Run HACS validation"
-          uses: "hacs/action@main"
-          with:
-            category: "integration"
+      - name: "Run HACS validation"
+        uses: "hacs/action@main"
+        with:
+          category: "integration"
