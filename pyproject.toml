@@ -1,6 +1,6 @@
 [project]
 name = "haomnilogic-local"
-version = "0.7.12"
+version = "1.0.0b2"
 description = "A Home Assistant integration for Hayward OmniLogic/OmniHub pool controllers using the local UDP api"
 readme = "README.md"
 requires-python = ">=3.14.2"
@@ -18,7 +18,6 @@ repository = "https://github.com/cryptk/haomnilogic-local"
 
 [dependency-groups]
 dev = [
-    "pre-commit>=4.0.0,<5.0.0",
     "mypy>=1.18.2,<2.0.0",
     "pytest>=9.0.0,<10.0.0",
     "pytest-asyncio>=1.2.0,<2.0.0",
