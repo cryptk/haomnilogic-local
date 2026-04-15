@@ -28,8 +28,8 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
     """Set up the switch platform."""
+    coordinator: OmniLogicCoordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
     entities: list[SwitchEntity] = []
-    coordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
 
     # Add relay switches (excluding valve actuators)
     for _, system_id, relay in coordinator.omni.all_relays.items():
@@ -174,11 +174,10 @@ class OmniLogicFilterSwitchEntity(OmniLogicEntity[Filter], SwitchEntity):
         self.schedule_delayed_update()
 
     @property
-    def extra_state_attributes(self) -> dict[str, int | str]:
-        state = self.equipment.state
-        return super().extra_state_attributes | {
-            "filter_state": state.pretty() if hasattr(state, "pretty") else str(state),
-            "why_on": self.equipment.why_on,
+    def _extra_state_attributes(self) -> dict[str, Any]:
+        return {
+            "omni_filter_state": str(self.equipment.state),
+            "omni_why_on": str(self.equipment.why_on),
         }
 
 

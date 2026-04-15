@@ -22,9 +22,9 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
     """Set up the water heater platform."""
-    coordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
-
+    coordinator: OmniLogicCoordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
     entities: list[WaterHeaterEntity] = []
+
     for _, system_id, heater in coordinator.omni.all_heaters.items():
         _LOGGER.debug(
             "Configuring water heater with ID: %s, Name: %s",
@@ -85,6 +85,7 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity[Heater], WaterHeaterEntity):
     async def async_set_temperature(self, **kwargs: Any) -> None:
         """Set target temperature."""
         await self.equipment.set_temperature(int(kwargs[ATTR_TEMPERATURE]))
+        self.schedule_delayed_update()
 
     async def async_set_operation_mode(self, operation_mode: str) -> None:
         """Set operation mode."""
@@ -93,6 +94,7 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity[Heater], WaterHeaterEntity):
                 await self.equipment.turn_on()
             case "off":
                 await self.equipment.turn_off()
+        self.schedule_delayed_update()
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         await self.async_set_operation_mode("on")
@@ -101,18 +103,20 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity[Heater], WaterHeaterEntity):
         await self.async_set_operation_mode("off")
 
     @property
-    def extra_state_attributes(self) -> dict[str, str | int]:
+    def _extra_state_attributes(self) -> dict[str, Any]:
         """Return extra state attributes."""
-        extra_state_attributes = super().extra_state_attributes | {"solar_set_point": self.equipment.solar_set_point}
+        extra_state_attributes: dict[str, Any] = {
+            "omni_solar_set_point": self.equipment.solar_set_point,
+            "omni_why_on": self.equipment.why_on,
+        }
         for _, system_id, heater_equip in self.equipment.heater_equipment.items():
             name = heater_equip.name or "unknown"
-            prefix = f"omni_heater_{name.lower()}"
-            state = heater_equip.state
-            extra_state_attributes = extra_state_attributes | {
+            prefix = f"omni_heater_equip_{name}_"
+            extra_state_attributes |= {
                 f"{prefix}_enabled": heater_equip.enabled,
                 f"{prefix}_system_id": system_id,
                 f"{prefix}_bow_id": heater_equip.bow_id,
-                f"{prefix}_state": state.pretty() if hasattr(state, "pretty") else str(state),
-                f"{prefix}_sensor_temp": heater_equip.current_temp,
+                f"{prefix}_state": str(heater_equip.state),
+                f"{prefix}_current_temp": heater_equip.current_temp,
             }
         return extra_state_attributes

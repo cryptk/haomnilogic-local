@@ -148,47 +148,28 @@ class OmniLogicVSPNumberEntity(OmniLogicEntity[PumpTypeT], NumberEntity):
         return self.current_pct
 
     @property
-    def extra_state_attributes(self) -> dict[str, int | str]:
-        return super().extra_state_attributes | {
-            "max_rpm": self.max_rpm,
-            "min_rpm": self.min_rpm,
-            "max_percent": self.max_pct,
-            "min_percent": self.min_pct,
-            "current_rpm": self.current_rpm,
-            "current_percent": self.current_pct,
+    def _extra_state_attributes(self) -> dict[str, Any]:
+        return {
+            "omni_max_rpm": self.max_rpm,
+            "omni_min_rpm": self.min_rpm,
+            "omni_max_percent": self.max_pct,
+            "omni_min_percent": self.min_pct,
+            "omni_current_rpm": self.current_rpm,
+            "omni_current_percent": self.current_pct,
         }
 
     async def async_set_native_value(self, value: float) -> None:
         """Update the current value."""
-        raise NotImplementedError
+        await self.equipment.set_speed(int(value))
+        self.schedule_delayed_update()
 
 
 class OmniLogicPumpNumberEntity(OmniLogicVSPNumberEntity[Pump]):
     """Number entity for variable speed pump speed control."""
 
-    async def async_set_native_value(self, value: float) -> None:
-        """Update the current value."""
-        if self.native_unit_of_measurement == "RPM":
-            new_speed_pct = round(value / self.native_max_value * 100)
-        else:
-            new_speed_pct = int(value)
-
-        await self.equipment.set_speed(new_speed_pct)
-        self.schedule_delayed_update()
-
 
 class OmniLogicFilterNumberEntity(OmniLogicVSPNumberEntity[Filter]):
     """Number entity for variable speed filter speed control."""
-
-    async def async_set_native_value(self, value: float) -> None:
-        """Update the current value."""
-        if self.native_unit_of_measurement == "RPM":
-            new_speed_pct = round(value / self.native_max_value * 100)
-        else:
-            new_speed_pct = int(value)
-
-        await self.equipment.set_speed(new_speed_pct)
-        self.schedule_delayed_update()
 
 
 class OmniLogicSolarSetPointNumberEntity(OmniLogicEntity[Heater], NumberEntity):

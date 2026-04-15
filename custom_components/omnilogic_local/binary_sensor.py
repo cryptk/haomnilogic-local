@@ -78,7 +78,7 @@ class OmniLogicServiceModeBinarySensorEntity(OmniLogicEntity[Backyard], BinarySe
 class OmniLogicHeaterEquipBinarySensorEntity(OmniLogicEntity[HeaterEquipment], BinarySensorEntity):
     """Binary sensor entity for heater equipment running status."""
 
-    device_class = BinarySensorDeviceClass.HEAT
+    _attr_device_class = BinarySensorDeviceClass.HEAT
 
     @property
     def icon(self) -> str | None:
