@@ -125,7 +125,7 @@ class OmniLogicVSPNumberEntity(OmniLogicEntity[PumpTypeT], NumberEntity):
 
     @property
     def current_rpm(self) -> int:
-        return floor(int(self.native_max_value) / 100 * self.equipment.speed)
+        return floor(self.equipment.max_rpm / 100 * self.equipment.speed)
 
     @property
     def current_pct(self) -> int:
