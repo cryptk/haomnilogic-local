@@ -44,12 +44,6 @@ class OmniLogicLightEntity(OmniLogicEntity[ColorLogicLight], LightEntity):
     _attr_supported_features = LightEntityFeature.EFFECT
 
     @property
-    def available(self) -> bool:
-        # The library shows lights as non-ready when they are in certain states (like powering off)
-        # but we can still query them for their state, so we report them as available
-        return self.equipment._omni.backyard.is_ready
-
-    @property
     def supported_color_modes(self) -> set[ColorMode]:
         match self.equipment.equip_type:
             case ColorLogicLightType.SAM | ColorLogicLightType.TWO_FIVE | ColorLogicLightType.UCL:
@@ -80,7 +74,7 @@ class OmniLogicLightEntity(OmniLogicEntity[ColorLogicLight], LightEntity):
     @property
     def effect(self) -> str | None:
         try:
-            return self.equipment.show.pretty()
+            return str(self.equipment.show)
         except ValueError:
             return None
 
@@ -88,13 +82,13 @@ class OmniLogicLightEntity(OmniLogicEntity[ColorLogicLight], LightEntity):
     def effect_list(self) -> list[str] | None:
         if self.equipment.effects is None:
             return None
-        return sorted([effect.pretty() for effect in self.equipment.effects])
+        return sorted([str(effect) for effect in self.equipment.effects])
 
     @property
-    def _extra_state_attributes(self) -> dict[str, int | str]:
+    def _extra_state_attributes(self) -> dict[str, Any]:
         return {
-            "omni_state": self.equipment.state.pretty(),
-            "omni_speed": self.equipment.speed.pretty(),
+            "omni_state": str(self.equipment.state),
+            "omni_speed": str(self.equipment.speed),
             "omni_brightness": self.equipment.brightness,
         }
 
@@ -106,7 +100,7 @@ class OmniLogicLightEntity(OmniLogicEntity[ColorLogicLight], LightEntity):
         """
         _LOGGER.debug("turning on light ID: %s, %s", self.system_id, kwargs)
         if not self.equipment.is_ready:
-            raise HomeAssistantError("Light is in state %s and cannot be turned on yet, try again later." % self.equipment.state.pretty())
+            raise HomeAssistantError("Light is in state %s and cannot be turned on yet, try again later." % str(self.equipment.state))
 
         # Map requested effect to omni show
         requested_effect = kwargs.get(ATTR_EFFECT, None)
@@ -130,7 +124,7 @@ class OmniLogicLightEntity(OmniLogicEntity[ColorLogicLight], LightEntity):
             ColorLogicBrightness(request_brightness),
         )
 
-        _LOGGER.debug("Setting light show to %s, speed %s, brightness %s", request_show.pretty(), self.equipment.speed, request_brightness)
+        _LOGGER.debug("Setting light show to %s, speed %s, brightness %s", str(request_show), self.equipment.speed, request_brightness)
 
         try:
             await self.equipment.set_show(
@@ -151,6 +145,6 @@ class OmniLogicLightEntity(OmniLogicEntity[ColorLogicLight], LightEntity):
         Example method how to request data updates.
         """
         if not self.equipment.is_ready:
-            raise HomeAssistantError("Light is in state %s and cannot be turned off yet, try again later." % self.equipment.state.pretty())
+            raise HomeAssistantError("Light is in state %s and cannot be turned off yet, try again later." % str(self.equipment.state))
         await self.equipment.turn_off()
         self.schedule_delayed_update()

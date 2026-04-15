@@ -272,15 +272,15 @@ class OmniLogicCSADAcidPhEntity(OmniLogicEntity[CSAD], SensorEntity):
         return self.equipment.current_ph + self.equipment.calibration_value
 
     @property
-    def extra_state_attributes(self) -> dict[str, int | str]:
-        return super().extra_state_attributes | {
-            "orp": self.equipment.current_orp,
-            "mode": self.equipment.mode,
-            "target_value": self.equipment.target_ph,
-            "ph_value_raw": self.equipment.current_ph,
-            "calibration_value": self.equipment.calibration_value,
-            "ph_low_alarm_value": self.equipment.ph_low_alarm,
-            "ph_high_alarm_value": self.equipment.ph_high_alarm,
+    def _extra_state_attributes(self) -> dict[str, Any]:
+        return {
+            "omni_orp": self.equipment.current_orp,
+            "omni_mode": str(self.equipment.mode),
+            "omni_target_value": self.equipment.target_ph,
+            "omni_ph_value_raw": self.equipment.current_ph,
+            "omni_calibration_value": self.equipment.calibration_value,
+            "omni_ph_low_alarm_value": self.equipment.ph_low_alarm,
+            "omni_ph_high_alarm_value": self.equipment.ph_high_alarm,
         }
 
 
@@ -295,12 +295,12 @@ class OmniLogicCSADAcidORPEntity(OmniLogicEntity[CSAD], SensorEntity):
         return self.equipment.current_orp
 
     @property
-    def extra_state_attributes(self) -> dict[str, int | str]:
-        return super().extra_state_attributes | {
-            "target_level": self.equipment.orp_target_level,
-            "runtime_level": self.equipment.orp_runtime_level,
-            "low_alarm_level": self.equipment.orp_low_alarm_level,
-            "high_alarm_level": self.equipment.orp_high_alarm_level,
-            "forced_on_time": self.equipment.orp_forced_on_time,
-            "forced_enabled": self.equipment.orp_forced_enabled,
+    def _extra_state_attributes(self) -> dict[str, Any]:
+        return {
+            "omni_target_level": self.equipment.orp_target_level,
+            "omni_runtime_level": self.equipment.orp_runtime_level,
+            "omni_low_alarm_level": self.equipment.orp_low_alarm_level,
+            "omni_high_alarm_level": self.equipment.orp_high_alarm_level,
+            "omni_forced_on_time": self.equipment.orp_forced_on_time,
+            "omni_forced_enabled": self.equipment.orp_forced_enabled,
         }

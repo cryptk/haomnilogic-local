@@ -23,8 +23,8 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
     """Set up the valve platform."""
+    coordinator: OmniLogicCoordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
     entities: list[ValveEntity] = []
-    coordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
 
     # Add valve actuator relays
     for _, system_id, relay in coordinator.omni.all_relays.items():
@@ -74,10 +74,12 @@ class OmniLogicValveEntity(OmniLogicEntity[Relay], ValveEntity):
                 return "mdi:valve-open" if not self.is_closed else "mdi:valve-closed"
 
     @property
-    def extra_state_attributes(self) -> dict[str, int | str]:
+    def _extra_state_attributes(self) -> dict[str, Any]:
         """Return extra state attributes."""
-        return super().extra_state_attributes | {
-            "why_on": self.equipment.why_on,
+        return {
+            "omni_function": str(self.equipment.function),
+            "omni_type": str(self.equipment.relay_type),
+            "omni_why_on": str(self.equipment.why_on),
         }
 
     async def async_open_valve(self, **kwargs: Any) -> None:
