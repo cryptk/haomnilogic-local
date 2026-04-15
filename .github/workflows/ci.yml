@@ -45,3 +45,5 @@ jobs:
         uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
       - name: Run prek
         uses: j178/prek-action@cbc2f23eb5539cf20d82d1aabd0d0ecbcc56f4e3 #v2.0.2
+        env:
+          PREK_SKIP: no-commit-to-branch
