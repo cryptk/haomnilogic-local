@@ -71,7 +71,8 @@ class OmniLogicServiceModeBinarySensorEntity(OmniLogicEntity[Backyard], BinarySe
 
     @property
     def is_on(self) -> bool:
-        return self.equipment.is_ready
+        # The library returns if the system is ready, we want this sensor to indicate if we are NOT ready
+        return not self.equipment.is_ready
 
 
 class OmniLogicHeaterEquipBinarySensorEntity(OmniLogicEntity[HeaterEquipment], BinarySensorEntity):
