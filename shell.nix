@@ -71,6 +71,8 @@ in
       libjpeg_turbo
       libpcap
       jq
+      yq-go
+      zip
     ];
 
   runScript = "bash --rcfile ${shellInit}";
