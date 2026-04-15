@@ -25,12 +25,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     coordinator: OmniLogicCoordinator = hass.data[DOMAIN][entry.entry_id][KEY_COORDINATOR]
     entities: list[WaterHeaterEntity] = []
 
-    for _, system_id, heater in coordinator.omni.all_heaters.items():
-        _LOGGER.debug(
-            "Configuring water heater with ID: %s, Name: %s",
-            system_id,
-            heater.name,
-        )
+    for _, _, heater in coordinator.omni.all_heaters.items():
         entities.append(OmniLogicWaterHeaterEntity(coordinator=coordinator, equipment=heater))
 
     async_add_entities(entities)

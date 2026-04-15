@@ -27,14 +27,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     entities: list[ValveEntity] = []
 
     # Add valve actuator relays
-    for _, system_id, relay in coordinator.omni.all_relays.items():
+    for _, _, relay in coordinator.omni.all_relays.items():
         # Only add valve actuators - standard relays belong in switch platform
         if relay.relay_type == RelayType.VALVE_ACTUATOR:
-            _LOGGER.debug(
-                "Configuring valve for valve actuator with ID: %s, Name: %s",
-                system_id,
-                relay.name,
-            )
             entities.append(OmniLogicValveEntity(coordinator=coordinator, equipment=relay))
 
     async_add_entities(entities)

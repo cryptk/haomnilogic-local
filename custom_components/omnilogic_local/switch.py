@@ -32,53 +32,27 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     entities: list[SwitchEntity] = []
 
     # Add relay switches (excluding valve actuators)
-    for _, system_id, relay in coordinator.omni.all_relays.items():
+    for _, _, relay in coordinator.omni.all_relays.items():
         # Skip valve actuators - they belong in valve platform
         if relay.relay_type == RelayType.VALVE_ACTUATOR:
             continue
-
-        _LOGGER.debug(
-            "Configuring switch for relay with ID: %s, Name: %s",
-            system_id,
-            relay.name,
-        )
         entities.append(OmniLogicRelaySwitchEntity(coordinator=coordinator, equipment=relay))
 
     # Add pump switches
-    for _, system_id, pump in coordinator.omni.all_pumps.items():
-        _LOGGER.debug(
-            "Configuring switch for pump with ID: %s, Name: %s",
-            system_id,
-            pump.name,
-        )
+    for _, _, pump in coordinator.omni.all_pumps.items():
         entities.append(OmniLogicPumpSwitchEntity(coordinator=coordinator, equipment=pump))
 
     # Add filter switches
-    for _, system_id, filter_equipment in coordinator.omni.all_filters.items():
-        _LOGGER.debug(
-            "Configuring switch for filter with ID: %s, Name: %s",
-            system_id,
-            filter_equipment.name,
-        )
+    for _, _, filter_equipment in coordinator.omni.all_filters.items():
         entities.append(OmniLogicFilterSwitchEntity(coordinator=coordinator, equipment=filter_equipment))
 
     # Add chlorinator switches
-    for _, system_id, chlorinator in coordinator.omni.all_chlorinators.items():
-        _LOGGER.debug(
-            "Configuring switch for chlorinator with ID: %s, Name: %s",
-            system_id,
-            chlorinator.name,
-        )
+    for _, _, chlorinator in coordinator.omni.all_chlorinators.items():
         entities.append(OmniLogicChlorinatorSwitchEntity(coordinator=coordinator, equipment=chlorinator))
 
     # Add spillover switches for pools that support it
-    for _, system_id, bow in coordinator.omni.all_bows.items():
+    for _, _, bow in coordinator.omni.all_bows.items():
         if bow.equip_type == BodyOfWaterType.POOL and bow.supports_spillover:
-            _LOGGER.debug(
-                "Configuring switch for spillover with ID: %s, Name: %s",
-                system_id,
-                bow.name,
-            )
             entities.append(OmniLogicSpilloverSwitchEntity(coordinator=coordinator, equipment=bow))
 
     async_add_entities(entities)
