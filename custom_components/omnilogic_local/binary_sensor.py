@@ -29,12 +29,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 
     # Create binary sensor entities for each piece of Heater-Equipment
 
-    for _, system_id, heater_equipment in coordinator.omni.all_heater_equipment.items():
-        _LOGGER.debug(
-            "Configuring binary sensor for heater equipment with ID: %s, Name: %s",
-            system_id,
-            heater_equipment.name,
-        )
+    for _, _, heater_equipment in coordinator.omni.all_heater_equipment.items():
         entities.append(
             OmniLogicHeaterEquipBinarySensorEntity(
                 coordinator=coordinator,
@@ -43,12 +38,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
         )
 
     # Create flow binary sensors for each BoW
-    for _, system_id, bow in coordinator.omni.backyard.bow.items():
-        _LOGGER.debug(
-            "Configuring binary sensor for flow with ID: %s, Name: %s",
-            system_id,
-            bow.name,
-        )
+    for _, _, bow in coordinator.omni.backyard.bow.items():
         entities.append(
             OmniLogicFlowBinarySensorEntity(
                 coordinator=coordinator,

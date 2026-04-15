@@ -34,18 +34,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     for _, _, sensor in coordinator.omni.all_sensors.items():
         match sensor.equip_type:
             case SensorType.AIR_TEMP:
-                _LOGGER.debug(
-                    "Configuring sensor for air temperature with ID: %s, Name: %s",
-                    sensor.system_id,
-                    sensor.name,
-                )
                 entities.append(OmniLogicAirTemperatureSensorEntity(coordinator=coordinator, sensor=sensor))
             case SensorType.WATER_TEMP:
-                _LOGGER.debug(
-                    "Configuring sensor for water temperature with ID: %s, Name: %s",
-                    sensor.system_id,
-                    sensor.name,
-                )
                 entities.append(OmniLogicWaterTemperatureSensorEntity(coordinator=coordinator, sensor=sensor))
             case SensorType.SOLAR_TEMP:
                 # Reference https://github.com/cryptk/haomnilogic-local/issues/60 for why we do this
@@ -62,11 +52,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
                     case 0:
                         _LOGGER.warning("Unable to locate a solar heater for sensor id: %s", sensor.system_id)
                     case 1:
-                        _LOGGER.debug(
-                            "Configuring sensor for solar temperature with ID: %s, Name: %s",
-                            sensor.system_id,
-                            sensor.name,
-                        )
                         entities.append(
                             OmniLogicSolarTemperatureSensorEntity(coordinator=coordinator, sensor=sensor, heater_equipment=solar_heaters[0])
                         )
@@ -88,23 +73,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
                 )
 
     # Create energy sensors for filters suitable for inclusion in the energy dashboard
-    for _, system_id, filt in coordinator.omni.all_filters.items():
-        _LOGGER.debug(
-            "Configuring sensor for filter energy with ID: %s, Name: %s",
-            system_id,
-            filt.name,
-        )
+    for _, _, filt in coordinator.omni.all_filters.items():
         entities.append(OmniLogicFilterEnergySensorEntity(coordinator=coordinator, equipment=filt))
 
     # Create salt level sensors for chlorinators
-    for _, system_id, chlorinator in coordinator.omni.all_chlorinators.items():
+    for _, _, chlorinator in coordinator.omni.all_chlorinators.items():
         match chlorinator.dispenser_type:
             case ChlorinatorDispenserType.SALT:
-                _LOGGER.debug(
-                    "Configuring sensor for chlorinator salt level with ID: %s, Name: %s",
-                    system_id,
-                    chlorinator.name,
-                )
                 entities.append(
                     OmniLogicChlorinatorSaltLevelSensorEntity(coordinator=coordinator, equipment=chlorinator, sensor_type="average")
                 )
@@ -120,14 +95,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
                 )
 
     # Create pH and ORP sensors for CSAD systems
-    for _, system_id, csad in coordinator.omni.all_csads.items():
+    for _, _, csad in coordinator.omni.all_csads.items():
         match csad.equip_type:
             case CSADType.ACID | CSADType.CO2:
-                _LOGGER.debug(
-                    "Configuring sensor for CSAD with ID: %s, Name: %s",
-                    system_id,
-                    csad.name,
-                )
                 entities.append(OmniLogicCSADAcidPhEntity(coordinator=coordinator, equipment=csad))
                 entities.append(OmniLogicCSADAcidORPEntity(coordinator=coordinator, equipment=csad))
 
