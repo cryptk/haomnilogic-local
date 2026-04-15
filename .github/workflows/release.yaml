@@ -19,9 +19,6 @@ jobs:
     runs-on: "ubuntu-latest"
     permissions:
       contents: write # Required to upload the ZIP file to the release
-    env:
-      TAG_NAME: ${{ github.event.release.tag_name }}
-      ARCHIVE_PATH: ${GITHUB_WORKSPACE}/custom_components/omnilogic_local/omnilogic_local.zip
     steps:
       - name: Check out code from GitHub
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
@@ -31,19 +28,22 @@ jobs:
       - name: "Adjust version number"
         shell: "bash"
         run: |
-          yq -i -o json '.version="${TAG_NAME}"' \
+          yq -i -o json '.version=env(TAG_NAME)' \
             "${GITHUB_WORKSPACE}/custom_components/omnilogic_local/manifest.json"
+        env:
+          TAG_NAME: ${{ github.event.release.tag_name }}
 
       - name: "ZIP the integration directory"
         shell: "bash"
         run: |
           cd "${GITHUB_WORKSPACE}/custom_components/omnilogic_local"
-          zip omnilogic_local.zip -r ./
+          zip -r ../../omnilogic_local.zip .
 
       - name: "Upload the ZIP file to the release"
         shell: "bash"
         run: |
-          gh release upload ${TAG_NAME} ${ARCHIVE_PATH} --clobber
+          gh release upload "${TAG_NAME}" "${ARCHIVE_PATH}" --clobber
         env:
-          ARCHIVE_PATH: ${GITHUB_WORKSPACE}/custom_components/omnilogic_local/omnilogic_local.zip
+          TAG_NAME: ${{ github.event.release.tag_name }}
+          ARCHIVE_PATH: ${{ github.workspace }}/omnilogic_local.zip
           GH_TOKEN: ${{ github.token }}
