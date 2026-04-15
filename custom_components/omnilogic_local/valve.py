@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any
 
-from homeassistant.components.valve import ValveEntity
+from homeassistant.components.valve import ValveEntity, ValveEntityFeature
 from pyomnilogic_local import Relay
 from pyomnilogic_local.omnitypes import RelayFunction, RelayType
 
@@ -42,6 +42,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 
 class OmniLogicValveEntity(OmniLogicEntity[Relay], ValveEntity):
     """Valve entity for valve actuator relays."""
+
+    _attr_supported_features = ValveEntityFeature.OPEN | ValveEntityFeature.CLOSE
 
     def __init__(self, coordinator: OmniLogicCoordinator, equipment: Relay) -> None:
         super().__init__(coordinator, equipment)
@@ -82,8 +84,10 @@ class OmniLogicValveEntity(OmniLogicEntity[Relay], ValveEntity):
         """Open the valve."""
         _LOGGER.debug("opening valve ID: %s", self.system_id)
         await self.equipment.turn_on()
+        self.schedule_delayed_update()
 
     async def async_close_valve(self, **kwargs: Any) -> None:
         """Close the valve."""
         _LOGGER.debug("closing valve ID: %s", self.system_id)
         await self.equipment.turn_off()
+        self.schedule_delayed_update()

@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING, Any
 from homeassistant.components.light import ATTR_BRIGHTNESS, ATTR_EFFECT, LightEntity
 from homeassistant.components.light.const import ColorMode, LightEntityFeature
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers.event import async_call_later
 from homeassistant.util.color import brightness_to_value, value_to_brightness
 from pyomnilogic_local import ColorLogicLight, OmniEquipmentNotInitializedError
 from pyomnilogic_local.omnitypes import ColorLogicBrightness, ColorLogicLightType, ColorLogicPowerState
@@ -19,7 +18,7 @@ if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .const import DOMAIN, KEY_COORDINATOR, UPDATE_DELAY_SECONDS
+from .const import DOMAIN, KEY_COORDINATOR
 from .entity import OmniLogicEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -143,8 +142,7 @@ class OmniLogicLightEntity(OmniLogicEntity[ColorLogicLight], LightEntity):
             )
         except OmniEquipmentNotInitializedError as exc:
             raise HomeAssistantError("Light is not yet initialized, try again later.") from exc
-
-        async_call_later(self.hass, UPDATE_DELAY_SECONDS, self._schedule_refresh_callback)
+        self.schedule_delayed_update()
 
     # The "Any" below here isn't great, we should create a type for this later
     async def async_turn_off(self, **kwargs: Any) -> None:
@@ -155,5 +153,4 @@ class OmniLogicLightEntity(OmniLogicEntity[ColorLogicLight], LightEntity):
         if not self.equipment.is_ready:
             raise HomeAssistantError("Light is in state %s and cannot be turned off yet, try again later." % self.equipment.state.pretty())
         await self.equipment.turn_off()
-
-        async_call_later(self.hass, UPDATE_DELAY_SECONDS, self._schedule_refresh_callback)
+        self.schedule_delayed_update()

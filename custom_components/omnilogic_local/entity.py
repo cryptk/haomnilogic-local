@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime
 from typing import Any, Generic, TypeVar, cast
 
 from homeassistant.core import callback
@@ -25,7 +24,7 @@ from pyomnilogic_local import (
     Sensor,
 )
 
-from .const import BACKYARD_SYSTEM_ID, DOMAIN, MANUFACTURER
+from .const import BACKYARD_SYSTEM_ID, DOMAIN, MANUFACTURER, UPDATE_DELAY_SECONDS
 from .coordinator import OmniLogicCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -115,10 +114,16 @@ class OmniLogicEntity(CoordinatorEntity[OmniLogicCoordinator], Generic[Equipment
     def unique_id(self) -> str | None:
         return f"{self.bow_id} {self.system_id} {self.name}"
 
-    # @callback
-    async def _schedule_refresh_callback(self, now: datetime) -> None:
-        """Callback function executed by async_call_later."""
-        # `now` is the timestamp argument required by async_call_later callbacks
+    @callback
+    def schedule_delayed_update(self, delay: float = UPDATE_DELAY_SECONDS) -> None:
+        """Schedule a coordinator refresh after a short delay.
 
-        # Use the non-blocking version of the refresh request
-        await self.coordinator.async_request_refresh()
+        Call this at the end of any action method (async_turn_on, async_turn_off, etc.)
+        to give the OmniLogic time to reflect the change in its telemetry before we poll.
+        Any currently pending interval refresh is cancelled and rescheduled for `delay`
+        seconds from now, ensuring no back-to-back updates occur. The interval clock
+        resets naturally once the refresh completes.
+        """
+        _LOGGER.debug("Scheduling delayed update for %s in %s seconds", self.name, delay)
+        self.coordinator._retry_after = delay
+        self.coordinator._schedule_refresh()

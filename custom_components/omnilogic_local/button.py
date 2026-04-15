@@ -4,11 +4,10 @@ import logging
 from typing import TYPE_CHECKING, Any, TypeVar
 
 from homeassistant.components.button import ButtonEntity
-from homeassistant.helpers.event import async_call_later
 from pyomnilogic_local import Backyard, Filter, Pump
 from pyomnilogic_local.omnitypes import FilterSpeedPresets, FilterType, PumpSpeedPresets, PumpType
 
-from .const import DOMAIN, KEY_COORDINATOR, UPDATE_DELAY_SECONDS
+from .const import DOMAIN, KEY_COORDINATOR
 from .entity import OmniLogicEntity
 
 if TYPE_CHECKING:
@@ -98,7 +97,7 @@ class OmniLogicPumpButtonEntity(OmniLogicSpeedPresetButtonEntity[Pump]):
 
     async def async_press(self) -> None:
         await self.equipment.run_preset_speed(self.speed)
-        async_call_later(self.hass, UPDATE_DELAY_SECONDS, self._schedule_refresh_callback)
+        self.schedule_delayed_update()
 
 
 class OmniLogicFilterButtonEntity(OmniLogicSpeedPresetButtonEntity[Filter]):
@@ -108,7 +107,7 @@ class OmniLogicFilterButtonEntity(OmniLogicSpeedPresetButtonEntity[Filter]):
 
     async def async_press(self) -> None:
         await self.equipment.run_preset_speed(self.speed)
-        async_call_later(self.hass, UPDATE_DELAY_SECONDS, self._schedule_refresh_callback)
+        self.schedule_delayed_update()
 
 
 class OmniLogicIdleButtonEntity(OmniLogicEntity[Backyard], ButtonEntity):
@@ -123,4 +122,4 @@ class OmniLogicIdleButtonEntity(OmniLogicEntity[Backyard], ButtonEntity):
 
     async def async_press(self) -> None:
         await self.coordinator.omni._api.async_restore_idle_state()
-        async_call_later(self.hass, UPDATE_DELAY_SECONDS, self._schedule_refresh_callback)
+        self.schedule_delayed_update()

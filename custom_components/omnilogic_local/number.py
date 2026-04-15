@@ -174,6 +174,7 @@ class OmniLogicPumpNumberEntity(OmniLogicVSPNumberEntity[Pump]):
             new_speed_pct = int(value)
 
         await self.equipment.set_speed(new_speed_pct)
+        self.schedule_delayed_update()
 
 
 class OmniLogicFilterNumberEntity(OmniLogicVSPNumberEntity[Filter]):
@@ -187,6 +188,7 @@ class OmniLogicFilterNumberEntity(OmniLogicVSPNumberEntity[Filter]):
             new_speed_pct = int(value)
 
         await self.equipment.set_speed(new_speed_pct)
+        self.schedule_delayed_update()
 
 
 class OmniLogicSolarSetPointNumberEntity(OmniLogicEntity[Heater], NumberEntity):
@@ -216,6 +218,7 @@ class OmniLogicSolarSetPointNumberEntity(OmniLogicEntity[Heater], NumberEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         await self.equipment.set_solar_temperature(int(value))
+        self.schedule_delayed_update()
 
 
 class OmniLogicChlorinatorTimedPercentNumberEntity(OmniLogicEntity[Chlorinator], NumberEntity):
@@ -234,3 +237,4 @@ class OmniLogicChlorinatorTimedPercentNumberEntity(OmniLogicEntity[Chlorinator],
 
     async def async_set_native_value(self, value: float) -> None:
         await self.equipment.set_timed_percent(int(value))
+        self.schedule_delayed_update()
