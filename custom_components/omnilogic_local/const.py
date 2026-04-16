@@ -1,5 +1,6 @@
 """Constants for the OmniLogic Local integration."""
 
+from datetime import timedelta
 from typing import Final
 
 from pyomnilogic_local.omnitypes import OmniType
@@ -7,8 +8,7 @@ from pyomnilogic_local.omnitypes import OmniType
 DOMAIN: Final[str] = "omnilogic_local"
 KEY_COORDINATOR: Final[str] = "coordinator"
 
-DEFAULT_SCAN_INTERVAL: Final[int] = 10
-MIN_SCAN_INTERVAL: Final[int] = 5
+SCAN_INTERVAL = timedelta(seconds=10)
 UPDATE_DELAY_SECONDS: Final[float] = 1.5
 
 # According to Hayward docs, the backyard always has a system id of 0

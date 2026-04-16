@@ -15,7 +15,6 @@
                     "ip_address": "IP Address",
                     "host": "Hostname/IP Address",
                     "port": "Port",
-                    "scan_interval": "Scan Interval",
                     "timeout": "Timeout"
                 }
             }
@@ -28,7 +27,6 @@
                     "ip_address": "IP Address",
                     "host": "Hostname/IP Address",
                     "port": "Port",
-                    "scan_interval": "Scan Interval",
                     "timeout": "Timeout"
                 }
             }

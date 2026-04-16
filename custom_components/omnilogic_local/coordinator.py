@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import logging
-from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+
+from .const import SCAN_INTERVAL
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -31,7 +32,7 @@ class OmniLogicCoordinator(DataUpdateCoordinator[None]):
     # We don't need to store the data inside of the coordinator
     data: None
 
-    def __init__(self, hass: HomeAssistant, omni: OmniLogic, scan_interval: int) -> None:
+    def __init__(self, hass: HomeAssistant, omni: OmniLogic) -> None:
         """Initialize my coordinator."""
         super().__init__(
             hass,
@@ -39,7 +40,7 @@ class OmniLogicCoordinator(DataUpdateCoordinator[None]):
             # Name of the data. For logging purposes.
             name="OmniLogic",
             # Polling interval. Will only be polled if there are subscribers.
-            update_interval=timedelta(seconds=scan_interval),
+            update_interval=SCAN_INTERVAL,
         )
         self.omni = omni
 

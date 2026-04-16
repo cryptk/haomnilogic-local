@@ -5,14 +5,21 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from homeassistant.const import CONF_IP_ADDRESS, CONF_NAME, CONF_PORT, CONF_SCAN_INTERVAL, CONF_TIMEOUT, Platform
+from homeassistant.const import (
+    CONF_IP_ADDRESS,
+    CONF_NAME,
+    CONF_PORT,
+    CONF_SCAN_INTERVAL,
+    CONF_TIMEOUT,
+    Platform,
+)  # CONF_SCAN_INTERVAL kept for migration
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 from pyomnilogic_local import OmniLogic
 from pyomnilogic_local.omnitypes import OmniType
 
-from .const import BACKYARD_SYSTEM_ID, DEFAULT_SCAN_INTERVAL, DOMAIN, KEY_COORDINATOR
+from .const import BACKYARD_SYSTEM_ID, DOMAIN, KEY_COORDINATOR
 from .coordinator import OmniLogicCoordinator
 
 if TYPE_CHECKING:
@@ -45,7 +52,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         raise ConfigEntryNotReady from error
 
     # Create our data coordinator
-    coordinator = OmniLogicCoordinator(hass=hass, omni=omni, scan_interval=entry.data[CONF_SCAN_INTERVAL])
+    coordinator = OmniLogicCoordinator(hass=hass, omni=omni)
     await coordinator.async_config_entry_first_refresh()
 
     device_registry = dr.async_get(hass)
@@ -97,7 +104,8 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
 
     if config_entry.version == 1:
         new = {**config_entry.data}
-        new[CONF_SCAN_INTERVAL] = DEFAULT_SCAN_INTERVAL
+        # The migration to VERSION 4 removes this, but we need to add it here to migrate from version 1 to version 2
+        new[CONF_SCAN_INTERVAL] = 10
 
         hass.config_entries.async_update_entry(config_entry, data=new, version=2)
 
@@ -159,6 +167,10 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
             entity_registry.async_update_entity(entity.entity_id, new_unique_id=new_unique_id)
 
         hass.config_entries.async_update_entry(config_entry, version=3)
+
+    if config_entry.version == 3:
+        new = {k: v for k, v in config_entry.data.items() if k != CONF_SCAN_INTERVAL}
+        hass.config_entries.async_update_entry(config_entry, data=new, version=4)
 
     _LOGGER.info("Migration to version %s successful", config_entry.version)
 

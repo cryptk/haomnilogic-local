@@ -8,12 +8,12 @@ from typing import TYPE_CHECKING, Any
 import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from homeassistant.config_entries import ConfigFlow, OptionsFlow
-from homeassistant.const import CONF_IP_ADDRESS, CONF_NAME, CONF_PORT, CONF_SCAN_INTERVAL, CONF_TIMEOUT
+from homeassistant.const import CONF_IP_ADDRESS, CONF_NAME, CONF_PORT, CONF_TIMEOUT
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 from pyomnilogic_local import OmniLogic
 
-from .const import DEFAULT_SCAN_INTERVAL, DOMAIN, MIN_SCAN_INTERVAL
+from .const import DOMAIN
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry, ConfigFlowResult
@@ -27,7 +27,6 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
         vol.Required(CONF_IP_ADDRESS): cv.string,
         vol.Required(CONF_NAME, default="Omnilogic"): cv.string,
         vol.Optional(CONF_PORT, default=10444): cv.port,
-        vol.Optional(CONF_SCAN_INTERVAL, default=DEFAULT_SCAN_INTERVAL): vol.All(cv.positive_int, vol.Clamp(min=MIN_SCAN_INTERVAL)),
         vol.Optional(CONF_TIMEOUT, default=5.0): vol.All(vol.Coerce(float), vol.Range(min=0.5, max=10.0)),
     }
 )
@@ -66,12 +65,6 @@ class OptionsFlowHandler(OptionsFlow):
                 {
                     vol.Required(CONF_IP_ADDRESS, default=self.config_entry.data[CONF_IP_ADDRESS]): cv.string,
                     vol.Required(CONF_PORT, default=self.config_entry.data[CONF_PORT]): cv.port,
-                    vol.Optional(
-                        CONF_SCAN_INTERVAL,
-                        description="bar",
-                        msg="foo",
-                        default=self.config_entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL),
-                    ): vol.All(cv.positive_int, vol.Clamp(min=MIN_SCAN_INTERVAL)),
                     vol.Required(CONF_TIMEOUT, default=self.config_entry.data[CONF_TIMEOUT]): vol.All(
                         vol.Coerce(float), vol.Range(min=0.5, max=10.0)
                     ),
@@ -83,7 +76,7 @@ class OptionsFlowHandler(OptionsFlow):
 class OmnilogicConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for OmniLogic Local."""
 
-    VERSION = 3
+    VERSION = 4
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle the initial step."""
