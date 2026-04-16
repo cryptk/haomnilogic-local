@@ -68,12 +68,8 @@ class OmniLogicRelaySwitchEntity(OmniLogicEntity[Relay], SwitchEntity):
     def icon(self) -> str | None:
         """Return icon based on relay function."""
         match self.equipment.function:
-            case RelayFunction.LAMINARS:
-                return "mdi:light"
-            case RelayFunction.LIGHT:
-                return "mdi:light"
-            case RelayFunction.BACKYARD_LIGHT:
-                return "mdi:light"
+            case RelayFunction.BACKYARD_LIGHT | RelayFunction.LAMINARS | RelayFunction.LIGHT | RelayFunction.POOL_LIGHT:
+                return "mdi:lightbulb" if self.is_on else "mdi:lightbulb-off"
             case _:
                 return "mdi:toggle-switch-variant" if self.is_on else "mdi:toggle-switch-variant-off"
 

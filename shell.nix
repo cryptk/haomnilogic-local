@@ -13,7 +13,7 @@ let
 
     echo "--- Updating Home Assistant Core ---"
     if [ ! -d "dev_files/home-assistant-core/.git" ]; then
-      git clone --depth 1 --branch dev https://github.com/home-assistant/core.git dev_files/home-assistant-core
+      git clone --branch dev https://github.com/home-assistant/core.git dev_files/home-assistant-core
     else
       git -C dev_files/home-assistant-core pull origin dev
     fi
