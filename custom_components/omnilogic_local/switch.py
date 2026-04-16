@@ -81,13 +81,13 @@ class OmniLogicRelaySwitchEntity(OmniLogicEntity[Relay], SwitchEntity):
         """Turn the entity on."""
         _LOGGER.debug("turning on relay ID: %s", self.system_id)
         await self.equipment.turn_on()
-        self.schedule_delayed_update()
+        await self.schedule_delayed_update()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the entity off."""
         _LOGGER.debug("turning off relay ID: %s", self.system_id)
         await self.equipment.turn_off()
-        self.schedule_delayed_update()
+        await self.schedule_delayed_update()
 
 
 class OmniLogicPumpSwitchEntity(OmniLogicEntity[Pump], SwitchEntity):
@@ -108,13 +108,13 @@ class OmniLogicPumpSwitchEntity(OmniLogicEntity[Pump], SwitchEntity):
         """Turn the entity on."""
         _LOGGER.debug("turning on pump ID: %s", self.system_id)
         await self.equipment.turn_on()
-        self.schedule_delayed_update()
+        await self.schedule_delayed_update()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the entity off."""
         _LOGGER.debug("turning off pump ID: %s", self.system_id)
         await self.equipment.turn_off()
-        self.schedule_delayed_update()
+        await self.schedule_delayed_update()
 
 
 class OmniLogicFilterSwitchEntity(OmniLogicEntity[Filter], SwitchEntity):
@@ -135,13 +135,13 @@ class OmniLogicFilterSwitchEntity(OmniLogicEntity[Filter], SwitchEntity):
         """Turn the entity on."""
         _LOGGER.debug("turning on filter ID: %s", self.system_id)
         await self.equipment.turn_on()
-        self.schedule_delayed_update()
+        await self.schedule_delayed_update()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the entity off."""
         _LOGGER.debug("turning off filter ID: %s", self.system_id)
         await self.equipment.turn_off()
-        self.schedule_delayed_update()
+        await self.schedule_delayed_update()
 
     @property
     def _extra_state_attributes(self) -> dict[str, Any]:
@@ -169,13 +169,13 @@ class OmniLogicChlorinatorSwitchEntity(OmniLogicEntity[Chlorinator], SwitchEntit
         """Turn the entity on."""
         _LOGGER.debug("turning on chlorinator ID: %s", self.system_id)
         await self.equipment.turn_on()
-        self.schedule_delayed_update()
+        await self.schedule_delayed_update()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the entity off."""
         _LOGGER.debug("turning off chlorinator ID: %s", self.system_id)
         await self.equipment.turn_off()
-        self.schedule_delayed_update()
+        await self.schedule_delayed_update()
 
 
 class OmniLogicSpilloverSwitchEntity(OmniLogicEntity[Bow], SwitchEntity):
@@ -203,10 +203,10 @@ class OmniLogicSpilloverSwitchEntity(OmniLogicEntity[Bow], SwitchEntity):
         """Turn the entity on."""
         _LOGGER.debug("turning on spillover ID: %s", self.system_id)
         await self.equipment.turn_on_spillover()
-        self.schedule_delayed_update()
+        await self.schedule_delayed_update()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the entity off."""
         _LOGGER.debug("turning off spillover ID: %s", self.system_id)
         await self.equipment.turn_off_spillover()
-        self.schedule_delayed_update()
+        await self.schedule_delayed_update()

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Any, Generic, TypeVar, cast
 
@@ -118,7 +119,7 @@ class OmniLogicEntity(CoordinatorEntity[OmniLogicCoordinator], Generic[Equipment
         return f"{self.bow_id} {self.system_id} {self.name}"
 
     @callback
-    def schedule_delayed_update(self, delay: float = UPDATE_DELAY_SECONDS) -> None:
+    async def schedule_delayed_update(self, delay: float = UPDATE_DELAY_SECONDS) -> None:
         """Schedule a coordinator refresh after a short delay.
 
         Call this at the end of any action method (async_turn_on, async_turn_off, etc.)
@@ -128,5 +129,5 @@ class OmniLogicEntity(CoordinatorEntity[OmniLogicCoordinator], Generic[Equipment
         resets naturally once the refresh completes.
         """
         _LOGGER.debug("Scheduling delayed update for %s in %s seconds", self.name, delay)
-        self.coordinator._retry_after = delay
-        self.coordinator._schedule_refresh()
+        await asyncio.sleep(delay)
+        await self.coordinator.async_request_refresh()
