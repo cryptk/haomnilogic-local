@@ -59,9 +59,7 @@ class OmniLogicValveEntity(OmniLogicEntity[Relay], ValveEntity):
         match self.equipment.function:
             case RelayFunction.WATERFALL:
                 return "mdi:waterfall"
-            case RelayFunction.FOUNTAIN:
-                return "mdi:fountain"
-            case RelayFunction.WATER_FEATURE:
+            case RelayFunction.FOUNTAIN | RelayFunction.WATER_FEATURE:
                 return "mdi:fountain"
             case RelayFunction.WATER_SLIDE:
                 return "mdi:slide"
