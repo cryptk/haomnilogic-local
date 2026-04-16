@@ -87,7 +87,7 @@ class OmniLogicPumpButtonEntity(OmniLogicSpeedPresetButtonEntity[Pump]):
 
     async def async_press(self) -> None:
         await self.equipment.run_preset_speed(self.speed)
-        self.schedule_delayed_update()
+        await self.schedule_delayed_update()
 
 
 class OmniLogicFilterButtonEntity(OmniLogicSpeedPresetButtonEntity[Filter]):
@@ -97,7 +97,7 @@ class OmniLogicFilterButtonEntity(OmniLogicSpeedPresetButtonEntity[Filter]):
 
     async def async_press(self) -> None:
         await self.equipment.run_preset_speed(self.speed)
-        self.schedule_delayed_update()
+        await self.schedule_delayed_update()
 
 
 class OmniLogicIdleButtonEntity(OmniLogicEntity[Backyard], ButtonEntity):
@@ -112,4 +112,4 @@ class OmniLogicIdleButtonEntity(OmniLogicEntity[Backyard], ButtonEntity):
 
     async def async_press(self) -> None:
         await self.coordinator.omni._api.async_restore_idle_state()
-        self.schedule_delayed_update()
+        await self.schedule_delayed_update()

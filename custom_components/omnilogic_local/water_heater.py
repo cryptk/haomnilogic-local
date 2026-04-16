@@ -80,7 +80,7 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity[Heater], WaterHeaterEntity):
     async def async_set_temperature(self, **kwargs: Any) -> None:
         """Set target temperature."""
         await self.equipment.set_temperature(int(kwargs[ATTR_TEMPERATURE]))
-        self.schedule_delayed_update()
+        await self.schedule_delayed_update()
 
     async def async_set_operation_mode(self, operation_mode: str) -> None:
         """Set operation mode."""
@@ -89,7 +89,7 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity[Heater], WaterHeaterEntity):
                 await self.equipment.turn_on()
             case "off":
                 await self.equipment.turn_off()
-        self.schedule_delayed_update()
+        await self.schedule_delayed_update()
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         await self.async_set_operation_mode("on")
