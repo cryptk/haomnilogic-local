@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from homeassistant.const import CONF_IP_ADDRESS, CONF_NAME, CONF_PORT, CONF_SCAN_INTERVAL, CONF_TIMEOUT, Platform
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import entity_registry as er
 from pyomnilogic_local import OmniLogic
 from pyomnilogic_local.omnitypes import OmniType
 
@@ -138,6 +139,24 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                     device.id,
                     new_identifiers=new_identifiers,
                 )
+
+        # Migrate entity unique_ids for backyard entities from "None X Y" to "-1 X Y"
+        entity_registry = er.async_get(hass)
+        entities = er.async_entries_for_config_entry(entity_registry, config_entry.entry_id)
+
+        for entity in entities:
+            parts = entity.unique_id.split(" ")
+            if parts[0] != "None":
+                continue
+            parts[0] = "-1"
+            new_unique_id = " ".join(parts)
+            _LOGGER.debug(
+                "Migrating entity %s unique_id from '%s' to '%s'",
+                entity.entity_id,
+                entity.unique_id,
+                new_unique_id,
+            )
+            entity_registry.async_update_entity(entity.entity_id, new_unique_id=new_unique_id)
 
         hass.config_entries.async_update_entry(config_entry, version=3)
 
