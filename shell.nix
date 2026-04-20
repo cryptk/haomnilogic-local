@@ -47,7 +47,7 @@ let
       uv pip install -e ../python-omnilogic-local
     fi
 
-    alias run-core="hass -c dev_files/home-assistant-core/config" --skip-pip-packages python-omnilogic-local"
+    alias run-core="hass -c dev_files/home-assistant-core/config --skip-pip-packages python-omnilogic-local"
   '';
 in
 (pkgs.buildFHSEnv {
