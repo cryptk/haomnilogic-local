@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar, cast
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorStateClass
 from homeassistant.const import CONCENTRATION_PARTS_PER_MILLION, UnitOfPower, UnitOfTemperature
 from pyomnilogic_local import CSAD, Backyard, Bow, Chlorinator, Filter, HeaterEquipment, Sensor
 from pyomnilogic_local.omnitypes import ChlorinatorDispenserType, CSADType, FilterState, HeaterType, SensorType
 
-from .const import DOMAIN, KEY_COORDINATOR
+from .const import BACKYARD_SYSTEM_ID, DOMAIN, KEY_COORDINATOR
 from .entity import OmniLogicEntity
 
 if TYPE_CHECKING:
@@ -118,11 +118,15 @@ class OmniLogicTemperatureSensorEntity(OmniLogicEntity[Sensor], SensorEntity, Ge
 
     _attr_device_class = SensorDeviceClass.TEMPERATURE
     _attr_state_class = SensorStateClass.MEASUREMENT
-    sensed_equipment: SensedEquipmentT
+    sensed_id: int
 
     def __init__(self, coordinator: OmniLogicCoordinator, sensor: Sensor) -> None:
         """Pass coordinator to CoordinatorEntity."""
         super().__init__(coordinator, sensor)
+
+    @property
+    def sensed_equipment(self) -> SensedEquipmentT:
+        return cast(SensedEquipmentT, self.coordinator.omni.get_equipment_by_id(self.sensed_id))
 
     @property
     def native_unit_of_measurement(self) -> str | None:
@@ -138,9 +142,7 @@ class OmniLogicTemperatureSensorEntity(OmniLogicEntity[Sensor], SensorEntity, Ge
 class OmniLogicAirTemperatureSensorEntity(OmniLogicTemperatureSensorEntity[Backyard]):
     """Sensor entity for air temperature readings."""
 
-    def __init__(self, coordinator: OmniLogicCoordinator, sensor: Sensor) -> None:
-        super().__init__(coordinator, sensor)
-        self.sensed_equipment = coordinator.omni.backyard
+    sensed_id = BACKYARD_SYSTEM_ID
 
     @property
     def native_value(self) -> StateType | date | datetime | Decimal:
@@ -157,7 +159,7 @@ class OmniLogicWaterTemperatureSensorEntity(OmniLogicTemperatureSensorEntity[Bow
         if sensor.bow_id is None:
             msg = f"Sensor {sensor.name} does not have a bow_id"
             raise ValueError(msg)
-        self.sensed_equipment = coordinator.omni.backyard.bow[sensor.bow_id]
+        self.sensed_id = sensor.bow_id
 
     @property
     def native_value(self) -> StateType | date | datetime | Decimal:
@@ -170,7 +172,10 @@ class OmniLogicSolarTemperatureSensorEntity(OmniLogicTemperatureSensorEntity[Hea
 
     def __init__(self, coordinator: OmniLogicCoordinator, sensor: Sensor, heater_equipment: HeaterEquipment) -> None:
         super().__init__(coordinator, sensor)
-        self.sensed_equipment = heater_equipment
+        if heater_equipment.system_id is None:
+            msg = f"Solar heater {heater_equipment.name} does not have a system_id"
+            raise ValueError(msg)
+        self.sensed_id = heater_equipment.system_id
 
     @property
     def native_value(self) -> StateType | date | datetime | Decimal:
