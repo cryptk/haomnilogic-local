@@ -57,7 +57,8 @@ class OmniLogicServiceModeBinarySensorEntity(OmniLogicEntity[Backyard], BinarySe
     @property
     def available(self) -> bool:
         # This is one of the few things we can pull from the telemetry even if we are in service mode
-        return True
+        # This is only unavailable if the coordinator is unavailable (e.g. can't connect to the API at all)
+        return super().available
 
     @property
     def is_on(self) -> bool:

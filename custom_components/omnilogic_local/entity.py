@@ -83,7 +83,7 @@ class OmniLogicEntity(CoordinatorEntity[OmniLogicCoordinator], Generic[Equipment
     def available(self) -> bool:
         # By default we consider an entity available if the backyard is ready (not in service mode),
         # Individual entities can override this if needed.
-        return self.equipment._omni.backyard.is_ready
+        return super().available and self.equipment._omni.backyard.is_ready  # Ensure coordinator is available, which checks if we have data
 
     @property
     def device_info(self) -> DeviceInfo:
