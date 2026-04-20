@@ -23,8 +23,9 @@ async def async_get_config_entry_diagnostics(hass: HomeAssistant, config_entry: 
 
     coordinator: OmniLogicCoordinator = hass.data[DOMAIN][config_entry.entry_id].get(KEY_COORDINATOR)
     if coordinator:
-        diag["msp_config"] = await coordinator.omni._api.async_get_mspconfig(raw=True)
-        diag["telemetry"] = await coordinator.omni._api.async_get_telemetry(raw=True)
+        diag["msp_config"] = coordinator.omni.mspconfig._raw
+        diag["telemetry"] = coordinator.omni.telemetry._raw
+        diag["failure_counts"] = coordinator.failure_counts
 
     # There are no credentials or other secrets within the diagnostic data for this integration
     return async_redact_data(diag, [])
