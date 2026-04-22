@@ -51,6 +51,6 @@ class OmniLogicCoordinator(DataUpdateCoordinator[None]):
         try:
             await self.omni.refresh(force=True)
         except Exception as err:
-            errName = type(err).__name__
-            self.failure_counts[errName] = self.failure_counts.get(errName, 0) + 1
+            err_name = type(err).__name__
+            self.failure_counts[err_name] = self.failure_counts.get(err_name, 0) + 1
             raise UpdateFailed("Failed to update data from OmniLogic") from err
