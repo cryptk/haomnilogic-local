@@ -8,7 +8,8 @@
     "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-      "source.organizeImports": "explicit"
+      "source.organizeImports": "explicit",
+      "source.unusedImports": "explicit"
     }
   },
   "[json][jsonc][yaml]": {
