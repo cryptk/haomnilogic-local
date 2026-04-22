@@ -23,7 +23,6 @@ body:
       label: Bug Description
       description: Please describe the bug you encountered.
       placeholder: "Example: Error logged about failing to parse Telemetry/MSP Config/etc."
-      value: bug description
     validations:
       required: true
   - type: textarea
@@ -43,6 +42,7 @@ body:
       options:
         - Ethernet
         - Wi-Fi
+      default: 0
     validations:
       required: true
   - type: upload
