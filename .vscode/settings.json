@@ -3,10 +3,10 @@
   "files.insertFinalNewline": true,
   "editor.rulers": [80, 100, 140],
   "editor.formatOnSave": true,
+  "editor.renderWhitespace": "all",
   "mypy-type-checker.importStrategy": "fromEnvironment",
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff",
-    "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
       "source.organizeImports": "explicit",
       "source.unusedImports": "explicit"
@@ -14,5 +14,9 @@
   },
   "[json][jsonc][yaml]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "sonarlint.connectedMode.project": {
+    "connectionId": "cryptk",
+    "projectKey": "cryptk_haomnilogic-local"
   }
 }
