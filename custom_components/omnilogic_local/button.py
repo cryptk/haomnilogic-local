@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.button import ButtonEntity
 from pyomnilogic_local import Backyard, Filter, Pump
@@ -27,27 +27,27 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
 
     for _, _, pump in coordinator.omni.all_pumps.items():
         if pump.equip_type == PumpType.VARIABLE_SPEED:
-            for pumpSpeed in PumpSpeedPresets:
-                entities.append(OmniLogicPumpButtonEntity(coordinator=coordinator, equipment=pump, speed=pumpSpeed))
+            for pump_speed in PumpSpeedPresets:
+                entities.append(OmniLogicPumpButtonEntity(coordinator=coordinator, equipment=pump, speed=pump_speed))
 
     for _, _, filt in coordinator.omni.all_filters.items():
         if filt.equip_type == FilterType.VARIABLE_SPEED:
-            for filterSpeed in FilterSpeedPresets:
-                entities.append(OmniLogicFilterButtonEntity(coordinator=coordinator, equipment=filt, speed=filterSpeed))
+            for filter_speed in FilterSpeedPresets:
+                entities.append(OmniLogicFilterButtonEntity(coordinator=coordinator, equipment=filt, speed=filter_speed))
 
     entities.append(OmniLogicIdleButtonEntity(coordinator=coordinator, equipment=coordinator.omni.backyard))
 
     async_add_entities(entities)
 
 
-PumpTypeT = TypeVar("PumpTypeT", bound=Pump | Filter)
-SpeedPresetT = TypeVar("SpeedPresetT", bound=PumpSpeedPresets | FilterSpeedPresets)
+type PumpTypes = Pump | Filter
+type SpeedPresets = FilterSpeedPresets | PumpSpeedPresets
 
 
-class OmniLogicSpeedPresetButtonEntity(OmniLogicEntity[PumpTypeT], ButtonEntity):
+class OmniLogicSpeedPresetButtonEntity[PT: PumpTypes](OmniLogicEntity[PT], ButtonEntity):
     """Button entity for triggering a pump or filter speed preset."""
 
-    def __init__(self, coordinator: OmniLogicCoordinator, equipment: PumpTypeT, speed: FilterSpeedPresets | PumpSpeedPresets) -> None:
+    def __init__(self, coordinator: OmniLogicCoordinator, equipment: PT, speed: SpeedPresets) -> None:
         super().__init__(coordinator, equipment)
         self.speed = speed
 

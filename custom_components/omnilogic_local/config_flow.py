@@ -9,7 +9,7 @@ import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from homeassistant.config_entries import ConfigFlow, OptionsFlow
 from homeassistant.const import CONF_IP_ADDRESS, CONF_NAME, CONF_PORT, CONF_TIMEOUT
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import callback
 from homeassistant.exceptions import HomeAssistantError
 from pyomnilogic_local import OmniLogic
 
@@ -17,7 +17,6 @@ from .const import DOMAIN
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry, ConfigFlowResult
-    from homeassistant.core import HomeAssistant
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -32,7 +31,7 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
 )
 
 
-async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> None:
+async def validate_input(data: dict[str, Any]) -> None:
     """Validate the user input allows us to connect.
 
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
@@ -83,7 +82,7 @@ class OmnilogicConfigFlow(ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
         if user_input is not None:
             try:
-                await validate_input(self.hass, user_input)
+                await validate_input(user_input)
             except CannotConnect as exc:
                 errors["base"] = "cannot_connect"
                 _LOGGER.exception("Failed to connect: %s", exc)

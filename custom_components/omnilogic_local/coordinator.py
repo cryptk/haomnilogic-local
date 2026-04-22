@@ -13,14 +13,6 @@ if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
     from pyomnilogic_local import OmniLogic
 
-
-# Import diagnostic data to reproduce issues
-SIMULATION = False
-if SIMULATION:
-    # This line is only used during development when simulating a pool with diagnostic data
-    # Disable the pylint and mypy alerts that don't like it when this variable isn't defined
-    pass
-
 _LOGGER = logging.getLogger(__name__)
 
 

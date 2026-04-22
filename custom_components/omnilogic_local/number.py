@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from math import floor
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.number import NumberDeviceClass, NumberEntity, NumberMode
 from homeassistant.const import PERCENTAGE, UnitOfTemperature
@@ -65,8 +65,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
             case ChlorinatorDispenserType.LIQUID:
                 # Working in issue #116 on this support
                 pass
-            case ChlorinatorDispenserType.TABLET:
-                pass
             case _:
                 _LOGGER.warning(
                     "Your system has an unsupported chlorinator, please raise an issue: https://github.com/cryptk/haomnilogic-local/issues"
@@ -75,10 +73,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     async_add_entities(entities)
 
 
-PumpTypeT = TypeVar("PumpTypeT", bound=Pump | Filter)
+type PumpTypes = Pump | Filter
 
 
-class OmniLogicVSPNumberEntity(OmniLogicEntity[PumpTypeT], NumberEntity):
+class OmniLogicVSPNumberEntity[PT: PumpTypes](OmniLogicEntity[PT], NumberEntity):
     """Number entity for variable speed pump or filter speed control."""
 
     _attr_icon: str = "mdi:gauge"
