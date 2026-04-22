@@ -43,6 +43,7 @@ body:
         - None
         - Ethernet
         - Wi-Fi
+      default: 0
     validations:
       required: true
   - type: upload
