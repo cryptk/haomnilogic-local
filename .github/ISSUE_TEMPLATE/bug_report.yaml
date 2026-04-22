@@ -11,11 +11,12 @@ body:
         and [diagnostic data](https://www.home-assistant.io/docs/configuration/troubleshooting/#download-diagnostics) if possible.
   - type: checkboxes
     id: have_searched
-    label: Is there an existing issue for this?
-    description: Please search to see if an issue already exists for the bug you encountered.
-    options:
-      - label: I have searched the existing issues
-        required: true
+    attributes:
+      label: Is there an existing issue for this?
+      description: Please search to see if an issue already exists for the bug you encountered.
+      options:
+        - label: I have searched the existing issues
+          required: true
   - type: textarea
     id: bug_description
     attributes:
@@ -37,10 +38,11 @@ body:
         ...
   - type: dropdown
     id: connection_type
-    description: How is your OmniLogic connected to the network?
-    options:
-      - Ethernet
-      - Wi-Fi
+    attributes:
+      label: How is your OmniLogic connected to the network?
+      options:
+        - Ethernet
+        - Wi-Fi
     validations:
       required: true
   - type: upload
