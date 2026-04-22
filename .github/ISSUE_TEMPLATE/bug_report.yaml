@@ -1,0 +1,50 @@
+name: Bug Report
+description: Have you experienced a problem? Use this option to report it!
+title: "[BUG] - "
+labels: bug
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Please complete this form as completely as possible. The higher quality the bug report, the
+        better chances that it can be resolved in a timely fashion. Please attach [debug logs](https://www.home-assistant.io/docs/configuration/troubleshooting/#enabling-debug-logging)
+        and [diagnostic data](https://www.home-assistant.io/docs/configuration/troubleshooting/#download-diagnostics) if possible.
+  - type: checkboxes
+    id: have_searched
+    label: Is there an existing issue for this?
+    description: Please search to see if an issue already exists for the bug you encountered.
+    options:
+      - label: I have searched the existing issues
+        required: true
+  - type: textarea
+    id: bug_description
+    attributes:
+      label: Bug Description
+      description: Please describe the bug you encountered.
+      placeholder: "Example: Error logged about failing to parse Telemetry/MSP Config/etc."
+      value: bug description
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction_steps
+    attributes:
+      label: Reproduction Steps
+      description: If you are able to reproduce this bug, please provide a step-by-step description of how to reproduce the bug.
+      value: |-
+        1.
+        2.
+        3.
+        ...
+  - type: dropdown
+    id: connection_type
+    description: How is your OmniLogic connected to the network?
+    options:
+      - Ethernet
+      - Wi-Fi
+    validations:
+      required: true
+  - type: upload
+    id: attachments
+    attributes:
+      label: Attachments
+      description: Please attach any supporting files such as diagnostic data, debug logs, screenshots, etc.

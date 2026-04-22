@@ -54,25 +54,29 @@ in
   name = "haomnilogic-fhs";
   targetPkgs =
     pkgs: with pkgs; [
+      # System utilities
+      jq
+      nodejs
       python314
-      uv
       stdenv.cc.cc.lib
-      zlib
-      zlib.dev
+      uv
+
+      # Home Assistant build dependencies
+      autoconf
       bashInteractive
-      pkg-config
-      libffi
-      libffi.dev
-      openssl
-      openssl.dev
       ffmpeg
       gcc
-      autoconf
+      libffi
+      libffi.dev
       libjpeg_turbo
       libpcap
-      jq
+      openssl
+      openssl.dev
+      pkg-config
       yq-go
       zip
+      zlib
+      zlib.dev
     ];
 
   runScript = "bash --rcfile ${shellInit}";
