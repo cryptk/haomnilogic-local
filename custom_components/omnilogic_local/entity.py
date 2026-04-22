@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import Any, Generic, TypeVar, cast
+from typing import Any, cast
 
 from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -30,9 +30,8 @@ from .coordinator import OmniLogicCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
-EquipmentTypes = TypeVar(
-    "EquipmentTypes",
-    bound=CSAD
+type OmnilogicEquipment = (
+    CSAD
     | Backyard
     | Bow
     | Chlorinator
@@ -46,11 +45,11 @@ EquipmentTypes = TypeVar(
     | Pump
     | Relay
     | Schedule
-    | Sensor,
+    | Sensor
 )
 
 
-class OmniLogicEntity(CoordinatorEntity[OmniLogicCoordinator], Generic[EquipmentTypes]):
+class OmniLogicEntity[EquipmentTypes: OmnilogicEquipment](CoordinatorEntity[OmniLogicCoordinator]):
     _attr_has_entity_name = True
 
     equipment: EquipmentTypes

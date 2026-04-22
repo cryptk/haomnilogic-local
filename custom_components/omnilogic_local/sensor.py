@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Literal, cast
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorStateClass
 from homeassistant.const import CONCENTRATION_PARTS_PER_MILLION, UnitOfPower, UnitOfTemperature
@@ -104,10 +104,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     async_add_entities(entities)
 
 
-SensedEquipmentT = TypeVar("SensedEquipmentT", bound=Backyard | Bow | HeaterEquipment)
+type SensedEquipment = Backyard | Bow | HeaterEquipment
 
 
-class OmniLogicTemperatureSensorEntity(OmniLogicEntity[Sensor], SensorEntity, Generic[SensedEquipmentT]):
+class OmniLogicTemperatureSensorEntity[SensedEquipment](OmniLogicEntity[Sensor], SensorEntity):
     """Sensor entity for temperature readings from pool equipment.
 
     Temperature sensors don't have their own telemetry - the readings come from the parent
@@ -125,8 +125,8 @@ class OmniLogicTemperatureSensorEntity(OmniLogicEntity[Sensor], SensorEntity, Ge
         super().__init__(coordinator, sensor)
 
     @property
-    def sensed_equipment(self) -> SensedEquipmentT:
-        return cast(SensedEquipmentT, self.coordinator.omni.get_equipment_by_id(self.sensed_id))
+    def sensed_equipment(self) -> SensedEquipment:
+        return cast(SensedEquipment, self.coordinator.omni.get_equipment_by_id(self.sensed_id))
 
     @property
     def native_unit_of_measurement(self) -> str | None:
