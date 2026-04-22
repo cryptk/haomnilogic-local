@@ -49,7 +49,10 @@ class OmniLogicCoordinator(DataUpdateCoordinator[None]):
     async def _async_update_data(self) -> None:
         """Update data via library."""
         try:
-            await self.omni.refresh(force=True)
+            # This ensures that telemetry is updated on every refresh
+            # The MSP Config will be refreshed if the stored config checksum doesn't match the
+            # config checksum in the telemetry.
+            await self.omni.refresh(force_telemetry=True)
         except Exception as err:
             err_name = type(err).__name__
             self.failure_counts[err_name] = self.failure_counts.get(err_name, 0) + 1
