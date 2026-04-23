@@ -17,6 +17,10 @@ body:
       options:
         - label: I have searched the existing issues
           required: true
+        - label: >
+            I have either added [diagnostic data](https://www.home-assistant.io/docs/configuration/troubleshooting/#download-diagnostics) or
+            I understand that the ability to assist may be limited without it (please upload diagnostics if at all possible).
+          required: true
   - type: textarea
     id: bug_description
     attributes:
@@ -40,7 +44,7 @@ body:
     attributes:
       label: How is your OmniLogic connected to the network?
       options:
-        -
+        - Select One
         - Ethernet
         - Wi-Fi
     validations:
