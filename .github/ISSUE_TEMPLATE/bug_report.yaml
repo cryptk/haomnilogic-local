@@ -9,6 +9,11 @@ body:
         Please complete this form as completely as possible. The higher quality the bug report, the
         better chances that it can be resolved in a timely fashion. Please attach [debug logs](https://www.home-assistant.io/docs/configuration/troubleshooting/#enabling-debug-logging)
         and [diagnostic data](https://www.home-assistant.io/docs/configuration/troubleshooting/#download-diagnostics) if possible.
+
+
+        $${\color{red}IMPORTANT}$$: Please do not paste logs into the description or reproduction steps, GitHub will try to parse them and it will mangle the
+        logs making them far less useful. Please place logs either in the "Relevant Logs" text box below, or attach them as an upload at the
+        end of the form.
   - type: checkboxes
     id: have_searched
     attributes:
@@ -39,6 +44,16 @@ body:
         2.
         3.
         ...
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Logs
+      description: >
+        Please only place logs either in this text box, or attach them as an upload at the end of the form.
+
+        DO NOT paste logs into the description or reproduction steps, GitHub will try to parse them and it will mangle the logs
+        making them far less useful.
+      render: text
   - type: dropdown
     id: connection_type
     attributes:
