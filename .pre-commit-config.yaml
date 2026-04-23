@@ -45,7 +45,7 @@ repos:
     hooks:
       - id: mypy
         additional_dependencies:
-          - "python-omnilogic-local>=0.28.1"
+          - "python-omnilogic-local>=1.0.0"
           - "pydantic>=2.0.0"
           - "pytest>=8.0.0"
           - "homeassistant>=2025.1.2"
