@@ -40,7 +40,7 @@ body:
     attributes:
       label: How is your OmniLogic connected to the network?
       options:
-        - Select One
+        - ""
         - Ethernet
         - Wi-Fi
     validations:
