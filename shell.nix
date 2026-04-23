@@ -48,6 +48,7 @@ let
     fi
 
     alias run-core="hass -c dev_files/home-assistant-core/config --skip-pip-packages python-omnilogic-local"
+    alias update-library="uv lock --refresh --upgrade-package python-omnilogic-local"
   '';
 in
 (pkgs.buildFHSEnv {
@@ -60,6 +61,7 @@ in
       python314
       stdenv.cc.cc.lib
       uv
+      wget
 
       # Home Assistant build dependencies
       autoconf
