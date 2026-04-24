@@ -23,8 +23,14 @@ body:
         - label: I have searched the existing issues
           required: true
         - label: >
-            I have either added [diagnostic data](https://www.home-assistant.io/docs/configuration/troubleshooting/#download-diagnostics) or
-            I understand that the ability to assist may be limited without it (please upload diagnostics if at all possible).
+            I have added [diagnostic data](https://www.home-assistant.io/docs/configuration/troubleshooting/#download-diagnostics)
+            file as an upload at the end of the form or. I understand that the ability to assist IS limited without it
+            (please upload diagnostics if at all possible).
+          required: true
+        - label: >
+            I have either added [debug logs](https://www.home-assistant.io/docs/configuration/troubleshooting/#enabling-debug-logging) or
+            to the section marked "Debug Logs" or attached the debug log file as an upload at the end of the form. I understand that the
+            ability to assist IS limited without it (add debug logs if at all possible).
           required: true
   - type: textarea
     id: bug_description
@@ -47,7 +53,7 @@ body:
   - type: textarea
     id: logs
     attributes:
-      label: Relevant Logs
+      label: Debug Logs
       description: >
         Please only place logs either in this text box, or attach them as an upload at the end of the form.
 
