@@ -36,7 +36,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
             case SensorType.AIR_TEMP:
                 entities.append(OmniLogicAirTemperatureSensorEntity(coordinator=coordinator, sensor=sensor))
             case SensorType.WATER_TEMP:
-                if sensor.bow_id not in [None, -1]:
+                if sensor.bow_id not in [None, -1]:  # https://github.com/cryptk/haomnilogic-local/issues/238
                     _LOGGER.debug(sensor.bow_id)
                     entities.append(OmniLogicWaterTemperatureSensorEntity(coordinator=coordinator, sensor=sensor))
                 else:
