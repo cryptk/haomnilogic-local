@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import SCAN_INTERVAL
+from .const import SCAN_INTERVAL, UPDATE_DELAY_SECONDS
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -49,3 +49,11 @@ class OmniLogicCoordinator(DataUpdateCoordinator[None]):
             err_name = type(err).__name__
             self.failure_counts[err_name] = self.failure_counts.get(err_name, 0) + 1
             raise UpdateFailed("Failed to update data from OmniLogic") from err
+
+    def do_next_refresh_after(self, delay: float = UPDATE_DELAY_SECONDS) -> None:
+        """Delay the next refresh by a given number of seconds."""
+
+        _LOGGER.debug("Performing next refresh in %s seconds", delay)
+
+        self._retry_after = delay
+        self._schedule_refresh()
