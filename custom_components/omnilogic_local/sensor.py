@@ -36,7 +36,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
             case SensorType.AIR_TEMP:
                 entities.append(OmniLogicAirTemperatureSensorEntity(coordinator=coordinator, sensor=sensor))
             case SensorType.WATER_TEMP:
-                entities.append(OmniLogicWaterTemperatureSensorEntity(coordinator=coordinator, sensor=sensor))
+                if sensor.bow_id not in [None, -1]:  # https://github.com/cryptk/haomnilogic-local/issues/238
+                    _LOGGER.debug(sensor.bow_id)
+                    entities.append(OmniLogicWaterTemperatureSensorEntity(coordinator=coordinator, sensor=sensor))
+                else:
+                    _LOGGER.warning("Water temperature sensor %s does not have a bow_id, skipping", sensor.name)
             case SensorType.SOLAR_TEMP:
                 # Reference https://github.com/cryptk/haomnilogic-local/issues/60 for why we do this
                 # If a BoW has more than one solar temperature sensor, we need to only configure the sensors that are associated with actual
