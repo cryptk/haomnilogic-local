@@ -136,7 +136,7 @@ class OmniLogicLightEntity(OmniLogicEntity[ColorLogicLight], LightEntity):
             )
         except OmniEquipmentNotInitializedError as exc:
             raise HomeAssistantError("Light is not yet initialized, try again later.") from exc
-        await self.schedule_delayed_update()
+        self.coordinator.do_next_refresh_after()
 
     # The "Any" below here isn't great, we should create a type for this later
     async def async_turn_off(self, **kwargs: Any) -> None:
@@ -147,4 +147,4 @@ class OmniLogicLightEntity(OmniLogicEntity[ColorLogicLight], LightEntity):
         if not self.equipment.is_ready:
             raise HomeAssistantError("Light is in state %s and cannot be turned off yet, try again later." % str(self.equipment.state))
         await self.equipment.turn_off()
-        await self.schedule_delayed_update()
+        self.coordinator.do_next_refresh_after()

@@ -79,10 +79,10 @@ class OmniLogicValveEntity(OmniLogicEntity[Relay], ValveEntity):
         """Open the valve."""
         _LOGGER.debug("opening valve ID: %s", self.system_id)
         await self.equipment.turn_on()
-        await self.schedule_delayed_update()
+        self.coordinator.do_next_refresh_after()
 
     async def async_close_valve(self, **kwargs: Any) -> None:
         """Close the valve."""
         _LOGGER.debug("closing valve ID: %s", self.system_id)
         await self.equipment.turn_off()
-        await self.schedule_delayed_update()
+        self.coordinator.do_next_refresh_after()
