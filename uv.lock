@@ -329,15 +329,15 @@ wheels = [
 
 [[package]]
 name = "python-omnilogic-local"
-version = "1.1.0"
+version = "1.1.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
     { name = "xmltodict" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/74/a4/7e31d946783dec4a230f6a1c786da4a424fd4ea9c05ac660a3e2379dad19/python_omnilogic_local-1.1.0.tar.gz", hash = "sha256:83dd9366816c8358884acf8c717b47d479f161f0909f971177a08bb8eeeccf34", size = 83123, upload-time = "2026-04-27T04:04:46.79Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/0b/ff/32984745dfad54ce60956acd4dfa2ddeb056446d2753302933c22b10edcf/python_omnilogic_local-1.1.1.tar.gz", hash = "sha256:b99e15e22e7e50d8c58bfe568663f9a18a342469f615ab89a3cad8771a523f7a", size = 83104, upload-time = "2026-04-28T03:08:17.608Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/96/2c/8f274c4e0cff528ee72f09798c29d9e0a19db1e60015ded88197622d9cdc/python_omnilogic_local-1.1.0-py3-none-any.whl", hash = "sha256:4fd6811b2067d98dd1ee160015aef038a652a57bedb616c663a47f78c795f2a6", size = 118135, upload-time = "2026-04-27T04:04:45.322Z" },
+    { url = "https://files.pythonhosted.org/packages/82/e6/d98b0376b0ddb52753223a76ba01b89c4f6ae6adc7b5987321485eeb146f/python_omnilogic_local-1.1.1-py3-none-any.whl", hash = "sha256:235c400c0bf213f0b983c3eb37ee6d75f1b8022f39e1943c7d32ef992ec0c699", size = 118126, upload-time = "2026-04-28T03:08:16.12Z" },
 ]
 
 [[package]]

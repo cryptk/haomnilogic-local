@@ -4,7 +4,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from homeassistant.components.binary_sensor import BinarySensorDeviceClass, BinarySensorEntity
-from pyomnilogic_local import Backyard, Bow, HeaterEquipment
+from pyomnilogic_local import Backyard, Bow, Chlorinator, HeaterEquipment
 
 from .const import DOMAIN, KEY_COORDINATOR
 from .coordinator import OmniLogicCoordinator
@@ -43,6 +43,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
             OmniLogicFlowBinarySensorEntity(
                 coordinator=coordinator,
                 equipment=bow,
+            )
+        )
+
+    for _, _, chlorinator in coordinator.omni.all_chlorinators.items():
+        entities.append(
+            OmniLogicChlorinatorGeneratingSensorEntity(
+                coordinator=coordinator,
+                equipment=chlorinator,
+            )
+        )
+        entities.append(
+            OmniLogicChlorinatorSuperChlorinatingSensorEntity(
+                coordinator=coordinator,
+                equipment=chlorinator,
             )
         )
 
@@ -98,3 +112,27 @@ class OmniLogicFlowBinarySensorEntity(OmniLogicEntity[Bow], BinarySensorEntity):
     @property
     def is_on(self) -> bool | None:
         return self.equipment.flow
+
+
+class OmniLogicChlorinatorGeneratingSensorEntity(OmniLogicEntity[Chlorinator], BinarySensorEntity):
+    """Binary sensor entity for chlorinator generating status."""
+
+    @property
+    def name(self) -> str:
+        return f"{self.equipment.name} Generating"
+
+    @property
+    def is_on(self) -> bool | None:
+        return self.equipment.is_generating
+
+
+class OmniLogicChlorinatorSuperChlorinatingSensorEntity(OmniLogicEntity[Chlorinator], BinarySensorEntity):
+    """Binary sensor entity for chlorinator super-chlorinating status."""
+
+    @property
+    def name(self) -> str:
+        return f"{self.equipment.name} Super-Chlorinating"
+
+    @property
+    def is_on(self) -> bool | None:
+        return self.equipment.sc_mode != 0
