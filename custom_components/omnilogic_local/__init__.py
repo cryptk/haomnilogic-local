@@ -190,7 +190,16 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
                 entity.unique_id,
                 new_unique_id,
             )
+            overwrite_entity = entity_registry.async_get_entity_id(entity.domain, entity.platform, new_unique_id)
+            if overwrite_entity is not None:
+                _LOGGER.warning(
+                    "Entity with unique_id '%s' already exists as '%s', taking over unique_id and removing old entity.",
+                    new_unique_id,
+                    overwrite_entity,
+                )
+                entity_registry.async_remove(overwrite_entity)
             entity_registry.async_update_entity(entity.entity_id, new_unique_id=new_unique_id)
+
         hass.config_entries.async_update_entry(config_entry, version=5)
 
     _LOGGER.info("Migration to version %s successful", config_entry.version)
