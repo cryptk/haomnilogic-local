@@ -5,8 +5,8 @@ from math import floor
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.number import NumberDeviceClass, NumberEntity, NumberMode
-from homeassistant.const import PERCENTAGE, UnitOfTemperature
-from pyomnilogic_local import Chlorinator, Filter, Heater, Pump
+from homeassistant.const import PERCENTAGE, UnitOfElectricPotential, UnitOfTemperature
+from pyomnilogic_local import CSAD, Chlorinator, Filter, Heater, Pump
 from pyomnilogic_local.omnitypes import (
     ChlorinatorDispenserType,
     ChlorinatorOperatingMode,
@@ -54,14 +54,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     for _, _, chlorinator in coordinator.omni.all_chlorinators.items():
         match chlorinator.dispenser_type:
             case ChlorinatorDispenserType.SALT:
-                match chlorinator.operating_mode:
-                    case ChlorinatorOperatingMode.TIMED:
-                        entities.append(OmniLogicChlorinatorTimedPercentNumberEntity(coordinator=coordinator, equipment=chlorinator))
-                    case ChlorinatorOperatingMode.ORP_AUTO | ChlorinatorOperatingMode.ORP_TIMED_RW:
-                        _LOGGER.warning(
-                            "Chlorinator ORP control is not supported yet, "
-                            "please raise an issue: https://github.com/cryptk/haomnilogic-local/issues"
-                        )
+                entities.append(OmniLogicChlorinatorTimedPercentNumberEntity(coordinator=coordinator, equipment=chlorinator))
             case ChlorinatorDispenserType.LIQUID:
                 # Working in issue #116 on this support
                 pass
@@ -69,6 +62,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
                 _LOGGER.warning(
                     "Your system has an unsupported chlorinator, please raise an issue: https://github.com/cryptk/haomnilogic-local/issues"
                 )
+    for _, _, csad in coordinator.omni.all_csads.items():
+        entities.append(OmniLogicCSADpHNumberEntity(coordinator=coordinator, equipment=csad))
+        entities.append(OmniLogicCSADORPNumberEntity(coordinator=coordinator, equipment=csad))
 
     async_add_entities(entities)
 
@@ -191,9 +187,69 @@ class OmniLogicChlorinatorTimedPercentNumberEntity(OmniLogicEntity[Chlorinator],
     _attr_mode = NumberMode.BOX
 
     @property
+    def available(self) -> bool:
+        return super().available and self.equipment.operating_mode == ChlorinatorOperatingMode.TIMED
+
+    @property
     def native_value(self) -> float | None:
         return self.equipment.timed_percent_telemetry
 
     async def async_set_native_value(self, value: float) -> None:
         await self.equipment.set_timed_percent(int(value))
+        self.coordinator.do_next_refresh_after()
+
+
+class OmniLogicCSADORPNumberEntity(OmniLogicEntity[CSAD], NumberEntity):
+    """Number entity for CSAD ORP control."""
+
+    _attr_name = "CSAD ORP"
+    _attr_native_max_value = 900
+    _attr_native_min_value = 400
+    _attr_native_step = 1
+    _attr_native_unit_of_measurement = UnitOfElectricPotential.MILLIVOLT
+    _attr_mode = NumberMode.BOX
+
+    _chlorinator: Chlorinator | None = None
+
+    def __init__(
+        self,
+        coordinator: OmniLogicCoordinator,
+        equipment: CSAD,
+    ) -> None:
+        super().__init__(coordinator, equipment)
+        bow = coordinator.omni.backyard.bow[equipment.bow_id] if equipment.bow_id is not None else None
+        self._chlorinator = bow.chlorinator if bow is not None else None
+
+    @property
+    def available(self) -> bool:
+        # This entity is only available if we have a chlorinator in ORP_AUTO mode, which means we have a CSAD to control it
+        if self._chlorinator is None:
+            return False
+        return super().available and self._chlorinator.operating_mode == ChlorinatorOperatingMode.ORP_AUTO
+
+    @property
+    def native_value(self) -> float | None:
+        return self.equipment.orp_target_level
+
+    async def async_set_native_value(self, value: float) -> None:
+        await self.equipment.set_orp_target(int(value))
+        self.coordinator.do_next_refresh_after()
+
+
+class OmniLogicCSADpHNumberEntity(OmniLogicEntity[CSAD], NumberEntity):
+    """Number entity for CSAD pH control."""
+
+    _attr_name = "CSAD pH"
+    _attr_native_max_value = 8.0
+    _attr_native_min_value = 7.0
+    _attr_native_step = 0.1
+    _attr_native_unit_of_measurement = "pH"
+    _attr_mode = NumberMode.BOX
+
+    @property
+    def native_value(self) -> float | None:
+        return self.equipment.ph_target_level
+
+    async def async_set_native_value(self, value: float) -> None:
+        await self.equipment.set_ph_target(value)
         self.coordinator.do_next_refresh_after()

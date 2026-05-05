@@ -1,14 +1,19 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from collections.abc import Callable
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, Any
 
-from homeassistant.components.binary_sensor import BinarySensorDeviceClass, BinarySensorEntity
+from homeassistant.components.binary_sensor import BinarySensorDeviceClass, BinarySensorEntity, BinarySensorEntityDescription
+from homeassistant.const import EntityCategory
 from pyomnilogic_local import Backyard, Bow, Chlorinator, HeaterEquipment
+from pyomnilogic_local.omnitypes import ChlorinatorAlert, ChlorinatorError, ChlorinatorStatus
 
 from .const import DOMAIN, KEY_COORDINATOR
 from .coordinator import OmniLogicCoordinator
 from .entity import OmniLogicEntity
+from .typing import OmniLogicEquipment
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
@@ -17,6 +22,46 @@ if TYPE_CHECKING:
 
 
 _LOGGER = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True, kw_only=True)
+class OmniLogicBinarySensorEntityDescription(BinarySensorEntityDescription):
+    """Describes an OmniLogic binary sensor entity"""
+
+    extra_state_attributes_fn: Callable[[OmniLogicEquipment], dict[str, Any]] = field(default_factory=lambda: lambda _: {})
+    value_fn: Callable[[OmniLogicEquipment], bool | None]
+
+
+CHLORINATOR_BINARY_SENSORS: tuple[OmniLogicBinarySensorEntityDescription, ...] = (
+    OmniLogicBinarySensorEntityDescription(
+        key="generating",
+        name="Generating",
+        value_fn=lambda equipment: equipment.is_generating if isinstance(equipment, Chlorinator) else None,
+    ),
+    OmniLogicBinarySensorEntityDescription(
+        key="error_present",
+        name="Error Present",
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        extra_state_attributes_fn=lambda equipment: (
+            {"error_messages": equipment.error_messages} if isinstance(equipment, Chlorinator) else {}
+        ),
+        value_fn=lambda equipment: equipment.has_error if isinstance(equipment, Chlorinator) else None,
+    ),
+    OmniLogicBinarySensorEntityDescription(
+        key="alert_present",
+        name="Alert Present",
+        device_class=BinarySensorDeviceClass.PROBLEM,
+        extra_state_attributes_fn=lambda equipment: (
+            {"alert_messages": equipment.alert_messages} if isinstance(equipment, Chlorinator) else {}
+        ),
+        value_fn=lambda equipment: equipment.has_alert if isinstance(equipment, Chlorinator) else None,
+    ),
+    OmniLogicBinarySensorEntityDescription(
+        key="super_chlorinating",
+        name="Super-Chlorinating",
+        value_fn=lambda equipment: (equipment.sc_mode != 0) if isinstance(equipment, Chlorinator) else None,
+    ),
+)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback) -> None:
@@ -47,18 +92,53 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
         )
 
     for _, _, chlorinator in coordinator.omni.all_chlorinators.items():
-        entities.append(
-            OmniLogicChlorinatorGeneratingSensorEntity(
+        entities.extend(
+            OmniLogicChlorinatorBinarySensorEntity(
                 coordinator=coordinator,
                 equipment=chlorinator,
+                entity_description=description,
             )
+            for description in CHLORINATOR_BINARY_SENSORS
         )
-        entities.append(
-            OmniLogicChlorinatorSuperChlorinatingSensorEntity(
-                coordinator=coordinator,
-                equipment=chlorinator,
-            )
+
+    # Create binary sensor entities for each chlorinator status, alert, and error message
+    status_flags_filter: list[ChlorinatorStatus] = [
+        # We create a non-diagnostic binary sensor for these as they are more commonly used
+        ChlorinatorStatus.GENERATING,
+        ChlorinatorStatus.ALERT_PRESENT,
+        ChlorinatorStatus.ERROR_PRESENT,
+    ]
+    entities.extend(
+        OmniLogicChlorinatorStatusBinarySensorEntity(
+            coordinator=coordinator,
+            equipment=chlorinator,
+            needle=statusFlag,
+            haystack=chlorinator.status,
         )
+        for statusFlag in ChlorinatorStatus
+        if statusFlag not in status_flags_filter
+        for _, _, chlorinator in coordinator.omni.all_chlorinators.items()
+    )
+    entities.extend(
+        OmniLogicChlorinatorStatusBinarySensorEntity(
+            coordinator=coordinator,
+            equipment=chlorinator,
+            needle=statusFlag,
+            haystack=chlorinator.alert_messages,
+        )
+        for _, _, chlorinator in coordinator.omni.all_chlorinators.items()
+        for statusFlag in ChlorinatorAlert
+    )
+    entities.extend(
+        OmniLogicChlorinatorStatusBinarySensorEntity(
+            coordinator=coordinator,
+            equipment=chlorinator,
+            needle=statusFlag,
+            haystack=chlorinator.error_messages,
+        )
+        for _, _, chlorinator in coordinator.omni.all_chlorinators.items()
+        for statusFlag in ChlorinatorError
+    )
 
     async_add_entities(entities)
 
@@ -114,25 +194,45 @@ class OmniLogicFlowBinarySensorEntity(OmniLogicEntity[Bow], BinarySensorEntity):
         return self.equipment.flow
 
 
-class OmniLogicChlorinatorGeneratingSensorEntity(OmniLogicEntity[Chlorinator], BinarySensorEntity):
+class OmniLogicChlorinatorBinarySensorEntity(OmniLogicEntity[Chlorinator], BinarySensorEntity):
     """Binary sensor entity for chlorinator generating status."""
 
+    entity_description: OmniLogicBinarySensorEntityDescription
+
+    def __init__(
+        self,
+        coordinator: OmniLogicCoordinator,
+        equipment: Chlorinator,
+        entity_description: OmniLogicBinarySensorEntityDescription,
+    ) -> None:
+        super().__init__(coordinator, equipment)
+        self.entity_description = entity_description
+        self._attr_name = f"{equipment.name} {str(entity_description.name)}" if hasattr(entity_description, "name") else None
+        self._attr_is_on = entity_description.value_fn(equipment)
+
     @property
-    def name(self) -> str:
-        return f"{self.equipment.name} Generating"
+    def _extra_state_attributes(self) -> dict[str, Any]:
+        return self.entity_description.extra_state_attributes_fn(self.equipment)
+
+
+class OmniLogicChlorinatorStatusBinarySensorEntity(OmniLogicEntity[Chlorinator], BinarySensorEntity):
+    """Binary sensor entity for chlorinator status (e.g. alerts, errors)."""
+
+    _attr_entity_category = EntityCategory.DIAGNOSTIC
+    _attr_entity_registry_enabled_default = False
+
+    def __init__(
+        self,
+        coordinator: OmniLogicCoordinator,
+        equipment: Chlorinator,
+        needle: ChlorinatorStatus | ChlorinatorAlert | ChlorinatorError,
+        haystack: list[str],
+    ) -> None:
+        super().__init__(coordinator, equipment)
+        self._needle = needle
+        self._haystack = haystack
+        self._attr_name = f"{self.equipment.name} {self._needle}"
 
     @property
     def is_on(self) -> bool | None:
-        return self.equipment.is_generating
-
-
-class OmniLogicChlorinatorSuperChlorinatingSensorEntity(OmniLogicEntity[Chlorinator], BinarySensorEntity):
-    """Binary sensor entity for chlorinator super-chlorinating status."""
-
-    @property
-    def name(self) -> str:
-        return f"{self.equipment.name} Super-Chlorinating"
-
-    @property
-    def is_on(self) -> bool | None:
-        return self.equipment.sc_mode != 0
+        return self._needle.name in self._haystack

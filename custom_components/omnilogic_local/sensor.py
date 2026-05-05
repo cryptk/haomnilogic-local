@@ -37,7 +37,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
                 entities.append(OmniLogicAirTemperatureSensorEntity(coordinator=coordinator, sensor=sensor))
             case SensorType.WATER_TEMP:
                 if sensor.bow_id not in [None, -1]:  # https://github.com/cryptk/haomnilogic-local/issues/238
-                    _LOGGER.debug(sensor.bow_id)
                     entities.append(OmniLogicWaterTemperatureSensorEntity(coordinator=coordinator, sensor=sensor))
                 else:
                     _LOGGER.warning("Water temperature sensor %s does not have a bow_id, skipping", sensor.name)
@@ -248,18 +247,19 @@ class OmniLogicCSADAcidPhEntity(OmniLogicEntity[CSAD], SensorEntity):
 
     @property
     def native_value(self) -> StateType | date | datetime | Decimal:
-        return self.equipment.current_ph + self.equipment.calibration_value
+        # ph_current_value already includes the calibration value, so we can just return it directly
+        return self.equipment.ph_current_value
 
     @property
     def _extra_state_attributes(self) -> dict[str, Any]:
         return {
-            "omni_orp": self.equipment.current_orp,
+            "omni_orp": self.equipment.orp_current_level,
             "omni_mode": str(self.equipment.mode),
-            "omni_target_value": self.equipment.target_ph,
-            "omni_ph_value_raw": self.equipment.current_ph,
-            "omni_calibration_value": self.equipment.calibration_value,
-            "omni_ph_low_alarm_value": self.equipment.ph_low_alarm,
-            "omni_ph_high_alarm_value": self.equipment.ph_high_alarm,
+            "omni_target_value": self.equipment.ph_target_level,
+            "omni_ph_value_raw": self.equipment.ph_current_value_raw,
+            "omni_calibration_value": self.equipment.ph_calibration_value,
+            "omni_ph_low_alarm_value": self.equipment.ph_low_alarm_level,
+            "omni_ph_high_alarm_value": self.equipment.ph_high_alarm_level,
         }
 
 
@@ -271,7 +271,7 @@ class OmniLogicCSADAcidORPEntity(OmniLogicEntity[CSAD], SensorEntity):
 
     @property
     def native_value(self) -> StateType | date | datetime | Decimal:
-        return self.equipment.current_orp
+        return self.equipment.orp_current_level
 
     @property
     def _extra_state_attributes(self) -> dict[str, Any]:

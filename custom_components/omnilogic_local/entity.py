@@ -6,49 +6,15 @@ from typing import Any, cast
 from homeassistant.core import callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from pyomnilogic_local import (
-    CSAD,
-    Backyard,
-    Bow,
-    Chlorinator,
-    ChlorinatorEquipment,
-    ColorLogicLight,
-    CSADEquipment,
-    Filter,
-    Group,
-    Heater,
-    HeaterEquipment,
-    Pump,
-    Relay,
-    Schedule,
-    Sensor,
-)
 
 from .const import BACKYARD_SYSTEM_ID, DOMAIN, MANUFACTURER
 from .coordinator import OmniLogicCoordinator
+from .typing import OmniLogicEquipment
 
 _LOGGER = logging.getLogger(__name__)
 
-type OmnilogicEquipment = (
-    CSAD
-    | Backyard
-    | Bow
-    | Chlorinator
-    | ChlorinatorEquipment
-    | ColorLogicLight
-    | CSADEquipment
-    | Filter
-    | Group
-    | Heater
-    | HeaterEquipment
-    | Pump
-    | Relay
-    | Schedule
-    | Sensor
-)
 
-
-class OmniLogicEntity[EquipmentTypes: OmnilogicEquipment](CoordinatorEntity[OmniLogicCoordinator]):
+class OmniLogicEntity[EquipmentTypes: OmniLogicEquipment](CoordinatorEntity[OmniLogicCoordinator]):
     _attr_has_entity_name = True
 
     equipment: EquipmentTypes
@@ -87,7 +53,7 @@ class OmniLogicEntity[EquipmentTypes: OmnilogicEquipment](CoordinatorEntity[Omni
     def device_info(self) -> DeviceInfo:
         """Return the device info."""
         # If we have a BOW ID, then we associate with that BOWs device, if not, we associate with the Backyard
-        if self.equipment.bow_id is not None and self.equipment.bow_id != -1:
+        if self.equipment.bow_id is not None and self.equipment.bow_id != BACKYARD_SYSTEM_ID:
             identifiers = {(DOMAIN, f"bow_{self.bow_id}")}
         else:
             identifiers = {(DOMAIN, f"backyard_{BACKYARD_SYSTEM_ID}")}
