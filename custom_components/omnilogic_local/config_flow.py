@@ -75,7 +75,7 @@ class OptionsFlowHandler(OptionsFlow):
 class OmnilogicConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for OmniLogic Local."""
 
-    VERSION = 4
+    VERSION = 5
 
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle the initial step."""

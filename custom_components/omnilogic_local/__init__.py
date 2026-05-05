@@ -173,6 +173,26 @@ async def async_migrate_entry(hass: HomeAssistant, config_entry: ConfigEntry) ->
         new = {k: v for k, v in config_entry.data.items() if k != CONF_SCAN_INTERVAL}
         hass.config_entries.async_update_entry(config_entry, data=new, version=4)
 
+    if config_entry.version == 4:
+        # Migrate entity unique_ids for backyard entities from "-1 X Y" to "0 X Y"
+        entity_registry = er.async_get(hass)
+        entities = er.async_entries_for_config_entry(entity_registry, config_entry.entry_id)
+
+        for entity in entities:
+            parts = entity.unique_id.split(" ")
+            if parts[0] != "-1":
+                continue
+            parts[0] = "0"
+            new_unique_id = " ".join(parts)
+            _LOGGER.debug(
+                "Migrating entity %s unique_id from '%s' to '%s'",
+                entity.entity_id,
+                entity.unique_id,
+                new_unique_id,
+            )
+            entity_registry.async_update_entity(entity.entity_id, new_unique_id=new_unique_id)
+        hass.config_entries.async_update_entry(config_entry, version=5)
+
     _LOGGER.info("Migration to version %s successful", config_entry.version)
 
     return True
