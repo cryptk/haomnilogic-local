@@ -58,6 +58,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     device_registry = dr.async_get(hass)
 
+    # Create a device for the Omni System if needed
+    if len(coordinator.omni.groups) > 0:
+        _LOGGER.debug("Creating device for system")
+        device_registry.async_get_or_create(
+            config_entry_id=entry.entry_id,
+            identifiers={(DOMAIN, "system")},
+            manufacturer="Hayward",
+            suggested_area="Back Yard",
+            name=f"{entry.data[CONF_NAME]} System",
+        )
+
     # Create a device for the Omni Backyard
     _LOGGER.debug("Creating device for backyard: %s", omni.backyard)
     device_registry.async_get_or_create(

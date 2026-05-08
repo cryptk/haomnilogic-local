@@ -5,6 +5,8 @@
   "editor.formatOnSave": true,
   "editor.renderWhitespace": "all",
   "mypy-type-checker.importStrategy": "fromEnvironment",
+  // This project uses mypy for type checking
+  "python.analysis.typeCheckingMode": "off",
   "[python]": {
     "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.codeActionsOnSave": {

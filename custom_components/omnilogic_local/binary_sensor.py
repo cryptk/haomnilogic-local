@@ -91,6 +91,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
             )
         )
 
+    # Create binary sensor entities for each chlorinator based on the descriptions in CHLORINATOR_BINARY_SENSORS
     for _, _, chlorinator in coordinator.omni.all_chlorinators.items():
         entities.extend(
             OmniLogicChlorinatorBinarySensorEntity(

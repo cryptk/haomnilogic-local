@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+from functools import cached_property
 from typing import Any, cast
 
 from homeassistant.core import callback
@@ -49,14 +50,16 @@ class OmniLogicEntity[EquipmentTypes: OmniLogicEquipment](CoordinatorEntity[Omni
         # Individual entities can override this if needed.
         return super().available and self.equipment._omni.backyard.is_ready  # Ensure coordinator is available, which checks if we have data
 
-    @property
-    def device_info(self) -> DeviceInfo:
+    @cached_property
+    def device_info(self) -> DeviceInfo | None:
         """Return the device info."""
         # If we have a BOW ID, then we associate with that BOWs device, if not, we associate with the Backyard
-        if self.equipment.bow_id is not None and self.equipment.bow_id != BACKYARD_SYSTEM_ID:
+        if self.equipment.bow_id is not None and self.equipment.bow_id > BACKYARD_SYSTEM_ID:
             identifiers = {(DOMAIN, f"bow_{self.bow_id}")}
-        else:
+        elif self.equipment.bow_id == BACKYARD_SYSTEM_ID:
             identifiers = {(DOMAIN, f"backyard_{BACKYARD_SYSTEM_ID}")}
+        else:
+            identifiers = {(DOMAIN, "system")}
         return DeviceInfo(
             identifiers=identifiers,
             manufacturer=MANUFACTURER,
