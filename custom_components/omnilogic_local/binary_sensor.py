@@ -209,11 +209,15 @@ class OmniLogicChlorinatorBinarySensorEntity(OmniLogicEntity[Chlorinator], Binar
         super().__init__(coordinator, equipment)
         self.entity_description = entity_description
         self._attr_name = f"{equipment.name} {str(entity_description.name)}" if hasattr(entity_description, "name") else None
-        self._attr_is_on = entity_description.value_fn(equipment)
 
     @property
     def _extra_state_attributes(self) -> dict[str, Any]:
         return self.entity_description.extra_state_attributes_fn(self.equipment)
+
+    @property
+    def is_on(self) -> bool | None:
+        # Override the cached value with a dynamic value based on the entity description function
+        return self.entity_description.value_fn(self.equipment)
 
 
 class OmniLogicChlorinatorStatusBinarySensorEntity(OmniLogicEntity[Chlorinator], BinarySensorEntity):
