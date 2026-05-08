@@ -35,3 +35,5 @@ OMNI_TO_HASS_TYPES: dict[str, str] = {
     OmniType.VALVE_ACTUATOR: "switch",
     OmniType.VIRT_HEATER: "water_heater",
 }
+
+SUGGESTED_AREA: Final[str] = "Backyard"
