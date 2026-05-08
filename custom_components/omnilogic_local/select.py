@@ -55,8 +55,6 @@ class OmniLogicChlorinatorOpModeSelectEntity(OmniLogicEntity[Chlorinator], Selec
         case = ChlorinatorOperatingMode.from_str(option)
         match case:
             case ChlorinatorOperatingMode.TIMED:
-                current_value = self.equipment.timed_percent_telemetry if self.equipment.timed_percent_telemetry is not None else 0
-                await self.equipment.set_timed_percent(current_value)
+                await self.equipment.set_op_mode(ChlorinatorOperatingMode.TIMED)
             case ChlorinatorOperatingMode.ORP_AUTO:
-                current_value = self._csad.orp_target_level
-                await self._csad.set_orp_target(current_value)
+                await self.equipment.set_op_mode(ChlorinatorOperatingMode.ORP_AUTO)

@@ -209,16 +209,11 @@ class OmniLogicCSADORPNumberEntity(OmniLogicEntity[CSAD], NumberEntity):
     _attr_native_unit_of_measurement = UnitOfElectricPotential.MILLIVOLT
     _attr_mode = NumberMode.BOX
 
-    _chlorinator: Chlorinator | None = None
-
-    def __init__(
-        self,
-        coordinator: OmniLogicCoordinator,
-        equipment: CSAD,
-    ) -> None:
-        super().__init__(coordinator, equipment)
-        bow = coordinator.omni.backyard.bow[equipment.bow_id] if equipment.bow_id is not None else None
-        self._chlorinator = bow.chlorinator if bow is not None else None
+    @property
+    def _chlorinator(self) -> Chlorinator | None:
+        if self.bow_id is None:
+            return None
+        return self.coordinator.omni.backyard.bow[self.bow_id].chlorinator
 
     @property
     def available(self) -> bool:
