@@ -211,7 +211,7 @@ class OmniLogicFilterEnergySensorEntity(OmniLogicEntity[Filter], SensorEntity):
         )
 
     @property
-    def name(self) -> Any:
+    def name(self) -> str:
         return f"{self.equipment.name} Power"
 
 
@@ -235,7 +235,7 @@ class OmniLogicChlorinatorSaltLevelSensorEntity(OmniLogicEntity[Chlorinator], Se
                 return self.equipment.instant_salt_level
 
     @property
-    def name(self) -> Any:
+    def name(self) -> str:
         return f"{self.equipment.name} {self._sensor_type.capitalize()} Salt Level"
 
 

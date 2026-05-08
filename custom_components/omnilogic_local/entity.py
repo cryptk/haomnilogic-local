@@ -78,7 +78,7 @@ class OmniLogicEntity[EquipmentTypes: OmniLogicEquipment](CoordinatorEntity[Omni
         return self._extra_state_attributes | base_attributes
 
     @property
-    def name(self) -> Any:
+    def name(self) -> str | None:
         return self._attr_name if hasattr(self, "_attr_name") else self.equipment.name
 
     @property

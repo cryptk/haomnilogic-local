@@ -78,7 +78,7 @@ class OmniLogicVSPNumberEntity[PT: PumpTypes](OmniLogicEntity[PT], NumberEntity)
     _attr_icon: str = "mdi:gauge"
 
     @property
-    def name(self) -> Any:
+    def name(self) -> str:
         return f"{super().name} Speed"
 
     @property
