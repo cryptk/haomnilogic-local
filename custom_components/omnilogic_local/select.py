@@ -90,38 +90,14 @@ class OmniLogicDualSpeedSelectEntity[PT: PumpTypes](OmniLogicEntity[PT], SelectE
         return f"{super().name} Speed"
 
     @property
-    def max_rpm(self) -> int:
-        return self.equipment.max_rpm
-
-    @property
-    def min_rpm(self) -> int:
-        return self.equipment.min_rpm
-
-    @property
-    def max_pct(self) -> int:
-        return self.equipment.max_percent
-
-    @property
-    def min_pct(self) -> int:
-        return self.equipment.min_percent
-
-    @property
-    def current_rpm(self) -> int:
-        return floor(self.equipment.max_rpm / 100 * self.equipment.speed)
-
-    @property
-    def current_pct(self) -> int:
-        return self.equipment.speed
-
-    @property
     def _extra_state_attributes(self) -> dict[str, Any]:
         return {
-            "omni_max_rpm": self.max_rpm,
-            "omni_min_rpm": self.min_rpm,
-            "omni_max_percent": self.max_pct,
-            "omni_min_percent": self.min_pct,
-            "omni_current_rpm": self.current_rpm,
-            "omni_current_percent": self.current_pct,
+            "omni_max_rpm": self.equipment.max_rpm,
+            "omni_min_rpm": self.equipment.min_rpm,
+            "omni_max_percent": self.equipment.max_percent,
+            "omni_min_percent": self.equipment.min_percent,
+            "omni_current_rpm": floor(self.equipment.max_rpm / 100 * self.equipment.speed),
+            "omni_current_percent": self.equipment.speed,
         }
 
 
@@ -132,7 +108,7 @@ class OmniLogicPumpSpeedSelectEntity(OmniLogicDualSpeedSelectEntity[Pump]):
 
     @property
     def current_option(self) -> str:
-        match self.current_pct:
+        match self.equipment.speed:
             case 0:
                 return str(PumpState.OFF)
             case 50:
@@ -159,8 +135,7 @@ class OmniLogicFilterSpeedSelectEntity(OmniLogicDualSpeedSelectEntity[Filter]):
 
     @property
     def current_option(self) -> str:
-        _LOGGER.debug("Getting current option for %s - Current Percent: %s", self.name, self.current_pct)
-        match self.current_pct:
+        match self.equipment.speed:
             case 0:
                 return str(FilterState.OFF)
             case 50:
