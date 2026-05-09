@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any
 from homeassistant.components.select import SelectEntity
 from pyomnilogic_local import CSAD, Chlorinator, Filter, Pump
 from pyomnilogic_local.omnitypes import (
-    ChlorinatorOperatingMode,
+    ChlorinatorMSPConfigMode,
     FilterSpeedPresets,
     FilterState,
     FilterType,
@@ -58,7 +58,7 @@ class OmniLogicChlorinatorOpModeSelectEntity(OmniLogicEntity[Chlorinator], Selec
     """Number entity for CSAD pH control."""
 
     _attr_name = "Chlorinator Operating Mode"
-    _attr_options = [str(mode) for mode in (ChlorinatorOperatingMode.TIMED, ChlorinatorOperatingMode.ORP_AUTO)]
+    _attr_options = [str(mode) for mode in (ChlorinatorMSPConfigMode.TIMED, ChlorinatorMSPConfigMode.ORP_AUTO)]
 
     def __init__(self, coordinator: OmniLogicCoordinator, equipment: Chlorinator, csad: CSAD):
         super().__init__(coordinator, equipment)
@@ -66,15 +66,12 @@ class OmniLogicChlorinatorOpModeSelectEntity(OmniLogicEntity[Chlorinator], Selec
 
     @property
     def current_option(self) -> str:
-        return str(self.equipment.operating_mode)
+        return str(self.equipment.mode)
 
     async def async_select_option(self, option: str) -> None:
-        case = ChlorinatorOperatingMode.from_str(option)
-        match case:
-            case ChlorinatorOperatingMode.TIMED:
-                await self.equipment.set_op_mode(ChlorinatorOperatingMode.TIMED)
-            case ChlorinatorOperatingMode.ORP_AUTO:
-                await self.equipment.set_op_mode(ChlorinatorOperatingMode.ORP_AUTO)
+        new_op_mode = ChlorinatorMSPConfigMode.from_str(option)
+        await self.equipment.set_op_mode(new_op_mode)
+        self.coordinator.do_next_refresh_after()
 
 
 type PumpTypes = Pump | Filter

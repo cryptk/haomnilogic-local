@@ -9,7 +9,7 @@ from homeassistant.const import PERCENTAGE, UnitOfElectricPotential, UnitOfTempe
 from pyomnilogic_local import CSAD, Chlorinator, Filter, Heater, Pump
 from pyomnilogic_local.omnitypes import (
     ChlorinatorDispenserType,
-    ChlorinatorOperatingMode,
+    ChlorinatorMSPConfigMode,
     FilterType,
     HeaterType,
     PumpType,
@@ -164,7 +164,8 @@ class OmniLogicChlorinatorTimedPercentNumberEntity(OmniLogicEntity[Chlorinator],
 
     @property
     def available(self) -> bool:
-        return super().available and self.equipment.operating_mode == ChlorinatorOperatingMode.TIMED
+        # This entity is only available if we have a chlorinator in TIMED mode
+        return super().available and self.equipment.mode == ChlorinatorMSPConfigMode.TIMED
 
     @property
     def native_value(self) -> float | None:
@@ -196,7 +197,7 @@ class OmniLogicCSADORPNumberEntity(OmniLogicEntity[CSAD], NumberEntity):
         # This entity is only available if we have a chlorinator in ORP_AUTO mode, which means we have a CSAD to control it
         if self._chlorinator is None:
             return False
-        return super().available and self._chlorinator.operating_mode == ChlorinatorOperatingMode.ORP_AUTO
+        return super().available and self._chlorinator.mode == ChlorinatorMSPConfigMode.ORP_AUTO
 
     @property
     def native_value(self) -> float | None:
