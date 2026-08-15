@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, Callable, cast
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorEntityDescription, SensorStateClass
-from homeassistant.const import CONCENTRATION_PARTS_PER_MILLION, UnitOfPower, UnitOfTemperature
+from homeassistant.const import UnitOfPower, UnitOfRatio, UnitOfTemperature
 from pyomnilogic_local import CSAD, Backyard, Bow, Chlorinator, Filter, HeaterEquipment, Sensor
 from pyomnilogic_local.omnitypes import ChlorinatorDispenserType, CSADMode, FilterState, HeaterType, SensorType
 
@@ -64,14 +64,14 @@ CHLORINATOR_SALT_SENSORS: tuple[OmniLogicSensorEntityDescription, ...] = (
         key="chlorinator_salt_level_average",
         name="Average Salt Level",
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
+        native_unit_of_measurement=UnitOfRatio.PARTS_PER_MILLION,
         value_fn=lambda equipment: equipment.avg_salt_level if isinstance(equipment, Chlorinator) else None,
     ),
     OmniLogicSensorEntityDescription(
         key="chlorinator_salt_level_instant",
         name="Instant Salt Level",
         state_class=SensorStateClass.MEASUREMENT,
-        native_unit_of_measurement=CONCENTRATION_PARTS_PER_MILLION,
+        native_unit_of_measurement=UnitOfRatio.PARTS_PER_MILLION,
         value_fn=lambda equipment: equipment.instant_salt_level if isinstance(equipment, Chlorinator) else None,
     ),
 )

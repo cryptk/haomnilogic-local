@@ -48,7 +48,7 @@ repos:
           - "python-omnilogic-local>=5.0.0"
           - "pydantic>=2.0.0"
           - "pytest>=8.0.0"
-          - "homeassistant>=2025.1.2"
+          - "homeassistant>=2026.7.0"
         args: ["--config-file=./pyproject.toml"]
         files: ^custom_components/.+\.(py|pyi)$
   - repo: local

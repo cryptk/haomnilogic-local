@@ -3,7 +3,8 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING, Any
 
-from homeassistant.components.valve import ValveEntity, ValveEntityFeature
+from homeassistant.components.valve.const import ValveEntityFeature
+from homeassistant.components.valve.entity import ValveEntity
 from pyomnilogic_local import Relay
 from pyomnilogic_local.omnitypes import RelayFunction, RelayType
 
