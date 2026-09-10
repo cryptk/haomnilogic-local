@@ -11,6 +11,11 @@ KEY_COORDINATOR: Final[str] = "coordinator"
 SCAN_INTERVAL = timedelta(seconds=10)
 UPDATE_DELAY_SECONDS: Final[float] = 1.5
 
+# The Omni communicates over UDP, which is lossy - especially over WiFi. A single
+# dropped/late poll should not flip every entity to unavailable. Tolerate this many
+# consecutive failed polls (keeping last-known data) before surfacing UpdateFailed.
+MAX_CONSECUTIVE_UPDATE_FAILURES: Final[int] = 3
+
 # According to Hayward docs, the backyard always has a system id of 0
 BACKYARD_SYSTEM_ID: Final[int] = 0
 

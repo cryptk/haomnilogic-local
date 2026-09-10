@@ -28,6 +28,10 @@ class OmniLogicEntity[EquipmentTypes: OmniLogicEquipment](CoordinatorEntity[Omni
     ) -> None:
         super().__init__(coordinator=coordinator)
         self.equipment = equipment
+        # Tracks whether this entity's equipment was present in the latest telemetry
+        # frame. We never overwrite self.equipment with None (see _handle_coordinator_update),
+        # so every dereference stays safe; availability is driven by this flag instead.
+        self._equipment_available = True
         self.bow_id = equipment.bow_id
         self.system_id = equipment.system_id
         subclass_name = self.__class__.__name__
@@ -37,18 +41,30 @@ class OmniLogicEntity[EquipmentTypes: OmniLogicEquipment](CoordinatorEntity[Omni
     def _handle_coordinator_update(self) -> None:
         """Handle updated data from the coordinator."""
         if self.system_id is not None:
-            subclass_name = self.__class__.__name__
-            _LOGGER.debug(
-                "Updating %s for %s - SystemID: %s, Name: %s", subclass_name, self.equipment.omni_type, self.system_id, self.equipment.name
-            )
-            self.equipment = cast("EquipmentTypes", self.coordinator.omni.get_equipment_by_id(self.system_id))
+            # Equipment can be temporarily missing from a telemetry frame (transient
+            # comms gap) or genuinely absent. In that case keep the last-known object
+            # rather than storing None, so name/device_info/attributes never dereference
+            # None (which previously left the entity permanently stuck throwing every
+            # poll). Availability is signalled via _equipment_available instead.
+            equipment = self.coordinator.omni.get_equipment_by_id(self.system_id)
+            self._equipment_available = equipment is not None
+            if equipment is not None:
+                self.equipment = cast("EquipmentTypes", equipment)
+                _LOGGER.debug(
+                    "Updating %s for %s - SystemID: %s, Name: %s",
+                    self.__class__.__name__,
+                    self.equipment.omni_type,
+                    self.system_id,
+                    self.equipment.name,
+                )
         self.async_write_ha_state()
 
     @property
     def available(self) -> bool:
         # By default we consider an entity available if the backyard is ready (not in service mode),
         # Individual entities can override this if needed.
-        return super().available and self.equipment._omni.backyard.is_ready  # Ensure coordinator is available, which checks if we have data
+        # If this entity's equipment was missing from the latest telemetry, treat it as unavailable.
+        return super().available and self._equipment_available and self.equipment._omni.backyard.is_ready
 
     @cached_property
     def device_info(self) -> DeviceInfo | None:

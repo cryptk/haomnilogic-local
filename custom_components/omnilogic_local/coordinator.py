@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .const import SCAN_INTERVAL, UPDATE_DELAY_SECONDS
+from .const import MAX_CONSECUTIVE_UPDATE_FAILURES, SCAN_INTERVAL, UPDATE_DELAY_SECONDS
 
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
@@ -37,6 +37,7 @@ class OmniLogicCoordinator(DataUpdateCoordinator[None]):
             update_interval=SCAN_INTERVAL,
         )
         self.omni = omni
+        self._consecutive_failures = 0
 
     async def _async_update_data(self) -> None:
         """Update data via library."""
@@ -48,7 +49,20 @@ class OmniLogicCoordinator(DataUpdateCoordinator[None]):
         except Exception as err:
             err_name = type(err).__name__
             self.failure_counts[err_name] = self.failure_counts.get(err_name, 0) + 1
-            raise UpdateFailed("Failed to update data from OmniLogic") from err
+            self._consecutive_failures += 1
+            # The Omni talks UDP (lossy over WiFi); don't flip every entity to unavailable
+            # on a single dropped/late poll. Keep last-known data until we cross the
+            # threshold of consecutive failures, then surface UpdateFailed.
+            if self._consecutive_failures >= MAX_CONSECUTIVE_UPDATE_FAILURES:
+                raise UpdateFailed("Failed to update data from OmniLogic") from err
+            _LOGGER.debug(
+                "OmniLogic poll failed (%d/%d consecutive), keeping last-known data: %s",
+                self._consecutive_failures,
+                MAX_CONSECUTIVE_UPDATE_FAILURES,
+                err_name,
+            )
+            return
+        self._consecutive_failures = 0
 
     def do_next_refresh_after(self, delay: float = UPDATE_DELAY_SECONDS) -> None:
         """Delay the next refresh by a given number of seconds."""
