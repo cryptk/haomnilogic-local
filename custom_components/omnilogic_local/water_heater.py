@@ -45,7 +45,7 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity[Heater], WaterHeaterEntity):
         super().__init__(coordinator, equipment)
 
     @property
-    def temperature_unit(self) -> str:
+    def native_temperature_unit(self) -> str:
         # Heaters always return their values in Fahrenheit, no matter what units the system is set to
         # https://github.com/cryptk/haomnilogic-local/issues/96
         return UnitOfTemperature.FAHRENHEIT
@@ -59,11 +59,11 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity[Heater], WaterHeaterEntity):
         return self.equipment.max_temp
 
     @property
-    def target_temperature(self) -> float | None:
+    def native_target_temperature(self) -> float | None:
         return self.equipment.current_set_point
 
     @property
-    def current_temperature(self) -> float | None:
+    def native_current_temperature(self) -> float | None:
         # Get the body of water to retrieve the current water temperature
         if self.equipment.bow_id is None:
             return None
