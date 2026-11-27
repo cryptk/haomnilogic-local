@@ -148,7 +148,8 @@ class OmniLogicSolarSetPointNumberEntity(OmniLogicEntity[Heater], NumberEntity):
         return str(UnitOfTemperature.FAHRENHEIT)
 
     async def async_set_native_value(self, value: float) -> None:
-        await self.equipment.set_solar_temperature(int(value))
+        # HA converts the value to Fahrenheit before calling us, so round rather than truncate
+        await self.equipment.set_solar_temperature(round(value))
         self.coordinator.do_next_refresh_after()
 
 
