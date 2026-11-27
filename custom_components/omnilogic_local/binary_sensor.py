@@ -133,7 +133,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
             coordinator=coordinator,
             equipment=chlorinator,
             needle=statusFlag,
-            haystack=chlorinator.status,
+            haystack_fn=lambda chlor: chlor.status,
         )
         for statusFlag in ChlorinatorStatus
         if statusFlag not in status_flags_filter
@@ -144,7 +144,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
             coordinator=coordinator,
             equipment=chlorinator,
             needle=statusFlag,
-            haystack=chlorinator.alert_messages,
+            haystack_fn=lambda chlor: chlor.alert_messages,
         )
         for _, _, chlorinator in coordinator.omni.all_chlorinators.items()
         for statusFlag in ChlorinatorAlert
@@ -154,7 +154,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
             coordinator=coordinator,
             equipment=chlorinator,
             needle=statusFlag,
-            haystack=chlorinator.error_messages,
+            haystack_fn=lambda chlor: chlor.error_messages,
         )
         for _, _, chlorinator in coordinator.omni.all_chlorinators.items()
         for statusFlag in ChlorinatorError
@@ -275,13 +275,15 @@ class OmniLogicChlorinatorStatusBinarySensorEntity(OmniLogicEntity[Chlorinator],
         coordinator: OmniLogicCoordinator,
         equipment: Chlorinator,
         needle: ChlorinatorStatus | ChlorinatorAlert | ChlorinatorError,
-        haystack: list[str],
+        haystack_fn: Callable[[Chlorinator], list[str]],
     ) -> None:
         super().__init__(coordinator, equipment)
         self._needle = needle
-        self._haystack = haystack
+        # A function rather than the list itself: the library builds a new Chlorinator (and new
+        # status/alert/error lists) on every refresh, so a stored list would never change.
+        self._haystack_fn = haystack_fn
         self._attr_name = f"{self.equipment.name} {self._needle}"
 
     @property
     def is_on(self) -> bool | None:
-        return self._needle.name in self._haystack
+        return self._needle.name in self._haystack_fn(self.equipment)
