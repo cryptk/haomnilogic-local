@@ -104,14 +104,17 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity[Heater], WaterHeaterEntity):
             "omni_solar_set_point": self.equipment.solar_set_point,
             "omni_why_on": self.equipment.why_on,
         }
-        for _, system_id, heater_equip in self.equipment.heater_equipment.items():
+        # EquipmentDict.items() yields (system_id, name, equipment)
+        for system_id, _, heater_equip in self.equipment.heater_equipment.items():
             name = heater_equip.name or "unknown"
             prefix = f"omni_heater_equip_{name}_"
+            current_temp = heater_equip.current_temp
             extra_state_attributes |= {
                 f"{prefix}_enabled": heater_equip.enabled,
                 f"{prefix}_system_id": system_id,
                 f"{prefix}_bow_id": heater_equip.bow_id,
                 f"{prefix}_state": str(heater_equip.state),
-                f"{prefix}_current_temp": heater_equip.current_temp,
+                # The same invalid readings the temperature sensors filter out
+                f"{prefix}_current_temp": current_temp if current_temp not in [-1, 255, 65535] else None,
             }
         return extra_state_attributes
