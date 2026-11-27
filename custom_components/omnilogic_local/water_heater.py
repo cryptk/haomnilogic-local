@@ -79,7 +79,9 @@ class OmniLogicWaterHeaterEntity(OmniLogicEntity[Heater], WaterHeaterEntity):
 
     async def async_set_temperature(self, **kwargs: Any) -> None:
         """Set target temperature."""
-        await self.equipment.set_temperature(int(kwargs[ATTR_TEMPERATURE]))
+        # HA converts the setpoint to Fahrenheit before calling us (21 °C arrives as 69.8 °F),
+        # so round rather than truncate
+        await self.equipment.set_temperature(round(kwargs[ATTR_TEMPERATURE]))
         self.coordinator.do_next_refresh_after()
 
     async def async_set_operation_mode(self, operation_mode: str) -> None:
