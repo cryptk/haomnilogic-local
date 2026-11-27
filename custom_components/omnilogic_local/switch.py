@@ -191,6 +191,21 @@ class OmniLogicScheduleSwitchEntity(OmniLogicSwitchEntity[Schedule]):
         # of a schedule to result in a new entity being created
         return f"{self.bow_id} {self.system_id} schedule"
 
+    @property
+    def _extra_state_attributes(self) -> dict[str, Any]:
+        schedule = self.equipment
+        return {
+            # What the schedule does: Set Equipment, or Set Spillover Cmd for a spillover schedule
+            "omni_schedule_event": str(schedule.event),
+            # The event's value: the speed % for a filter or pump schedule
+            "omni_schedule_data": schedule.data,
+            "omni_schedule_equipment_id": schedule.equipment_id,
+            "omni_schedule_start_time": f"{schedule.start_hour:02d}:{schedule.start_minute:02d}",
+            "omni_schedule_end_time": f"{schedule.end_hour:02d}:{schedule.end_minute:02d}",
+            "omni_schedule_days_active": schedule.days_active,
+            "omni_schedule_recurring": schedule.recurring,
+        }
+
 
 class OmniLogicSpilloverSwitchEntity(OmniLogicEntity[Bow], SwitchEntity):
     """Switch entity for spillover control."""
